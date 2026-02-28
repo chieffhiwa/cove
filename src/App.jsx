@@ -1014,114 +1014,73 @@ function MainApp({ userData, update, tab, setTab, activeContact, setActiveContac
 }
 
 // ── Home Tab ──────────────────────────────────────────────────────────────────
-function HomeTab({ userData, openContact, setTab }) {
+function HomeTab({ userData }) {
   const visible = useFadeIn(["home"]);
-  const contacts = userData.contacts || [];
-  const wants = userData.wants || [];
-  const tagged = wants.filter(w => w.feeling).length;
+  const quadrant = userData.selfPosition ? getQuadrant(userData.selfPosition.x, userData.selfPosition.y) : null;
+  const qr = quadrant ? QUADRANT_READS[quadrant] : null;
 
   return (
     <div style={{ ...fadeStyle(visible), padding: "28px 22px" }}>
-      <div style={{ marginBottom: 36 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 400, margin: "0 0 8px", color: C.pearl, letterSpacing: -0.3 }}>
-          Good to see you.
+
+      {/* Greeting */}
+      <div style={{ marginBottom: 40 }}>
+        <h1 style={{ fontSize: 24, fontWeight: 400, margin: "0 0 10px", color: C.pearl, letterSpacing: -0.3 }}>
+          Take a breath.
         </h1>
-        <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.8, margin: 0 }}>
-          You know what you want. You know how to show up. This just keeps it organized so you stay in motion.
+        <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.85, margin: 0 }}>
+          You've done the hard part. You placed yourself on the map. Most people never do that — they just keep moving without knowing where they're starting from.
         </p>
       </div>
 
-      {/* Values snapshot */}
-      {wants.length > 0 && (
+      {/* Matrix read */}
+      {qr && (
         <div style={{ marginBottom: 32 }}>
-          <SectionLabel>your values</SectionLabel>
-          <div
-            onClick={() => setTab("values")}
-            style={{
-              padding: "18px 20px", borderRadius: 12,
-              background: C.surface, border: `1px solid ${C.borderSoft}`,
-              display: "flex", justifyContent: "space-between", alignItems: "center",
-            }}
-          >
-            <div>
-              <div style={{ fontSize: 14, color: C.pearl, fontWeight: 500, marginBottom: 4 }}>
-                {tagged} feelings named
-              </div>
-              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", maxWidth: 220 }}>
-                {[...new Set(wants.filter(w => w.feeling).map(w => w.feeling))].map(f => (
-                  <span key={f} style={{
-                    fontSize: 10, padding: "2px 8px", borderRadius: 20,
-                    background: (FEELINGS.find(fl => fl.id === f)?.color || C.ocean) + "18",
-                    color: FEELINGS.find(fl => fl.id === f)?.color || C.ocean,
-                  }}>{f}</span>
-                ))}
-              </div>
-            </div>
-            <span style={{ color: C.muted, fontSize: 18 }}>›</span>
+          <SectionLabel>where you are right now</SectionLabel>
+          <div style={{
+            padding: "20px", borderRadius: 12,
+            background: C.surface, border: `1px solid ${C.borderSoft}`,
+          }}>
+            <div style={{ fontSize: 15, color: qr.color, fontWeight: 500, marginBottom: 8 }}>{qr.title}</div>
+            <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.8, margin: 0 }}>{qr.read}</p>
           </div>
         </div>
       )}
 
-      {/* Connections */}
+      {/* Why the matrix matters */}
       <div style={{ marginBottom: 32 }}>
-        <SectionLabel>your people</SectionLabel>
-        {contacts.length === 0
-          ? <div style={{
-              padding: "24px", borderRadius: 12, textAlign: "center",
-              border: `1px dashed ${C.border}`, color: C.dim, fontSize: 13,
-            }}>No connections yet. Add someone.</div>
-          : <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {contacts.map((c, i) => {
-                const done = (c.attempts || []).filter(a => a.status !== "pending").length;
-                return (
-                  <div
-                    key={i}
-                    onClick={() => openContact(c)}
-                    style={{
-                      display: "flex", alignItems: "center", gap: 16,
-                      padding: "16px 18px", borderRadius: 12,
-                      background: C.surface, border: `1px solid ${C.borderSoft}`,
-                    }}
-                  >
-                    <Avatar name={c.first} size={44} />
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 14, color: C.pearl, fontWeight: 500 }}>{c.first} {c.last}</div>
-                      <div style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>{c.company}</div>
-                    </div>
-                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
-                      <div style={{ display: "flex", gap: 4 }}>
-                        {[0,1,2].map(j => (
-                          <div key={j} style={{
-                            width: 7, height: 7, borderRadius: "50%",
-                            background: j < done ? C.seafoam : C.faint,
-                          }} />
-                        ))}
-                      </div>
-                      {c.feeling && <span style={{ fontSize: 10, color: C.muted }}>{c.feeling}</span>}
-                    </div>
-                  </div>
-                );
-              })}
-              <div style={{
-                padding: "14px 18px", borderRadius: 12, cursor: "pointer",
-                border: `1px dashed ${C.border}`, color: C.dim, fontSize: 13,
-                textAlign: "center",
-              }}>+ add another person</div>
+        <SectionLabel>why this matters</SectionLabel>
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {[
+            { icon: "📍", title: "It's a starting point, not a verdict", body: "Where you place yourself today is just data. It changes. That's the whole point — Cove is here to help you move." },
+            { icon: "🔄", title: "Honesty is the strategy", body: "The people who get the furthest fastest are the ones who see themselves clearly. Not harshly — clearly. The matrix is practice for that." },
+            { icon: "🌊", title: "What's coming", body: "We're building out the next layer — values exploration, connection mapping, the full picture. For now, sit with where you are. That's enough." },
+          ].map((item, i) => (
+            <div key={i} style={{
+              padding: "18px 20px", borderRadius: 12,
+              background: C.surface, border: `1px solid ${C.borderSoft}`,
+              display: "flex", gap: 14, alignItems: "flex-start",
+            }}>
+              <span style={{ fontSize: 20, lineHeight: 1, marginTop: 2 }}>{item.icon}</span>
+              <div>
+                <div style={{ fontSize: 13, color: C.pearl, fontWeight: 500, marginBottom: 5 }}>{item.title}</div>
+                <div style={{ fontSize: 13, color: C.muted, lineHeight: 1.75 }}>{item.body}</div>
+              </div>
             </div>
-        }
+          ))}
+        </div>
       </div>
 
-      {/* Philosophy */}
+      {/* Quote */}
       <blockquote style={{
-        margin: 0, padding: "18px 20px",
-        borderRadius: 12, background: C.surface,
-        border: `1px solid ${C.borderSoft}`,
+        margin: 0, padding: "18px 20px", borderRadius: 12,
+        background: C.surface, border: `1px solid ${C.borderSoft}`,
         borderLeft: `2px solid ${C.oceanDeep}`,
       }}>
         <p style={{ margin: 0, fontSize: 13, color: C.muted, fontStyle: "italic", lineHeight: 1.9 }}>
-          "Be approachable. Be generous with what you know. Show up like someone who's been places and isn't keeping it to themselves."
+          "The karma compounds quietly."
         </p>
       </blockquote>
+
     </div>
   );
 }
