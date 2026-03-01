@@ -1,41 +1,64 @@
 # cove.
-> *your career, your current*
+> *your career, your current.*
 
-A mobile-first career coaching app. A system for building the career you actually want — generously, honestly, with people you actually like.
+A mobile-first career coaching app. Not a job board. Not a resume builder. A smart, simple, and clean system for building the career that you want.
+
+Live: **[cove-nu.vercel.app](https://cove-nu.vercel.app)**
 
 ---
 
 ## What it is
 
-Cove helps you manage your job search with intention. Not a job board. Not a tracker. It starts with **you** — where you actually sit as a person — then surfaces what you're really chasing, then helps you build relationships with the people who can get you there.
+Cove is a reflective onboarding experience that starts with *you* — where you actually sit as a person — then helps you understand what you're really chasing, and what's in the way.
 
 Built on three ideas:
-- **Go-Giver first** — show up with something to offer
+- **Go-Giver first** — show up with something to offer *(The Go-Giver, Bob Burg & John David Mann)*
 - **Careers over cash** — the right fit pays you back in ways money can't count
-- **Generous enthusiasm** — the energy you bring is part of the pitch
+- **Generous enthusiasm** — *"Do you always need a reason to help somebody?"* — Ash Ketchum
 
 ---
 
 ## Stack
 
-- React 18
-- Zero external libraries
-- Inline styles throughout
+- React 18, react-scripts 5.0.1
+- Zero external libraries — inline styles throughout
 - Hooks only: `useState`, `useEffect`, `useRef`
 - Mobile-first, max-width 480px
+- localStorage for session persistence
+- Discord webhook for reflection notifications
+
+---
+
+## Onboarding flow (10 steps)
+
+1. **Welcome** — landing + tagline
+2. **Privacy** — data commitments
+3. **Philosophy** — three principles (Go-Giver, Careers over Cash, Generous Enthusiasm)
+4. **Name** — what do people call you?
+5. **Self Matrix** — plot yourself: Brave/Fearful × Curious/Judgmental
+6. **Matrix Pause** — stop-and-go: task card, come back when done
+7. **Pricing** — membership ($5/month trial)
+8. **Brave Reflect** — what would a brave career decision look like?
+9. **Fears Reflect** — what's in the way?
+10. **Heart Pause** — terminal screen, reflections sent to Discord
 
 ---
 
 ## Getting started
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/cove.git
+git clone https://github.com/chieffhiwa/cove.git
 cd cove
 npm install
 npm start
 ```
 
 Opens at `http://localhost:3000`. Best viewed in Chrome DevTools mobile view (iPhone 14 Pro).
+
+To clear session state and restart onboarding:
+```
+DevTools → Application → Local Storage → localhost:3000 → Clear All
+```
 
 ---
 
@@ -44,54 +67,60 @@ Opens at `http://localhost:3000`. Best viewed in Chrome DevTools mobile view (iP
 ```
 cove/
 ├── public/
-│   └── index.html
+│   └── index.html        # global styles, keyframe animations
 ├── src/
-│   ├── App.jsx       # entire app — onboarding + main
-│   └── index.js      # entry point
+│   ├── App.jsx           # entire app (~1600 lines) — all components inline
+│   └── index.js          # React DOM entry point
 ├── .gitignore
 ├── package.json
 └── README.md
 ```
 
-### App.jsx — two phases
+---
 
-**Onboarding (7 steps)**
-1. Welcome
-2. Philosophy
-3. Name
-4. Self matrix — plot yourself (Brave/Fearful × Curious/Judgmental), get a read on what environments fit you
-5. Values — name the feeling underneath the want
-6. Add your first connection
-7. Place them on the matrix
+## Roadmap
 
-**Main app (4 tabs)**
-- Home — dashboard with values snapshot + connections
-- Values — grouped wants with reflections
-- Matrix — you and your people on the same grid
-- Vibes — motivational anchor
+| Milestone | Description | Status |
+|-----------|-------------|--------|
+| M1 | Vercel auto-deploy on push | ✅ Done |
+| M2 | Supabase backend — auth + database | 🔜 Next |
+| M3 | Matrix UX improvements — sticky, animated reveal | 🔜 |
+| M4 | Analytics (PostHog) + coach dashboard | 🔜 |
+| M5 | End-to-end flow: sign up → matrix → dashboard | 🔜 |
+| M6 | Ship to clients — real users, collect phone/email | 🔜 |
+
+### M2 plan (Supabase)
+- Auth: magic link (email) or phone OTP
+- Tables: `profiles`, `matrix_sessions`, `reflections`
+- Replace localStorage with Supabase upserts
+- Keep localStorage as optimistic cache
+
+### M4 plan (Analytics)
+- PostHog events: `onboarding_started`, `step_completed`, `matrix_placed`, `reflection_submitted`
+- Internal coach dashboard at `/coach` — DAUs, quadrant distribution, user list
 
 ---
 
-## Extending it
+## Environment variables
 
-**Add persistent storage**
-Replace `useState` in the root `App` component with a hook that syncs to `localStorage` or a backend. The `userData` shape is simple JSON.
+```
+REACT_APP_SUPABASE_URL=       # Supabase project URL
+REACT_APP_SUPABASE_ANON_KEY=  # Supabase anon key
+REACT_APP_POSTHOG_KEY=        # PostHog API key
+REACT_APP_COACH_PASSWORD=     # Coach dashboard access
+```
 
-**Add a scorecard**
-Rate companies against your values. The Y/N/M pattern from the original spreadsheet system maps cleanly onto the existing values data model.
-
-**Pull from LinkedIn**
-The contact shape already matches LinkedIn profile data. Wire up OAuth and map the response to `{ first, last, role, company, location, mutual }`.
-
-**Go native**
-The component logic is framework-agnostic. Port to React Native by swapping `div` → `View`, `p` → `Text`, `input` → `TextInput`. Main effort is about 4-6 hours for someone familiar with RN.
+Set in `.env.local` for local dev, and in Vercel dashboard for production.
 
 ---
 
-## Philosophy
+## Deploying
 
-The coaching layer lives in the "go deeper" accordion sections on each contact page. Right now they're static. The next version should personalize them based on the user's own values — e.g. *"This person works somewhere that scored high on your Legacy values. Lead with that."*
+Vercel auto-deploys on every push to `main`. No manual steps needed.
 
----
-
-*See `Cove-Engineering-Notes.docx` for full architecture notes, component breakdown, data model, and engineering handoff documentation.*
+```bash
+git add .
+git commit -m "your message"
+git push origin main
+# Vercel picks it up automatically → live in ~60s
+```

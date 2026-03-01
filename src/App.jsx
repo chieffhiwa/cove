@@ -243,7 +243,7 @@ function StepPrivacy({ next }) {
           ))}
         </div>
       </div>
-      <Btn onClick={next} style={{ marginTop: 32 }}>I get it, let's go</Btn>
+      <Btn onClick={next} style={{ marginTop: 32 }}>got it. let's go 🏁</Btn>
     </div>
   );
 }
