@@ -350,9 +350,9 @@ function StepPricing({ next }) {
 function StepPhilosophy({ next }) {
   const visible = useFadeIn([]);
   const principles = [
-    { icon: "💙", title: "Go-Giver first", body: "Thinking about what I had to offer, rather than what I had to gain — that shift changed everything. A new way of thinking, a unique skillset, a thoughtful question, or words of sincere appreciation. Lead with the gift. Show up like you mean it. This is how you find your edge.", cite: "inspired by The Go-Giver by Bob Burg & John David Mann" },
-    { icon: "〰️", title: "Careers over cash", body: "I've taken the higher offer and regretted it. Took the interesting role instead and it changed my life. You already know which one you want." },
-    { icon: "🐸", title: "Generous enthusiasm", body: "\"Do you always need a reason to help somebody?\" — Ash Ketchum. The energy you walk in with is part of the pitch. People remember how you made them feel." },
+    { icon: "💙", title: "\u201cGo-Giver\u201d first", body: "What I had to offer, not what I had to gain — that shift changed everything. Lead with the gift. Show up like you mean it.", cite: "The Go-Giver — Bob Burg & John David Mann" },
+    { icon: "〰️", title: "Careers over cash", body: "I've taken the higher offer and regretted it. The interesting role changed my life. You already know which one you want." },
+    { icon: "🐸", title: "Generous enthusiasm", body: "\u201cDo you always need a reason to help somebody?\u201d — Ash Ketchum. The energy you bring is part of the pitch." },
   ];
 
   return (
@@ -1030,38 +1030,70 @@ function StepMatrixPause({ selfPosition, next, goBack }) {
 // ── Step 6: Ash Ketchum / Generous Enthusiasm ────────────────────────────────
 function StepAshStory({ next }) {
   const visible = useFadeIn([]);
+  const p = (text, extra = {}) => (
+    <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.85, margin: "0 0 20px", ...extra }}>{text}</p>
+  );
   return (
-    <div style={{ ...fadeStyle(visible), padding: "80px 28px 56px", minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center" }}>
-      <p style={{ fontSize: 11, letterSpacing: 2, color: C.muted, fontFamily: "monospace", margin: "0 0 32px" }}>GENEROUS ENTHUSIASM</p>
+    <div style={{ ...fadeStyle(visible), padding: "80px 28px 56px", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+      <div style={{ flex: 1 }}>
+        <p style={{ fontSize: 11, letterSpacing: 2, color: C.muted, fontFamily: "monospace", margin: "0 0 36px" }}>GENEROUS ENTHUSIASM</p>
 
-      <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.85, margin: "0 0 24px" }}>
-        There's a scene in <em style={{ color: C.pearl }}>Pokémon: Mewtwo Returns</em>. Ash is helping Mewtwo escape from Team Rocket — a genetically engineered Pokémon that has every reason not to trust anyone.
-      </p>
+        {p("You ever just help somebody. No reason. No angle.")}
 
-      <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.85, margin: "0 0 36px" }}>
-        Mewtwo turns to him and asks:
-      </p>
-
-      <blockquote style={{
-        margin: "0 0 36px",
-        padding: "24px 28px",
-        borderLeft: `3px solid ${C.ocean}`,
-        background: C.surface,
-        borderRadius: "0 12px 12px 0",
-      }}>
-        <p style={{ fontSize: 20, fontWeight: 300, color: C.pearl, lineHeight: 1.5, margin: "0 0 12px", fontStyle: "italic" }}>
-          "Do you always need a reason to help somebody?"
+        <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.85, margin: "0 0 20px" }}>
+          There's a scene in <em style={{ color: C.pearl, fontStyle: "italic" }}>Pokémon: Mewtwo Returns</em> that keeps coming back to me.
         </p>
-        <p style={{ fontSize: 12, color: C.muted, margin: 0 }}>— Ash Ketchum</p>
-      </blockquote>
 
-      <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.85, margin: "0 0 16px" }}>
-        He doesn't answer. He just keeps going.
-      </p>
+        {/* Mewtwo GIF */}
+        <div style={{ margin: "0 0 24px", borderRadius: 12, overflow: "hidden", lineHeight: 0 }}>
+          <img
+            src="https://media.giphy.com/media/Q9Sk5zq0PWyxq/giphy.gif"
+            alt="Mewtwo"
+            style={{ width: "100%", borderRadius: 12, display: "block" }}
+          />
+          <p style={{ fontSize: 9, color: C.dim, margin: "6px 0 0", letterSpacing: 1, textTransform: "uppercase" }}>via GIPHY · Pokémon</p>
+        </div>
 
-      <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.85, margin: "0 0 48px" }}>
-        The energy you walk in with — giving before there's anything to gain — is the edge most people never pick up. It's how rooms change. It's how careers shift. It's not a strategy. It's a posture.
-      </p>
+        <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.85, margin: "0 0 20px" }}>
+          Ash is helping Mewtwo escape — a Pokémon built in a lab, hunted, every reason not to trust anyone — and Mewtwo stops. Looks at him. Asks:
+        </p>
+
+        <blockquote style={{
+          margin: "0 0 20px",
+          padding: "20px 24px",
+          borderLeft: `3px solid ${C.ocean}`,
+          background: C.surface,
+          borderRadius: "0 10px 10px 0",
+        }}>
+          <p style={{ fontSize: 18, fontWeight: 300, color: C.pearl, lineHeight: 1.55, margin: "0 0 10px", fontStyle: "italic" }}>
+            "Do you always need a reason to help somebody?"
+          </p>
+          <p style={{ fontSize: 11, color: C.muted, margin: 0 }}>— Ash Ketchum</p>
+        </blockquote>
+
+        {/* Ash reaction GIF */}
+        <div style={{ margin: "0 0 24px", borderRadius: 12, overflow: "hidden", lineHeight: 0 }}>
+          <img
+            src="https://media.giphy.com/media/gyQNvaJwtFDz7uySek/giphy.gif"
+            alt="Ash Ketchum"
+            style={{ width: "100%", borderRadius: 12, display: "block" }}
+          />
+          <p style={{ fontSize: 9, color: C.dim, margin: "6px 0 0", letterSpacing: 1, textTransform: "uppercase" }}>via GIPHY · Pokémon</p>
+        </div>
+
+        {p("He doesn't answer. He just keeps going.")}
+
+        <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.85, margin: "0 0 12px" }}>
+          The people I've watched move well through a job search — who leave rooms better than they found them, who build actual relationships instead of a pipeline — they all have some version of that. They show up before the ask. They give before the taking is even on the table.
+        </p>
+
+        <p style={{ fontSize: 15, color: C.pearl, lineHeight: 1.85, margin: "0 0 4px" }}>
+          It's not a strategy. It's a posture.
+        </p>
+        <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.85, margin: "0 0 48px" }}>
+          And it changes everything.
+        </p>
+      </div>
 
       <Btn onClick={next}>no, I don't.</Btn>
     </div>
