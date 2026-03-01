@@ -140,19 +140,20 @@ export default function App() {
 function Onboard({ step, setStep, userData, update, finish }) {
   const steps = [
     <StepWelcome        key={0} next={() => setStep(1)} />,
-    <StepPhilosophy     key={1} next={() => setStep(2)} />,
-    <StepName           key={2} next={(name) => { update({ name }); setStep(3); }} />,
-    <StepSelfMatrix     key={3} name={userData.name} next={(selfPosition) => { update({ selfPosition }); setStep(4); }} />,
-    <StepMatrixPause    key={4} selfPosition={userData.selfPosition} next={() => setStep(5)} />,
-    <StepBraveReflect   key={5} next={(braveReflection) => { update({ braveReflection }); setStep(6); }} />,
-    <StepFearsReflect   key={6} next={(fearsReflection) => { update({ fearsReflection }); setStep(7); postReflections({ ...userData, fearsReflection }); }} />,
-    <StepPause          key={7} finish={finish} />,
+    <StepPrivacy        key={1} next={() => setStep(2)} />,
+    <StepPhilosophy     key={2} next={() => setStep(3)} />,
+    <StepName           key={3} next={(name) => { update({ name }); setStep(4); }} />,
+    <StepSelfMatrix     key={4} name={userData.name} initialPosition={userData.selfPosition} next={(selfPosition) => { update({ selfPosition }); setStep(5); }} />,
+    <StepMatrixPause    key={5} selfPosition={userData.selfPosition} next={() => setStep(6)} goBack={() => setStep(4)} />,
+    <StepPricing        key={6} next={() => setStep(7)} />,
+    <StepBraveReflect   key={7} next={(braveReflection) => { update({ braveReflection }); setStep(8); }} />,
+    <StepFearsReflect   key={8} next={(fearsReflection) => { update({ fearsReflection }); setStep(9); postReflections({ ...userData, fearsReflection }); }} />,
+    <StepPause          key={9} finish={finish} />,
   ];
 
-  // Show dots on 1–3 (matrix phase) and 5–6 (reflection phase). Hide on 0, 4, 7.
-  const showDots = step > 0 && step < 7 && step !== 4;
-  // Map step → dot index: steps 1,2,3 → dots 1,2,3 | steps 5,6 → dots 4,5
-  const dotStep = step <= 3 ? step : step - 1;
+  // Dots on steps 2–4 (philosophy, name, matrix) and 7–8 (brave, fears). Hide on 0,1,5,6,9.
+  const showDots = [2,3,4,7,8].includes(step);
+  const dotStep = step <= 4 ? step - 1 : step - 4;
 
   return (
     <Shell>
@@ -188,8 +189,11 @@ function StepWelcome({ next }) {
         <h1 style={{ fontSize: 32, fontWeight: 400, margin: "0 0 20px", color: C.pearl, lineHeight: 1.3, letterSpacing: -0.5 }}>
           Find work that<br />actually fits.
         </h1>
-        <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.8, margin: 0, maxWidth: 280 }}>
-          Not a job board. Not a resume builder. A system for building the career you actually want. Generously, honestly, with people you actually like.
+        <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.8, margin: "0 0 20px", maxWidth: 280 }}>
+          Not a job board. Not a resume builder.<br />A smart, simple, and clean system for building the career that you want.
+        </p>
+        <p style={{ fontSize: 11, letterSpacing: 3, color: C.ocean, fontFamily: "monospace", margin: 0, textTransform: "lowercase" }}>
+          your career. your current.
         </p>
       </div>
 
@@ -204,13 +208,96 @@ function StepWelcome({ next }) {
   );
 }
 
-// ── Step 1: Philosophy ────────────────────────────────────────────────────────
+// ── Step 1: Privacy ───────────────────────────────────────────────────────────
+function StepPrivacy({ next }) {
+  const visible = useFadeIn([]);
+  const commitments = [
+    { icon: "🔒", title: "Your data stays yours", body: "Everything you share in Cove — your reflections, your matrix position, your thoughts — belongs to you. We don't sell it, share it, or use it for anything other than making your experience better." },
+    { icon: "👁️", title: "No surveillance, no profiling", body: "We're not building an ad business. We're building a career tool. We have zero interest in tracking you across the web or building a profile to sell to anyone." },
+    { icon: "💙", title: "A personal commitment", body: "This community works for you, or it doesn't work at all. If you ever feel like we've broken that trust, tell us. We mean it." },
+  ];
+
+  return (
+    <div style={{ ...fadeStyle(visible), padding: "72px 28px 48px", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+      <div style={{ flex: 1 }}>
+        <p style={{ fontSize: 11, letterSpacing: 2, color: C.muted, fontFamily: "monospace", margin: "0 0 16px" }}>BEFORE WE START</p>
+        <h2 style={{ fontSize: 26, fontWeight: 400, margin: "0 0 10px", color: C.pearl, lineHeight: 1.35 }}>
+          We don't touch your data.
+        </h2>
+        <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.8, margin: "0 0 28px" }}>
+          Your reflections are personal. We treat them that way.
+        </p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {commitments.map((c, i) => (
+            <div key={i} style={{
+              padding: "18px 20px", borderRadius: 12,
+              background: C.surface, border: `1px solid ${C.borderSoft}`,
+              display: "flex", gap: 14, alignItems: "flex-start",
+            }}>
+              <span style={{ fontSize: 20, lineHeight: 1, marginTop: 2 }}>{c.icon}</span>
+              <div>
+                <div style={{ fontSize: 13, color: C.pearl, fontWeight: 500, marginBottom: 5 }}>{c.title}</div>
+                <div style={{ fontSize: 12, color: C.muted, lineHeight: 1.75 }}>{c.body}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <Btn onClick={next} style={{ marginTop: 32 }}>I get it, let's go</Btn>
+    </div>
+  );
+}
+
+// ── Step 2: Pricing ───────────────────────────────────────────────────────────
+function StepPricing({ next }) {
+  const visible = useFadeIn([]);
+  return (
+    <div style={{ ...fadeStyle(visible), display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", minHeight: "100vh", padding: "48px 28px", textAlign: "center" }}>
+
+      <div style={{ marginBottom: 44, maxWidth: 320 }}>
+        <p style={{ fontSize: 11, letterSpacing: 2, color: C.muted, fontFamily: "monospace", margin: "0 0 24px" }}>MEMBERSHIP</p>
+        <div style={{ fontSize: 52, fontWeight: 300, color: C.pearl, letterSpacing: -2, marginBottom: 6 }}>
+          $5
+        </div>
+        <div style={{ fontSize: 14, color: C.muted, marginBottom: 28 }}>per month</div>
+
+        <div style={{
+          padding: "20px", borderRadius: 12, marginBottom: 24,
+          background: C.surface, border: `1px solid ${C.borderSoft}`,
+          textAlign: "left",
+        }}>
+          {[
+            "Less than a Guinness.",
+            "Cancel anytime, no questions.",
+            "If it's not for you — full refund.",
+            "We think you'll like it.",
+          ].map((line, i) => (
+            <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: i < 3 ? 12 : 0 }}>
+              <span style={{ color: C.ocean, fontSize: 14, lineHeight: 1.5, flexShrink: 0 }}>·</span>
+              <span style={{ fontSize: 13, color: C.muted, lineHeight: 1.6 }}>{line}</span>
+            </div>
+          ))}
+        </div>
+
+        <p style={{ fontSize: 12, color: C.dim, lineHeight: 1.7, margin: 0, fontStyle: "italic" }}>
+          No payment required to explore. We'll get to that when you're ready.
+        </p>
+      </div>
+
+      <div style={{ width: "100%", maxWidth: 320 }}>
+        <Btn onClick={next}>Start my trial</Btn>
+      </div>
+    </div>
+  );
+}
+
+// ── Step 3: Philosophy ── (was Step 1) ───────────────────────────────────────
 function StepPhilosophy({ next }) {
   const visible = useFadeIn([]);
   const principles = [
-    { icon: "💙", title: "Go-Giver first", body: "Every great connection I've ever made started with me offering something a thought, an intro, a real answer. Not asking. Lead with the gift." },
+    { icon: "💙", title: "Go-Giver first", body: "Thinking about what I had to offer, rather than what I had to gain — that shift changed everything. A new way of thinking, a unique skillset, a thoughtful question, or words of sincere appreciation. Lead with the gift. Show up like you mean it. This is how you find your edge.", cite: "inspired by The Go-Giver by Bob Burg & John David Mann" },
     { icon: "〰️", title: "Careers over cash", body: "I've taken the higher offer and regretted it. Took the interesting role instead and it changed my life. You already know which one you want." },
-    { icon: "🐸", title: "Generous enthusiasm", body: "The energy you walk in with is part of the pitch. People remember how you made them feel. Show up like you mean it because you do." },
+    { icon: "🐸", title: "Generous enthusiasm", body: "\"Do you always need a reason to help somebody?\" — Ash Ketchum. The energy you walk in with is part of the pitch. People remember how you made them feel." },
   ];
 
   return (
@@ -231,12 +318,15 @@ function StepPhilosophy({ next }) {
               <div>
                 <div style={{ fontSize: 14, fontWeight: 500, color: C.pearl, marginBottom: 5 }}>{p.title}</div>
                 <div style={{ fontSize: 13, color: C.muted, lineHeight: 1.7 }}>{p.body}</div>
+                {p.cite && (
+                  <div style={{ fontSize: 10, color: C.dim, fontStyle: "italic", marginTop: 8 }}>{p.cite}</div>
+                )}
               </div>
             </div>
           ))}
         </div>
       </div>
-      <Btn onClick={next} style={{ marginTop: 32 }}>I'm with it</Btn>
+      <Btn onClick={next} style={{ marginTop: 32 }}>I can get with that 🙂‍↕️</Btn>
     </div>
   );
 }
@@ -319,10 +409,11 @@ function getQuadrant(x, y) {
   return "fearful-judgmental";
 }
 
-function StepSelfMatrix({ name, next }) {
+function StepSelfMatrix({ name, initialPosition, next }) {
   const visible = useFadeIn([]);
-  const [pos, setPos] = useState(null);
+  const [pos, setPos] = useState(initialPosition || null);
   const [confirmed, setConfirmed] = useState(false);
+  const isReturn = !!initialPosition;
   const gridRef = useRef(null);
 
   const handleTap = (e) => {
@@ -342,12 +433,25 @@ function StepSelfMatrix({ name, next }) {
     <div style={{ ...fadeStyle(visible), padding: "72px 28px 48px", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <div>
         <p style={{ fontSize: 11, letterSpacing: 2, color: C.muted, fontFamily: "monospace", margin: "0 0 16px" }}>THE MATRIX</p>
-        <h2 style={{ fontSize: 24, fontWeight: 400, margin: "0 0 8px", color: C.pearl, lineHeight: 1.35 }}>
-          Be real with yourself, {name}?
-        </h2>
-        <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.7, margin: "0 0 22px" }}>
-          Brave or fearful? Curious or judgmental? Be honest not aspirational. Where you actually are, not where you want to be.
-        </p>
+        {isReturn ? (
+          <>
+            <h2 style={{ fontSize: 24, fontWeight: 400, margin: "0 0 8px", color: C.pearl, lineHeight: 1.35 }}>
+              Not feeling it?
+            </h2>
+            <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.7, margin: "0 0 22px" }}>
+              Move your dot. This is about how you actually see yourself right now — not how you want to be seen, not who you're becoming. Just honest. Where are you today?
+            </p>
+          </>
+        ) : (
+          <>
+            <h2 style={{ fontSize: 24, fontWeight: 400, margin: "0 0 8px", color: C.pearl, lineHeight: 1.35 }}>
+              Be real with yourself, {name}.
+            </h2>
+            <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.7, margin: "0 0 22px" }}>
+              Brave or fearful? Curious or judgmental? Be honest — not aspirational. Where you actually are, not where you want to be.
+            </p>
+          </>
+        )}
       </div>
 
       {/* Grid */}
@@ -769,18 +873,17 @@ const QUADRANT_TASKS = {
   },
 };
 
-function StepMatrixPause({ selfPosition, next }) {
+function StepMatrixPause({ selfPosition, next, goBack }) {
   const visible = useFadeIn([]);
   const quadrant = selfPosition ? getQuadrant(selfPosition.x, selfPosition.y) : "fearful-curious";
-  const qt = QUADRANT_TASKS[quadrant];
   const qr = QUADRANT_READS[quadrant];
 
-  // "task" = first visit | "waiting" = clicked Got It | "checkin" = returned next day
   const [view, setView] = useState(() => {
     const pausedAt = localStorage.getItem("cove_paused_at");
     if (!pausedAt) return "task";
     return "checkin";
   });
+  const [open, setOpen] = useState(null); // null | "roles" | "hillston"
 
   const handleGotIt = () => {
     localStorage.setItem("cove_paused_at", String(Date.now()));
@@ -792,24 +895,125 @@ function StepMatrixPause({ selfPosition, next }) {
     next();
   };
 
+  const toggle = (key) => setOpen(o => o === key ? null : key);
+
   if (view === "task") {
     return (
-      <div style={{ ...fadeStyle(visible), display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", minHeight: "100vh", padding: "48px 28px", textAlign: "center" }}>
-        <div style={{ marginBottom: 48, maxWidth: 320 }}>
-          <p style={{ fontSize: 11, letterSpacing: 2, color: C.muted, fontFamily: "monospace", margin: "0 0 24px" }}>YOUR TASK</p>
-          <h2 style={{ fontSize: 24, fontWeight: 400, margin: "0 0 20px", color: C.pearl, lineHeight: 1.4 }}>
-            {qt.headline}
+      <div style={{ ...fadeStyle(visible), display: "flex", flexDirection: "column", minHeight: "100vh", padding: "64px 28px 48px" }}>
+
+        {/* Heart + wave */}
+        <div style={{ textAlign: "center", marginBottom: 44 }}>
+          <div style={{ fontSize: 54, display: "inline-block", animation: "pulse 2.8s ease-in-out infinite", marginBottom: 22 }}>
+            💙
+          </div>
+          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 3, height: 32 }}>
+            {[0.4,0.7,0.5,1,0.6,0.8,0.3,0.9,0.5,0.7,1,0.4,0.6,0.8,0.5,0.7,0.3,0.9,0.6,1].map((h, i) => (
+              <div key={i} style={{
+                width: 3, borderRadius: 2,
+                background: i % 3 === 0 ? C.ocean : i % 3 === 1 ? C.seafoam : C.sky,
+                opacity: 0.4 + h * 0.5,
+                height: `${h * 100}%`,
+                animation: `wave ${0.7 + (i % 6) * 0.15}s ease-in-out infinite alternate`,
+                animationDelay: `${i * 0.06}s`,
+              }} />
+            ))}
+          </div>
+        </div>
+
+        {/* Copy */}
+        <div style={{ textAlign: "center", marginBottom: 40 }}>
+          <p style={{ fontSize: 11, letterSpacing: 3, color: C.muted, fontFamily: "monospace", margin: "0 0 14px" }}>COVE</p>
+          <h2 style={{ fontSize: 22, fontWeight: 400, color: C.pearl, lineHeight: 1.55, margin: "0 0 8px" }}>
+            your career, your current.
           </h2>
-          <p style={{ fontSize: 15, color: C.ocean, lineHeight: 1.85, margin: "0 0 24px", fontStyle: "italic" }}>
-            {qt.task}
-          </p>
-          <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.7 }}>
-            Put the phone down. We'll be here when you get back.
+          <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.6, margin: 0, fontStyle: "italic" }}>
+            alright, now pause.
           </p>
         </div>
-        <div style={{ width: "100%", maxWidth: 320 }}>
-          <Btn onClick={handleGotIt}>Got it. I'm going.</Btn>
+
+        {/* Pathways */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 28 }}>
+
+          {/* Back to matrix */}
+          <div
+            onClick={goBack}
+            style={{
+              padding: "16px 18px", borderRadius: 12, cursor: "pointer",
+              background: C.surface, border: `1px solid ${C.borderSoft}`,
+              display: "flex", alignItems: "center", gap: 12,
+            }}
+          >
+            <span style={{ fontSize: 18, color: C.muted }}>←</span>
+            <div>
+              <div style={{ fontSize: 13, color: C.pearl, fontWeight: 500 }}>Move my dot</div>
+              <div style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>Go back and adjust where you placed yourself</div>
+            </div>
+          </div>
+
+          {/* Roles */}
+          <div
+            style={{ borderRadius: 12, overflow: "hidden", background: C.surface, border: `1px solid ${C.borderSoft}` }}
+          >
+            <div
+              onClick={() => toggle("roles")}
+              style={{ padding: "16px 18px", display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }}
+            >
+              <span style={{ fontSize: 18 }}>🧭</span>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 13, color: C.pearl, fontWeight: 500 }}>Roles people in your quadrant find</div>
+                <div style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>Where {qr.title.toLowerCase()}s tend to land</div>
+              </div>
+              <span style={{ color: C.muted, fontSize: 12 }}>{open === "roles" ? "↑" : "↓"}</span>
+            </div>
+            {open === "roles" && (
+              <div style={{ padding: "0 18px 18px" }}>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 12 }}>
+                  {qr.jobs.map(j => (
+                    <span key={j} style={{
+                      fontSize: 11, padding: "4px 12px", borderRadius: 20,
+                      background: qr.color + "18", color: qr.color,
+                      border: `1px solid ${qr.color}40`,
+                    }}>{j}</span>
+                  ))}
+                </div>
+                <p style={{ fontSize: 12, color: C.muted, lineHeight: 1.8, margin: 0 }}>{qr.read}</p>
+              </div>
+            )}
+          </div>
+
+          {/* Hillston Graph */}
+          <div
+            style={{ borderRadius: 12, overflow: "hidden", background: C.surface, border: `1px solid ${C.borderSoft}` }}
+          >
+            <div
+              onClick={() => toggle("hillston")}
+              style={{ padding: "16px 18px", display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }}
+            >
+              <span style={{ fontSize: 18 }}>📐</span>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 13, color: C.pearl, fontWeight: 500 }}>The Hillston Graph</div>
+                <div style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>Why this matrix works</div>
+              </div>
+              <span style={{ color: C.muted, fontSize: 12 }}>{open === "hillston" ? "↑" : "↓"}</span>
+            </div>
+            {open === "hillston" && (
+              <div style={{ padding: "0 18px 18px" }}>
+                <p style={{ fontSize: 12, color: C.muted, lineHeight: 1.85, margin: "0 0 12px" }}>
+                  This framework was introduced to Cove by Coach Stuart Hillston. Stuart calls it the Hillston Graph — two axes that map how you show up when things are uncertain: how much courage you're bringing, and how open your mind is to what comes next.
+                </p>
+                <p style={{ fontSize: 12, color: C.muted, lineHeight: 1.85, margin: "0 0 12px" }}>
+                  It's not a personality test. It's not fixed. Research on fear of failure (Atkinson), psychological safety (Edmondson), and growth mindset (Dweck) all point to the same truth: you can't navigate from a location you won't admit you're in.
+                </p>
+                <p style={{ fontSize: 12, color: C.ocean, lineHeight: 1.85, margin: 0, fontStyle: "italic" }}>
+                  "Honesty about your current state is the only reliable starting point for growth." — Coach Stuart Hillston
+                </p>
+              </div>
+            )}
+          </div>
+
         </div>
+
+        <Btn onClick={handleGotIt}>Got it. I'm going.</Btn>
       </div>
     );
   }
@@ -817,7 +1021,9 @@ function StepMatrixPause({ selfPosition, next }) {
   if (view === "waiting") {
     return (
       <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", minHeight: "100vh", padding: "48px 32px", textAlign: "center" }}>
-        <div style={{ fontSize: 52, marginBottom: 28 }}>🌊</div>
+        <div style={{ fontSize: 52, display: "inline-block", animation: "pulse 2.8s ease-in-out infinite", marginBottom: 28 }}>
+          💙
+        </div>
         <h2 style={{ fontSize: 22, fontWeight: 400, margin: "0 0 14px", color: C.pearl, lineHeight: 1.4 }}>
           See you tomorrow.
         </h2>
@@ -840,9 +1046,7 @@ function StepMatrixPause({ selfPosition, next }) {
           <div style={{ fontSize: 16, color: qr.color, fontWeight: 500, marginBottom: 8 }}>{qr.title}</div>
           <div style={{ fontSize: 13, color: C.muted, lineHeight: 1.75 }}>{qr.short}</div>
         </div>
-        <p style={{ fontSize: 15, color: C.pearl, lineHeight: 1.7, margin: 0 }}>
-          Still feel that way?
-        </p>
+        <p style={{ fontSize: 15, color: C.pearl, lineHeight: 1.7, margin: 0 }}>Still feel that way?</p>
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 32 }}>
         <Btn onClick={handleCheckin}>Yeah, that's still me</Btn>
