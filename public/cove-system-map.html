@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cove — System Map</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #0c0c11;
+    color: #e8e6e3;
+    overflow-x: auto;
+    min-height: 100vh;
+  }
+
+  .canvas {
+    min-width: 3000px;
+    padding: 48px 64px 72px;
+    position: relative;
+  }
+
+  /* ── Header ── */
+  .header {
+    margin-bottom: 40px;
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+  }
+  .header h1 {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: #e8e6e3;
+    line-height: 1;
+  }
+  .header .tagline {
+    font-size: 13px;
+    color: #555;
+    font-weight: 400;
+  }
+
+  /* ── Shared ── */
+  .section-label {
+    position: absolute;
+    top: -10px;
+    left: 28px;
+    background: #0c0c11;
+    padding: 0 10px;
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  /* ── Coach layer ── */
+  .coach-layer {
+    background: rgba(201,169,110,0.04);
+    border: 1px solid rgba(201,169,110,0.12);
+    border-radius: 12px;
+    padding: 22px 28px 18px;
+    margin-bottom: 32px;
+    position: relative;
+  }
+  .coach-layer .section-label { color: #c9a96e; }
+  .coach-cards { display: flex; gap: 16px; }
+  .coach-card {
+    flex: 1;
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(201,169,110,0.08);
+    border-radius: 8px;
+    padding: 16px 18px;
+  }
+  .coach-card h4 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #c9a96e;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .coach-card h4 svg {
+    width: 14px; height: 14px;
+    stroke: #c9a96e; fill: none; stroke-width: 1.5;
+    flex-shrink: 0;
+  }
+  .coach-card p {
+    font-size: 11px;
+    color: #666;
+    line-height: 1.5;
+    margin-bottom: 10px;
+  }
+  .metrics { display: flex; gap: 5px; flex-wrap: wrap; }
+  .metric-pill {
+    background: rgba(201,169,110,0.06);
+    border: 1px solid rgba(201,169,110,0.12);
+    border-radius: 3px;
+    padding: 2px 7px;
+    font-size: 10px;
+    color: rgba(201,169,110,0.7);
+    white-space: nowrap;
+    font-weight: 500;
+    font-family: 'Inter', monospace;
+  }
+
+  /* ── Journey ── */
+  .journey-label {
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: #444;
+    margin-bottom: 14px;
+    font-weight: 700;
+  }
+  .journey-flow {
+    display: flex;
+    align-items: stretch;
+  }
+
+  /* ── Steps ── */
+  .step { min-width: 310px; max-width: 340px; }
+  .step-inner {
+    border-radius: 10px;
+    padding: 20px 20px 18px;
+    height: 100%;
+    transition: transform 0.12s;
+  }
+  .step-inner:hover { transform: none; }
+
+  .step-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .step-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .step-icon svg { width: 16px; height: 16px; stroke-width: 1.8; fill: none; }
+  .step-head-text .step-number {
+    font-size: 9px; letter-spacing: 2px; text-transform: uppercase; opacity: 0.5; font-weight: 700;
+  }
+  .step-head-text .step-name {
+    font-size: 15px; font-weight: 700; letter-spacing: -0.2px; line-height: 1.2;
+  }
+  .step-desc {
+    font-size: 11px; line-height: 1.55; opacity: 0.55; margin-bottom: 12px;
+  }
+  .step-details {
+    border-top: 1px solid rgba(255,255,255,0.05);
+    padding-top: 10px;
+  }
+  .step-detail {
+    font-size: 11px; color: #666; margin-bottom: 4px;
+    display: flex; align-items: flex-start; gap: 7px; line-height: 1.4;
+  }
+  .step-detail svg {
+    width: 13px; height: 13px; flex-shrink: 0; margin-top: 1px; stroke-width: 1.8; fill: none;
+  }
+  .step-output {
+    margin-top: 10px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 5px;
+    padding: 7px 10px;
+    font-size: 10px;
+    line-height: 1.5;
+    color: #777;
+  }
+  .step-output .label {
+    font-size: 9px; text-transform: uppercase; letter-spacing: 2px; opacity: 0.45; margin-bottom: 2px; font-weight: 700;
+  }
+
+  /* ── Arrows ── */
+  .arrow {
+    display: flex; align-items: center; justify-content: center;
+    min-width: 44px; position: relative;
+  }
+  .arrow-line {
+    width: 28px; height: 0; border-top: 1.5px solid #2a2a2a; position: relative;
+  }
+  .arrow-line::after {
+    content: ''; position: absolute; right: -1px; top: -4px;
+    border-left: 5px solid #2a2a2a; border-top: 3.5px solid transparent; border-bottom: 3.5px solid transparent;
+  }
+  .arrow-label {
+    position: absolute; top: -16px;
+    font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: #333; white-space: nowrap; font-weight: 600;
+  }
+
+  /* ── Step colors ── */
+  .step-onboard .step-inner { background: rgba(100,149,237,0.07); border: 1px solid rgba(100,149,237,0.12); }
+  .step-onboard .step-name { color: #8bb4f0; }
+  .step-onboard .step-icon { background: rgba(100,149,237,0.12); }
+  .step-onboard .step-icon svg, .step-onboard .step-detail svg { stroke: #8bb4f0; }
+
+  .step-matrix .step-inner { background: rgba(147,130,220,0.07); border: 1px solid rgba(147,130,220,0.12); }
+  .step-matrix .step-name { color: #b0a0e0; }
+  .step-matrix .step-icon { background: rgba(147,130,220,0.12); }
+  .step-matrix .step-icon svg, .step-matrix .step-detail svg { stroke: #b0a0e0; }
+
+  .step-iwant .step-inner { background: rgba(220,170,110,0.07); border: 1px solid rgba(220,170,110,0.12); }
+  .step-iwant .step-name { color: #dca86e; }
+  .step-iwant .step-icon { background: rgba(220,170,110,0.12); }
+  .step-iwant .step-icon svg, .step-iwant .step-detail svg { stroke: #dca86e; }
+
+  .step-hw .step-inner { background: rgba(200,160,106,0.07); border: 1px solid rgba(200,160,106,0.12); }
+  .step-hw .step-name { color: #c9a06a; }
+  .step-hw .step-icon { background: rgba(200,160,106,0.12); }
+  .step-hw .step-icon svg, .step-hw .step-detail svg { stroke: #c9a06a; }
+
+  .step-scorecard .step-inner { background: rgba(110,190,160,0.07); border: 1px solid rgba(110,190,160,0.12); }
+  .step-scorecard .step-name { color: #7ecfaa; }
+  .step-scorecard .step-icon { background: rgba(110,190,160,0.12); }
+  .step-scorecard .step-icon svg, .step-scorecard .step-detail svg { stroke: #7ecfaa; }
+
+  .step-outreach .step-inner { background: rgba(230,120,100,0.07); border: 1px solid rgba(230,120,100,0.12); }
+  .step-outreach .step-name { color: #e88070; }
+  .step-outreach .step-icon { background: rgba(230,120,100,0.12); }
+  .step-outreach .step-icon svg, .step-outreach .step-detail svg { stroke: #e88070; }
+
+  .step-loop .step-inner { background: rgba(200,200,200,0.03); border: 1px dashed rgba(200,200,200,0.1); }
+  .step-loop .step-name { color: #888; }
+  .step-loop .step-icon { background: rgba(200,200,200,0.08); }
+  .step-loop .step-icon svg, .step-loop .step-detail svg { stroke: #888; }
+
+  /* ── Feedback loop ── */
+  .feedback-loop { margin-top: 28px; position: relative; }
+  .feedback-bar {
+    border: 1px dashed rgba(255,255,255,0.06);
+    border-radius: 8px;
+    padding: 14px 24px;
+    display: flex; align-items: center; gap: 28px;
+  }
+  .feedback-bar .section-label { color: #333; }
+  .feedback-item { display: flex; align-items: center; gap: 8px; }
+  .fb-icon {
+    width: 24px; height: 24px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .fb-icon svg { width: 12px; height: 12px; stroke-width: 2; fill: none; }
+  .feedback-text { font-size: 11px; color: #555; line-height: 1.3; }
+  .feedback-text strong { color: #888; font-weight: 600; }
+  .feedback-sep { color: #1a1a1a; font-size: 14px; }
+
+  /* ── Data layer ── */
+  .data-layer {
+    margin-top: 28px;
+    background: rgba(80,180,140,0.02);
+    border: 1px solid rgba(80,180,140,0.08);
+    border-radius: 10px;
+    padding: 22px 28px;
+    position: relative;
+  }
+  .data-layer .section-label { color: rgba(80,180,140,0.5); }
+  .data-grid { display: flex; gap: 12px; }
+  .data-item {
+    flex: 1; min-width: 180px;
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(80,180,140,0.06);
+    border-radius: 6px;
+    padding: 12px 14px;
+  }
+  .data-item h5 {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px;
+    color: rgba(80,180,140,0.55); margin-bottom: 5px; font-weight: 700;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .data-item h5 svg { width: 11px; height: 11px; stroke: rgba(80,180,140,0.45); stroke-width: 1.8; fill: none; }
+  .data-item p { font-size: 10px; color: #555; line-height: 1.5; }
+
+  /* ── Design notes ── */
+  .design-notes {
+    margin-bottom: 32px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-left: 3px solid rgba(255,255,255,0.12);
+    border-radius: 0 8px 8px 0;
+    padding: 14px 20px;
+    max-width: 860px;
+  }
+  .design-notes-label {
+    font-size: 9px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: #333;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .design-notes p {
+    font-size: 11px;
+    color: #555;
+    line-height: 1.65;
+    margin: 0;
+  }
+  .design-notes p + p { margin-top: 6px; }
+
+  /* ── Scroll hint ── */
+  .scroll-hint {
+    position: fixed; bottom: 14px; right: 14px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-size: 10px; color: #555; letter-spacing: 1.5px; font-weight: 600;
+    animation: pulse 3s infinite; z-index: 100;
+  }
+  @keyframes pulse { 0%,100%{opacity:0.8}50%{opacity:0.3} }
+</style>
+</head>
+<body>
+
+<div class="scroll-hint">SCROLL &rarr;</div>
+
+<div class="canvas">
+
+  <div class="header">
+    <h1>Cove</h1>
+    <div class="tagline">System map &mdash; user journey + coach admin layer + data model</div>
+  </div>
+
+  <div class="design-notes">
+    <div class="design-notes-label">Design notes</div>
+    <p>Color legend: killed. The step cards already carry their own color coding — an engineer reading this picks up the visual grouping without a separate key explaining it. That's explaining something that's already self-evident.</p>
+    <p>Icons: every SVG maps to what the item actually <em>does</em>. Clipboard for intake. Crosshair for grid-plotting. Send icon for outreach. Magnifying glass with heart for examining feelings beneath wants.</p>
+    <p>Metric pills and data layer fields use field-name formatting (<code style="font-family:monospace;font-size:10px;color:#666">days_inactive</code>, <code style="font-family:monospace;font-size:10px;color:#666">scorecard_active</code>) so an engineer immediately sees the data model, not a summary of it.</p>
+  </div>
+
+  <!-- ═══ COACH LAYER ═══ -->
+  <div class="coach-layer">
+    <div class="section-label">COACH ADMIN</div>
+    <div class="coach-cards">
+
+      <div class="coach-card">
+        <h4>
+          <!-- grid/table icon: represents dashboard view of data -->
+          <svg viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="10" rx="1.5"/><line x1="2" y1="7" x2="14" y2="7"/><line x1="6" y1="7" x2="6" y2="13"/></svg>
+          Dashboard
+        </h4>
+        <p>All coachees at a glance. Who's progressing, who's stalled, who needs a nudge.</p>
+        <div class="metrics">
+          <span class="metric-pill">matrix_done</span>
+          <span class="metric-pill">hw_done</span>
+          <span class="metric-pill">scorecard_active</span>
+          <span class="metric-pill">outreach_weekly</span>
+          <span class="metric-pill">apps_submitted</span>
+        </div>
+      </div>
+
+      <div class="coach-card">
+        <h4>
+          <!-- clock icon: represents time-based alerts -->
+          <svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><path d="M8 4v4l2.5 2.5"/></svg>
+          Nudge Engine
+        </h4>
+        <p>Flags when someone hasn't moved in X days. Coach decides whether + how to intervene.</p>
+        <div class="metrics">
+          <span class="metric-pill">days_inactive</span>
+          <span class="metric-pill">comms_pref</span>
+          <span class="metric-pill">nudge_log</span>
+        </div>
+      </div>
+
+      <div class="coach-card">
+        <h4>
+          <!-- person icon: represents user profile/intake -->
+          <svg viewBox="0 0 16 16"><circle cx="8" cy="5" r="3"/><path d="M3 14c0-2.8 2.2-5 5-5s5 2.2 5 5"/></svg>
+          Intake
+        </h4>
+        <p>Contact info, preferred channel, community interest, data consent.</p>
+        <div class="metrics">
+          <span class="metric-pill">contact</span>
+          <span class="metric-pill">comms_mode</span>
+          <span class="metric-pill">discord_interest</span>
+          <span class="metric-pill">data_consent</span>
+        </div>
+      </div>
+
+      <div class="coach-card">
+        <h4>
+          <!-- graph icon: represents aggregate analytics -->
+          <svg viewBox="0 0 16 16"><polyline points="2 12 5 8 8 10 11 5 14 7"/></svg>
+          Cohort Analytics
+        </h4>
+        <p>Anonymous patterns across all users. Where do people stall? What predicts success?</p>
+        <div class="metrics">
+          <span class="metric-pill">value_clusters</span>
+          <span class="metric-pill">stall_points</span>
+          <span class="metric-pill">success_signals</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══ USER JOURNEY ═══ -->
+  <div class="journey-label">User Journey</div>
+  <div class="journey-flow">
+
+    <!-- STEP 0 ── Intake -->
+    <div class="step step-onboard">
+      <div class="step-inner">
+        <div class="step-head">
+          <div class="step-icon">
+            <!-- clipboard: user is filling out their info -->
+            <svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="10" x2="15" y2="10"/><line x1="9" y1="14" x2="15" y2="14"/><line x1="9" y1="6" x2="15" y2="6"/></svg>
+          </div>
+          <div class="step-head-text">
+            <div class="step-number">Step 0</div>
+            <div class="step-name">Intake</div>
+          </div>
+        </div>
+        <div class="step-desc">User joins. Basic info collected. Coach sets communication cadence.</div>
+        <div class="step-details">
+          <div class="step-detail">
+            <!-- form field -->
+            <svg viewBox="0 0 16 16"><rect x="2" y="4" width="12" height="8" rx="1.5"/><line x1="5" y1="8" x2="11" y2="8"/></svg>
+            Name, email, phone
+          </div>
+          <div class="step-detail">
+            <!-- chat bubble: communication preference -->
+            <svg viewBox="0 0 16 16"><path d="M3 3h10a1 1 0 011 1v6a1 1 0 01-1 1H6l-3 2V4a1 1 0 011-1z"/></svg>
+            Preferred comms channel
+          </div>
+          <div class="step-detail">
+            <!-- shield: consent/privacy -->
+            <svg viewBox="0 0 16 16"><path d="M8 2l5 2v4c0 3.5-2.5 5.5-5 7-2.5-1.5-5-3.5-5-7V4z"/></svg>
+            Data consent + community opt-in
+          </div>
+        </div>
+        <div class="step-output">
+          <div class="label">Creates</div>
+          Personal folder. Dashboard row.
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow"><div class="arrow-line"></div></div>
+
+    <!-- STEP 1 ── Matrix -->
+    <div class="step step-matrix">
+      <div class="step-inner">
+        <div class="step-head">
+          <div class="step-icon">
+            <!-- crosshair/compass: plotting position on a grid -->
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="12" y1="3" x2="12" y2="21"/><line x1="3" y1="12" x2="21" y2="12"/></svg>
+          </div>
+          <div class="step-head-text">
+            <div class="step-number">Step 1</div>
+            <div class="step-name">Hillston's Matrix</div>
+          </div>
+        </div>
+        <div class="step-desc">2D emotional grid: Brave &harr; Fearful, Curious &harr; Judgmental. User plots where they are. Re-taken over time.</div>
+        <div class="step-details">
+          <div class="step-detail">
+            <!-- target: self-placement -->
+            <svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><circle cx="8" cy="8" r="2"/></svg>
+            Self-placement on grid
+          </div>
+          <div class="step-detail">
+            <!-- refresh: repeated over time -->
+            <svg viewBox="0 0 16 16"><path d="M12 3l2 2-2 2"/><path d="M2 8a6 6 0 0112-3"/><path d="M4 13l-2-2 2-2"/><path d="M14 8a6 6 0 01-12 3"/></svg>
+            Re-taken periodically
+          </div>
+          <div class="step-detail">
+            <!-- trending: coach sees trajectory -->
+            <svg viewBox="0 0 16 16"><polyline points="2 12 6 7 9 9 14 4"/><polyline points="10 4 14 4 14 8"/></svg>
+            Coach tracks emotional drift
+          </div>
+        </div>
+        <div class="step-output">
+          <div class="label">Creates</div>
+          Emotional baseline. Ready for deep work, or needs support?
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow"><div class="arrow-line"></div><div class="arrow-label">grounded?</div></div>
+
+    <!-- STEP 2 ── I Want -->
+    <div class="step step-iwant">
+      <div class="step-inner">
+        <div class="step-head">
+          <div class="step-icon">
+            <!-- list: brainstorming items -->
+            <svg viewBox="0 0 24 24"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="10" x2="16" y2="10"/><line x1="4" y1="14" x2="18" y2="14"/><line x1="4" y1="18" x2="14" y2="18"/></svg>
+          </div>
+          <div class="step-head-text">
+            <div class="step-number">Step 2</div>
+            <div class="step-name">"I Want..." Listing</div>
+          </div>
+        </div>
+        <div class="step-desc">Freeform brainstorm of everything the user wants from their next role. No filtering. Categories emerge naturally.</div>
+        <div class="step-details">
+          <div class="step-detail">
+            <!-- edit: writing/brainstorm -->
+            <svg viewBox="0 0 16 16"><path d="M11 2l3 3-8 8H3v-3z"/></svg>
+            Freeform "I want..." brainstorm
+          </div>
+          <div class="step-detail">
+            <!-- layers: categories forming -->
+            <svg viewBox="0 0 16 16"><path d="M8 2l6 3-6 3-6-3z"/><path d="M2 8l6 3 6-3"/><path d="M2 11l6 3 6-3"/></svg>
+            Natural categories surface
+          </div>
+          <div class="step-detail">
+            <!-- counter: coach tracks volume + revision count -->
+            <svg viewBox="0 0 16 16"><rect x="2" y="4" width="12" height="8" rx="1.5"/><line x1="6" y1="4" x2="6" y2="12"/><line x1="10" y1="4" x2="10" y2="12"/></svg>
+            Coach tracks: count, specificity, revisions
+          </div>
+        </div>
+        <div class="step-output">
+          <div class="label">Creates</div>
+          Raw desire list. The DNA for everything after.
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow"><div class="arrow-line"></div><div class="arrow-label">go deeper</div></div>
+
+    <!-- STEP 3 ── HW -->
+    <div class="step step-hw">
+      <div class="step-inner">
+        <div class="step-head">
+          <div class="step-icon">
+            <!-- heart in magnifying glass: examining feelings -->
+            <svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="7"/><line x1="15" y1="15" x2="21" y2="21"/><path d="M10 7c-1.5 0-3 1.2-3 3 0 2.5 3 4.5 3 4.5s3-2 3-4.5c0-1.8-1.5-3-3-3z"/></svg>
+          </div>
+          <div class="step-head-text">
+            <div class="step-number">Step 3</div>
+            <div class="step-name">Hillston's Homework</div>
+          </div>
+        </div>
+        <div class="step-desc">Each "I want..." &rarr; name the feeling it would give you. Freedom? Stability? Legacy? Joy? Reveals the real drivers.</div>
+        <div class="step-details">
+          <div class="step-detail">
+            <!-- arrow-right: mapping wants to feelings -->
+            <svg viewBox="0 0 16 16"><line x1="2" y1="8" x2="14" y2="8"/><polyline points="10 4 14 8 10 12"/></svg>
+            Map each want &rarr; underlying feeling
+          </div>
+          <div class="step-detail">
+            <!-- bar chart: pattern frequency -->
+            <svg viewBox="0 0 16 16"><rect x="2" y="8" width="3" height="6"/><rect x="6.5" y="4" width="3" height="10"/><rect x="11" y="6" width="3" height="8"/></svg>
+            Patterns emerge (e.g. 7&times; Freedom)
+          </div>
+          <div class="step-detail">
+            <!-- mirror/reflect: reframing insight -->
+            <svg viewBox="0 0 16 16"><path d="M8 2v12"/><path d="M4 5l4-3 4 3"/><path d="M4 11l4 3 4-3"/></svg>
+            "You want $115k but you need Stability"
+          </div>
+        </div>
+        <div class="step-output">
+          <div class="label">Creates</div>
+          Values fingerprint. Emotional truth beneath practical desires.
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow"><div class="arrow-line"></div><div class="arrow-label">now evaluate</div></div>
+
+    <!-- STEP 4 ── Scorecard -->
+    <div class="step step-scorecard">
+      <div class="step-inner">
+        <div class="step-head">
+          <div class="step-icon">
+            <!-- table/grid: scoring matrix -->
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+          </div>
+          <div class="step-head-text">
+            <div class="step-number">Step 4</div>
+            <div class="step-name">Grenier's Scorecard</div>
+          </div>
+        </div>
+        <div class="step-desc">Each opportunity scored Y/N/M against every "I want." Tallied at top. Does this job match what you said matters?</div>
+        <div class="step-details">
+          <div class="step-detail">
+            <!-- check: Y/N/M scoring -->
+            <svg viewBox="0 0 16 16"><polyline points="3 8 6 11 13 4"/></svg>
+            Y / N / M per want statement
+          </div>
+          <div class="step-detail">
+            <!-- sigma/sum: auto tally -->
+            <svg viewBox="0 0 16 16"><path d="M12 3H4l4 5-4 5h8"/></svg>
+            Auto-tally: Yes=12, No=3, Maybe=4
+          </div>
+          <div class="step-detail">
+            <!-- flag: warning/attention -->
+            <svg viewBox="0 0 16 16"><line x1="3" y1="2" x2="3" y2="14"/><path d="M3 2h8l-2 3 2 3H3"/></svg>
+            "Comfortable with the flags?"
+          </div>
+          <div class="step-detail">
+            <!-- plus: adding new columns -->
+            <svg viewBox="0 0 16 16"><line x1="8" y1="3" x2="8" y2="13"/><line x1="3" y1="8" x2="13" y2="8"/></svg>
+            New orgs added as columns
+          </div>
+        </div>
+        <div class="step-output">
+          <div class="label">Creates</div>
+          Scored comparison. Data-informed gut check.
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow"><div class="arrow-line"></div><div class="arrow-label">ready to move</div></div>
+
+    <!-- STEP 5 ── Outreach -->
+    <div class="step step-outreach">
+      <div class="step-inner">
+        <div class="step-head">
+          <div class="step-icon">
+            <!-- send/paper plane: outreach action -->
+            <svg viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9Z"/></svg>
+          </div>
+          <div class="step-head-text">
+            <div class="step-number">Step 5</div>
+            <div class="step-name">Valancy's 30 Days</div>
+          </div>
+        </div>
+        <div class="step-desc">30 people in 30 days. Each: why them? SMART ask. Track 3 attempts. Self-knowledge becomes action.</div>
+        <div class="step-details">
+          <div class="step-detail">
+            <!-- user: contact person -->
+            <svg viewBox="0 0 16 16"><circle cx="8" cy="5" r="3"/><path d="M3 14c0-2.8 2.2-5 5-5s5 2.2 5 5"/></svg>
+            Name, company, contact
+          </div>
+          <div class="step-detail">
+            <!-- question: intentionality prompt -->
+            <svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><path d="M6 6a2 2 0 013 2c0 1-2 1.5-2 3"/><circle cx="8" cy="12.5" r="0.5"/></svg>
+            "Why this person?" prompt
+          </div>
+          <div class="step-detail">
+            <!-- target: SMART ask -->
+            <svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><circle cx="8" cy="8" r="3"/><circle cx="8" cy="8" r="0.5"/></svg>
+            SMART ask per contact
+          </div>
+          <div class="step-detail">
+            <!-- retry/attempts -->
+            <svg viewBox="0 0 16 16"><path d="M12 3l2 2-2 2"/><path d="M2 8a6 6 0 0112-3"/></svg>
+            3-attempt tracker (Y/N)
+          </div>
+        </div>
+        <div class="step-output">
+          <div class="label">Creates</div>
+          Active pipeline. Coach sees volume + success rate.
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow"><div class="arrow-line"></div></div>
+
+    <!-- ONGOING ── Loop -->
+    <div class="step step-loop">
+      <div class="step-inner">
+        <div class="step-head">
+          <div class="step-icon">
+            <!-- cycle: continuous loop -->
+            <svg viewBox="0 0 24 24"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
+          </div>
+          <div class="step-head-text">
+            <div class="step-number">Ongoing</div>
+            <div class="step-name">Track &amp; Reflect</div>
+          </div>
+        </div>
+        <div class="step-desc">Not linear. Return to Matrix when shaken, revise wants when priorities shift, add orgs, keep outreach flowing.</div>
+        <div class="step-details">
+          <div class="step-detail">
+            <svg viewBox="0 0 16 16"><path d="M12 3l2 2-2 2"/><path d="M2 8a6 6 0 0112-3"/><path d="M4 13l-2-2 2-2"/><path d="M14 8a6 6 0 01-12 3"/></svg>
+            Re-take Matrix monthly
+          </div>
+          <div class="step-detail">
+            <svg viewBox="0 0 16 16"><path d="M11 2l3 3-8 8H3v-3z"/></svg>
+            Revise wants as clarity grows
+          </div>
+          <div class="step-detail">
+            <svg viewBox="0 0 16 16"><line x1="8" y1="3" x2="8" y2="13"/><line x1="3" y1="8" x2="13" y2="8"/></svg>
+            New orgs &rarr; Scorecard
+          </div>
+          <div class="step-detail">
+            <svg viewBox="0 0 16 16"><polyline points="2 12 6 7 9 9 14 4"/><polyline points="10 4 14 4 14 8"/></svg>
+            Weekly outreach + app count
+          </div>
+        </div>
+        <div class="step-output">
+          <div class="label">Coach Signal</div>
+          "Haein hasn't updated in 11 days" &rarr; time to reach out.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══ FEEDBACK LOOP ═══ -->
+  <div class="feedback-loop">
+    <div class="feedback-bar">
+      <div class="section-label">FEEDBACK TRIGGERS</div>
+      <div class="feedback-item">
+        <div class="fb-icon" style="background:rgba(147,130,220,0.1);">
+          <svg viewBox="0 0 16 16" style="stroke:#b0a0e0;"><path d="M12 3l2 2-2 2"/><path d="M2 8a6 6 0 0112-3"/></svg>
+        </div>
+        <div class="feedback-text"><strong>Matrix drift</strong> &rarr; revisit Step 1</div>
+      </div>
+      <div class="feedback-item">
+        <div class="fb-icon" style="background:rgba(220,170,110,0.1);">
+          <svg viewBox="0 0 16 16" style="stroke:#dca86e;"><path d="M11 2l3 3-8 8H3v-3z"/></svg>
+        </div>
+        <div class="feedback-text"><strong>Priority shift</strong> &rarr; revisit "I want"</div>
+      </div>
+      <div class="feedback-item">
+        <div class="fb-icon" style="background:rgba(110,190,160,0.1);">
+          <svg viewBox="0 0 16 16" style="stroke:#7ecfaa;"><line x1="8" y1="3" x2="8" y2="13"/><line x1="3" y1="8" x2="13" y2="8"/></svg>
+        </div>
+        <div class="feedback-text"><strong>New opportunity</strong> &rarr; add to Scorecard</div>
+      </div>
+      <div class="feedback-item">
+        <div class="fb-icon" style="background:rgba(230,120,100,0.1);">
+          <svg viewBox="0 0 16 16" style="stroke:#e88070;"><circle cx="8" cy="8" r="6"/><path d="M8 4v4l2.5 2.5"/></svg>
+        </div>
+        <div class="feedback-text"><strong>Stalling?</strong> &rarr; coach nudge fires</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ DATA LAYER ═══ -->
+  <div class="data-layer">
+    <div class="section-label">DATA MODEL</div>
+    <div class="data-grid">
+      <div class="data-item">
+        <h5><svg viewBox="0 0 16 16"><circle cx="8" cy="5" r="3"/><path d="M3 14c0-2.8 2.2-5 5-5s5 2.2 5 5"/></svg>Per User</h5>
+        <p>matrix_done, hw_done, scorecard_active, iwant_revision_count, outreach_count, apps_count, resume_version</p>
+      </div>
+      <div class="data-item">
+        <h5><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><path d="M8 4v4l2.5 2.5"/></svg>Coach Signals</h5>
+        <p>days_since_activity, flag_color, nudge_history[], comms_channel, next_checkin</p>
+      </div>
+      <div class="data-item">
+        <h5><svg viewBox="0 0 16 16"><path d="M8 2l5 2v4c0 3.5-2.5 5.5-5 7-2.5-1.5-5-3.5-5-7V4z"/></svg>Consent</h5>
+        <p>cohort_analysis_optin, discord_interest, data_sharing_pref, consent_revocable</p>
+      </div>
+      <div class="data-item">
+        <h5><svg viewBox="0 0 16 16"><circle cx="5" cy="8" r="2"/><circle cx="11" cy="5" r="2"/><circle cx="11" cy="11" r="2"/><line x1="7" y1="8" x2="9" y2="6"/><line x1="7" y1="8" x2="9" y2="10"/></svg>Cohort Intel</h5>
+        <p>value_clusters[], common_stall_steps, outreach_success_patterns, all anonymous + aggregate</p>
+      </div>
+      <div class="data-item">
+        <h5><svg viewBox="0 0 16 16"><path d="M3 12l2-4 3 2 3-5 2 2"/><circle cx="13" cy="7" r="1.5"/></svg>Future: AI</h5>
+        <p>session_transcripts, sentiment_scores, auto_action_items, predictive_nudge_timing</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
