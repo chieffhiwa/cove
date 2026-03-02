@@ -980,49 +980,79 @@ const QUADRANT_TASKS = {
   },
 };
 
+const QUADRANT_PAUSE = {
+  "brave-curious": {
+    opener: "You're already in motion.",
+    question: "What would it look like to slow down just enough to pick the right direction?",
+  },
+  "brave-judgmental": {
+    opener: "You know what you want.",
+    question: "Where have you been most willing to be wrong lately?",
+  },
+  "fearful-curious": {
+    opener: "You see more than you let on.",
+    question: "What would you try if you knew no one was judging?",
+  },
+  "fearful-judgmental": {
+    opener: "Something's made you careful. That's okay.",
+    question: "Who has seen you at your best — and when did they last say so?",
+  },
+};
+
 function StepMatrixPause({ selfPosition, next, goBack }) {
   const visible = useFadeIn([]);
   const quadrant = selfPosition ? getQuadrant(selfPosition.x, selfPosition.y) : "fearful-curious";
   const qr = QUADRANT_READS[quadrant];
+  const qp = QUADRANT_PAUSE[quadrant];
 
   return (
-    <div style={{
-      ...fadeStyle(visible), display: "flex", flexDirection: "column",
-      justifyContent: "center", alignItems: "center",
-      minHeight: "100vh", padding: "64px 28px 56px", textAlign: "center",
-    }}>
-      <div style={{ fontSize: 52, display: "inline-block", animation: "pulse 2.8s ease-in-out infinite", marginBottom: 36 }}>
-        💙
+    <div style={{ ...fadeStyle(visible), minHeight: "100vh", padding: "72px 28px 64px", display: "flex", flexDirection: "column" }}>
+
+      {/* Pulsing heart */}
+      <div style={{ textAlign: "center", marginBottom: 40 }}>
+        <div style={{ fontSize: 48, display: "inline-block", animation: "pulse 2.8s ease-in-out infinite", marginBottom: 24 }}>
+          💙
+        </div>
+        <p style={{ fontSize: 11, letterSpacing: 3, color: C.muted, fontFamily: "monospace", margin: "0 0 10px" }}>COVE</p>
+        <p style={{ fontSize: 15, color: C.muted, fontStyle: "italic" }}>alright, now pause.</p>
       </div>
 
-      <p style={{ fontSize: 11, letterSpacing: 3, color: C.muted, fontFamily: "monospace", margin: "0 0 16px" }}>COVE</p>
-      <h2 style={{ fontSize: 22, fontWeight: 400, color: C.pearl, lineHeight: 1.55, margin: "0 0 8px" }}>
-        your career, your current.
-      </h2>
-      <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.6, margin: "0 0 48px", fontStyle: "italic" }}>
-        alright, now pause.
-      </p>
-
-      <div style={{
-        padding: "20px 24px", borderRadius: 14, marginBottom: 48,
-        background: C.surface, border: `1px solid ${C.borderSoft}`,
-        textAlign: "left", maxWidth: 320, width: "100%",
-      }}>
-        <div style={{ fontSize: 12, color: qr.color, fontWeight: 600, letterSpacing: 1, marginBottom: 8, textTransform: "uppercase" }}>
+      {/* Opener — forked by quadrant */}
+      <div style={{ marginBottom: 28 }}>
+        <div style={{ fontSize: 11, color: qr.color, letterSpacing: 2, fontFamily: "monospace", marginBottom: 10, textTransform: "uppercase" }}>
           {qr.title}
         </div>
-        <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.75, margin: 0 }}>{qr.short}</p>
-        <button
-          onClick={goBack}
-          style={{ marginTop: 14, background: "none", border: "none", color: C.ocean, fontSize: 12, cursor: "pointer", padding: 0 }}
-        >
-          ← not quite right — move my dot
-        </button>
+        <h2 style={{ fontSize: 24, fontWeight: 400, color: C.pearl, lineHeight: 1.4, margin: "0 0 16px" }}>
+          {qp.opener}
+        </h2>
+        <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.85, margin: 0 }}>
+          {qr.read}
+        </p>
       </div>
 
-      <div style={{ width: "100%", maxWidth: 320 }}>
-        <Btn onClick={next}>keep going</Btn>
+      {/* Question to hold */}
+      <div style={{
+        padding: "20px 22px", borderRadius: 12, marginBottom: 36,
+        background: C.surface, border: `1px solid ${C.border}`,
+        borderLeft: `3px solid ${qr.color}`,
+      }}>
+        <p style={{ fontSize: 11, color: C.muted, fontFamily: "monospace", letterSpacing: 1.5, textTransform: "uppercase", margin: "0 0 10px" }}>
+          sit with this
+        </p>
+        <p style={{ fontSize: 15, color: C.pearl, lineHeight: 1.7, margin: 0, fontStyle: "italic" }}>
+          "{qp.question}"
+        </p>
       </div>
+
+      {/* Back link */}
+      <button
+        onClick={goBack}
+        style={{ background: "none", border: "none", color: C.muted, fontSize: 12, cursor: "pointer", padding: "0 0 28px", textAlign: "left", fontFamily: "Georgia, serif" }}
+      >
+        ← that's not me, move my dot
+      </button>
+
+      <Btn onClick={next}>keep going</Btn>
     </div>
   );
 }
