@@ -202,7 +202,7 @@ function StepWelcome({ next }) {
           Find work that<br />actually fits.
         </h1>
         <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.8, margin: "0 0 20px", maxWidth: 280 }}>
-          Not a job board. Not a resume builder.<br />A smart, simple, and clean system for building the career that you want.
+          A simple, proven system.
         </p>
         <p style={{ fontSize: 11, letterSpacing: 3, color: C.ocean, fontFamily: "monospace", margin: 0, textTransform: "lowercase" }}>
           your career. your current.
@@ -255,7 +255,7 @@ function StepPrivacy({ next }) {
           ))}
         </div>
       </div>
-      <Btn onClick={next} style={{ marginTop: 32 }}>got it. let's go 🏁</Btn>
+      <Btn onClick={next} style={{ marginTop: 32 }}>got it! let's go.</Btn>
     </div>
   );
 }
@@ -350,9 +350,9 @@ function StepPricing({ next }) {
 function StepPhilosophy({ next }) {
   const visible = useFadeIn([]);
   const principles = [
-    { icon: "💙", title: "\u201cGo-Giver\u201d first", body: "What I had to offer, not what I had to gain — that shift changed everything. Lead with the gift. Show up like you mean it.", cite: "The Go-Giver — Bob Burg & John David Mann" },
-    { icon: "〰️", title: "Careers over cash", body: "I've taken the higher offer and regretted it. The interesting role changed my life. You already know which one you want." },
-    { icon: "🐸", title: "Generous enthusiasm", body: "\u201cDo you always need a reason to help somebody?\u201d — Ash Ketchum. The energy you bring is part of the pitch." },
+    { icon: "💙", title: "\u201cGo-Giver\u201d first", body: "It's about what you have to offer — not what you have to gain. This shift in thinking changes everything. Lead with the gift, and show up like you mean it.", cite: "The Go-Giver — Bob Burg & John David Mann" },
+    { icon: "〰️", title: "Careers over cash", body: "Get the stars out of your eyes. We all know someone who took the higher offer and immediately regretted it. The opportunity you feel — in your gut — like you need to explore? That's often the one that changes your life. You already know which one you want." },
+    { icon: "🐸", title: "Generous enthusiasm", body: "The energy you bring into a room is part of the pitch. Showing up with something to give — before there's anything to gain — is the edge most people leave on the table." },
   ];
 
   return (
