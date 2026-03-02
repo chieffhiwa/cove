@@ -1077,10 +1077,12 @@ function StepAshStory({ next }) {
       <div style={{ flex: 1 }}>
         <p style={{ fontSize: 11, letterSpacing: 2, color: C.muted, fontFamily: "monospace", margin: "0 0 36px" }}>GENEROUS ENTHUSIASM</p>
 
-        {p("You ever just help somebody. No reason. No angle.")}
+        <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.85, margin: "0 0 20px" }}>
+          There's a moment in <em style={{ color: C.pearl }}>Pokémon: Mewtwo Returns</em> that I keep coming back to.
+        </p>
 
         <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.85, margin: "0 0 20px" }}>
-          There's a scene in <em style={{ color: C.pearl, fontStyle: "italic" }}>Pokémon: Mewtwo Returns</em> that keeps coming back to me.
+          Mewtwo has spent the whole movie trying to destroy everything. Built in a lab. Hunted. Betrayed. He doesn't trust anyone — and he's been actively trying to kill Ash's friends.
         </p>
 
         {/* Mewtwo GIF */}
@@ -1094,11 +1096,15 @@ function StepAshStory({ next }) {
         </div>
 
         <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.85, margin: "0 0 20px" }}>
-          Ash is helping Mewtwo escape — a Pokémon built in a lab, hunted, every reason not to trust anyone — and Mewtwo stops. Looks at him. Asks:
+          And then Ash just... helps him. No calculation. No angle. Steps in like it's the most obvious thing in the world.
+        </p>
+
+        <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.85, margin: "0 0 20px" }}>
+          Mewtwo stops. Can't make sense of it. Looks at him. And asks:
         </p>
 
         <blockquote style={{
-          margin: "0 0 20px",
+          margin: "0 0 24px",
           padding: "20px 24px",
           borderLeft: `3px solid ${C.ocean}`,
           background: C.surface,
@@ -1110,20 +1116,20 @@ function StepAshStory({ next }) {
           <p style={{ fontSize: 11, color: C.muted, margin: 0 }}>— Ash Ketchum</p>
         </blockquote>
 
-        {/* Ash reaction GIF */}
+        {p("He doesn't answer. He just keeps going.")}
+
+        {/* Ash + Pikachu high five GIF */}
         <div style={{ margin: "0 0 24px", borderRadius: 12, overflow: "hidden", lineHeight: 0 }}>
           <img
-            src="https://media.giphy.com/media/PB9EHrzfWJuLtv4n1M/giphy.gif"
-            alt="Happy Pokémon"
+            src="https://media.giphy.com/media/Oq3QAI2mzTZJmjhenC/giphy.gif"
+            alt="Ash and Pikachu high five"
             style={{ width: "100%", borderRadius: 12, display: "block" }}
           />
           <p style={{ fontSize: 9, color: C.dim, margin: "6px 0 0", letterSpacing: 1, textTransform: "uppercase" }}>via GIPHY · Pokémon</p>
         </div>
 
-        {p("He doesn't answer. He just keeps going.")}
-
         <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.85, margin: "0 0 12px" }}>
-          The people I've watched move well through a job search — who leave rooms better than they found them, who build actual relationships instead of a pipeline — they all have some version of that. They show up before the ask. They give before the taking is even on the table.
+          The people who move well through a job search — who leave rooms better than they found them, who build real relationships instead of a pipeline — they all have some version of that. They show up before the ask. They give before there's anything to gain.
         </p>
 
         <p style={{ fontSize: 15, color: C.pearl, lineHeight: 1.85, margin: "0 0 4px" }}>
