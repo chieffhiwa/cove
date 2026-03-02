@@ -224,7 +224,7 @@ function StepWelcome({ next }) {
 function StepPrivacy({ next }) {
   const visible = useFadeIn([]);
   const commitments = [
-    { icon: "🔒", title: "Your data stays yours", body: "Everything you share in Cove — your reflections, your matrix position, your thoughts — belongs to you. We don't sell it, share it, or use it for anything other than making your experience better." },
+    { icon: "🔒", title: "Your data stays yours", body: "Everything you share in Cove (your reflections, your matrix position, your thoughts) belongs to you. We don't sell it, share it, or use it for anything other than making your experience better." },
     { icon: "👁️", title: "No surveillance, no profiling", body: "We're not building an ad business. We're building a career tool. We have zero interest in tracking you across the web or building a profile to sell to anyone." },
     { icon: "💙", title: "A personal commitment", body: "This community works for you, or it doesn't work at all. If you ever feel like we've broken that trust, tell us. We mean it." },
   ];
@@ -279,7 +279,7 @@ function StepPricing({ next }) {
       options: { shouldCreateUser: true },
     });
     setLoading(false);
-    if (sbError) { setError("something went wrong — try again"); return; }
+    if (sbError) { setError("something went wrong, try again"); return; }
     setSent(true);
     setTimeout(() => next(trimmed), 2500);
   };
@@ -296,7 +296,7 @@ function StepPricing({ next }) {
           {[
             "Less than a Guinness.",
             "Cancel anytime, no questions.",
-            "If it's not for you — full refund.",
+            "Not for you? Full refund.",
             "We think you'll like it.",
           ].map((line, i) => (
             <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: i < 3 ? 12 : 0 }}>
@@ -309,7 +309,7 @@ function StepPricing({ next }) {
         {sent ? (
           <div style={{ padding: "16px 20px", borderRadius: 12, background: C.faint, border: `1px solid ${C.ocean}`, textAlign: "left" }}>
             <p style={{ fontSize: 13, color: C.ocean, margin: 0, lineHeight: 1.6 }}>
-              ✓ Check your inbox — we sent you a link.
+              ✓ Check your inbox. We sent you a link.
             </p>
           </div>
         ) : (
@@ -350,9 +350,9 @@ function StepPricing({ next }) {
 function StepPhilosophy({ next }) {
   const visible = useFadeIn([]);
   const principles = [
-    { icon: "💙", title: "\u201cGo-Giver\u201d first", body: "It's about what you have to offer — not what you have to gain. This shift in thinking changes everything. Lead with the gift, and show up like you mean it.", cite: "The Go-Giver — Bob Burg & John David Mann" },
-    { icon: "〰️", title: "Careers over cash", body: "Get the stars out of your eyes. We all know someone who took the higher offer and immediately regretted it. The opportunity you feel — in your gut — like you need to explore? That's often the one that changes your life. You already know which one you want." },
-    { icon: "🐸", title: "Generous enthusiasm", body: "The energy you bring into a room is part of the pitch. Showing up with something to give — before there's anything to gain — is the edge most people leave on the table." },
+    { icon: "💙", title: "\u201cGo-Giver\u201d first", body: "It's about what you have to offer, not what you have to gain. This shift in thinking changes everything. Lead with the gift, and show up like you mean it.", cite: "The Go-Giver — Bob Burg & John David Mann" },
+    { icon: "〰️", title: "Careers over cash", body: "Get the stars out of your eyes. We all know someone who took the higher offer and immediately regretted it. The opportunity you feel, in your gut, like you need to explore? That's often the one that changes your life. You already know which one you want." },
+    { icon: "🐸", title: "Generous enthusiasm", body: "The energy you bring into a room is part of the pitch. Showing up with something to give, before there's anything to gain, is the edge most people leave on the table." },
   ];
 
   return (
@@ -494,7 +494,7 @@ function StepSelfMatrix({ name, initialPosition, next }) {
               Not feeling it?
             </h2>
             <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.7, margin: "0 0 22px" }}>
-              Move your dot. This is about how you actually see yourself right now — not how you want to be seen, not who you're becoming. Just honest. Where are you today?
+              Move your dot. This is about how you actually see yourself right now. Not how you want to be seen, not who you're becoming. Just honest. Where are you today?
             </p>
           </>
         ) : (
@@ -503,7 +503,7 @@ function StepSelfMatrix({ name, initialPosition, next }) {
               Be real with yourself, {name}.
             </h2>
             <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.7, margin: "0 0 22px" }}>
-              Brave or fearful? Curious or judgmental? Be honest — not aspirational. Where you actually are, not where you want to be.
+              Brave or fearful? Curious or judgmental? Be honest, not aspirational. Where you actually are, not where you want to be.
             </p>
           </>
         )}
@@ -964,19 +964,19 @@ function StepPause({ finish }) {
 const QUADRANT_TASKS = {
   "brave-curious": {
     headline: "You're moving and you're open.",
-    task: "Before you come back — reach out to one person in your network you haven't talked to in a year. No agenda. Just check in.",
+    task: "Before you come back: reach out to one person in your network you haven't talked to in a year. No agenda. Just check in.",
   },
   "brave-judgmental": {
     headline: "You're willing to move. Stay open about where.",
-    task: "Before you come back — spend 20 minutes listening to someone whose career path looks nothing like yours. Podcast, interview, conversation. Just listen.",
+    task: "Before you come back: spend 20 minutes listening to someone whose career path looks nothing like yours. Podcast, interview, conversation. Just listen.",
   },
   "fearful-curious": {
     headline: "You see it. Something's holding you back.",
-    task: "Before you come back — write down the one career move you keep circling but haven't made. Don't share it. Just put it somewhere real.",
+    task: "Before you come back: write down the one career move you keep circling but haven't made. Don't share it. Just put it somewhere real.",
   },
   "fearful-judgmental": {
     headline: "You're in a careful place right now. That's okay.",
-    task: "Before you come back — do one thing today that feels even slightly uncomfortable. Doesn't have to be career-related. Just move.",
+    task: "Before you come back: do one thing today that feels even slightly uncomfortable. Doesn't have to be career-related. Just move.",
   },
 };
 
@@ -1141,7 +1141,7 @@ function StepFearsReflect({ next }) {
           What fears or judgments are getting in the way?
         </h2>
         <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.7, margin: "0 0 24px" }}>
-          Name them. You don't have to solve them here — just say them out loud.
+          Name them. You don't have to solve them here. Just say them out loud.
         </p>
         <VoiceOrText
           value={text}
@@ -1271,7 +1271,7 @@ function HomeTab({ userData }) {
           Take a breath.
         </h1>
         <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.85, margin: 0 }}>
-          You've done the hard part. You placed yourself on the map. Most people never do that — they just keep moving without knowing where they're starting from.
+          You've done the hard part. You placed yourself on the map. Most people never do that. They just keep moving without knowing where they're starting from.
         </p>
       </div>
 
@@ -1294,9 +1294,9 @@ function HomeTab({ userData }) {
         <SectionLabel>why this matters</SectionLabel>
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           {[
-            { icon: "📍", title: "It's a starting point, not a verdict", body: "Where you place yourself today is just data. It changes. That's the whole point — Cove is here to help you move." },
-            { icon: "🔄", title: "Honesty is the strategy", body: "The people who get the furthest fastest are the ones who see themselves clearly. Not harshly — clearly. The matrix is practice for that." },
-            { icon: "🌊", title: "What's coming", body: "We're building out the next layer — values exploration, connection mapping, the full picture. For now, sit with where you are. That's enough." },
+            { icon: "📍", title: "It's a starting point, not a verdict", body: "Where you place yourself today is just data. It changes. That's the whole point. Cove is here to help you move." },
+            { icon: "🔄", title: "Honesty is the strategy", body: "The people who get the furthest fastest are the ones who see themselves clearly. Not harshly. Clearly. The matrix is practice for that." },
+            { icon: "🌊", title: "What's coming", body: "We're building out the next layer: values exploration, connection mapping, the full picture. For now, sit with where you are. That's enough." },
           ].map((item, i) => (
             <div key={i} style={{
               padding: "18px 20px", borderRadius: 12,
