@@ -157,15 +157,15 @@ function Onboard({ step, setStep, userData, update, finish }) {
     <StepSelfMatrix     key={4} name={userData.name} initialPosition={userData.selfPosition} next={(selfPosition) => { update({ selfPosition }); setStep(5); }} />,
     <StepMatrixPause    key={5} selfPosition={userData.selfPosition} next={() => setStep(6)} goBack={() => setStep(4)} />,
     <StepAshStory       key={6} next={() => setStep(7)} />,
-    <StepPricing        key={7} next={(email) => { if (email) update({ email }); setStep(8); }} />,
-    <StepBraveReflect   key={8} next={(braveReflection) => { update({ braveReflection }); setStep(9); }} />,
-    <StepFearsReflect   key={9} next={(fearsReflection) => { update({ fearsReflection }); setStep(10); postReflections({ ...userData, fearsReflection }); }} />,
-    <StepPause          key={10} finish={finish} />,
+    <StepBraveReflect   key={7} next={(braveReflection) => { update({ braveReflection }); setStep(8); }} />,
+    <StepFearsReflect   key={8} next={(fearsReflection) => { update({ fearsReflection }); setStep(9); postReflections({ ...userData, fearsReflection }); }} />,
+    <StepPause          key={9} finish={() => setStep(10)} />,
+    <StepPricing        key={10} next={(email) => { if (email) update({ email }); finish(); }} />,
   ];
 
-  // Dots on steps 2–4 (philosophy, name, matrix) and 8–9 (brave, fears). Hide on 0,1,5,6,7,10.
-  const showDots = [2,3,4,8,9].includes(step);
-  const dotStep = step <= 4 ? step - 1 : step - 5;
+  // Dots on steps 2–4 (philosophy, name, matrix) and 7–8 (brave, fears). Hide on 0,1,5,6,9,10.
+  const showDots = [2,3,4,7,8].includes(step);
+  const dotStep = step <= 4 ? step - 1 : step - 4;
 
   return (
     <Shell>
@@ -951,7 +951,7 @@ function StepPause({ finish }) {
         </p>
       </div>
       <div style={{ width: "100%", maxWidth: 320 }}>
-        <Btn onClick={finish}>Open Cove</Btn>
+        <Btn onClick={finish}>one last thing →</Btn>
       </div>
       <p style={{ fontSize: 11, color: C.dim, marginTop: 24, fontStyle: "italic" }}>
         "the karma compounds quietly."
@@ -1047,8 +1047,8 @@ function StepAshStory({ next }) {
         {/* Mewtwo GIF */}
         <div style={{ margin: "0 0 24px", borderRadius: 12, overflow: "hidden", lineHeight: 0 }}>
           <img
-            src="https://media.giphy.com/media/Q9Sk5zq0PWyxq/giphy.gif"
-            alt="Mewtwo"
+            src="https://media.giphy.com/media/JWsWyAUZhOZxK/giphy.gif"
+            alt="Mew and Mewtwo"
             style={{ width: "100%", borderRadius: 12, display: "block" }}
           />
           <p style={{ fontSize: 9, color: C.dim, margin: "6px 0 0", letterSpacing: 1, textTransform: "uppercase" }}>via GIPHY · Pokémon</p>
@@ -1074,8 +1074,8 @@ function StepAshStory({ next }) {
         {/* Ash reaction GIF */}
         <div style={{ margin: "0 0 24px", borderRadius: 12, overflow: "hidden", lineHeight: 0 }}>
           <img
-            src="https://media.giphy.com/media/gyQNvaJwtFDz7uySek/giphy.gif"
-            alt="Ash Ketchum"
+            src="https://media.giphy.com/media/PB9EHrzfWJuLtv4n1M/giphy.gif"
+            alt="Happy Pokémon"
             style={{ width: "100%", borderRadius: 12, display: "block" }}
           />
           <p style={{ fontSize: 9, color: C.dim, margin: "6px 0 0", letterSpacing: 1, textTransform: "uppercase" }}>via GIPHY · Pokémon</p>
