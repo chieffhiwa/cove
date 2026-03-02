@@ -350,9 +350,9 @@ function StepPricing({ next }) {
 function StepPhilosophy({ next }) {
   const visible = useFadeIn([]);
   const principles = [
-    { icon: "💙", title: "\u201cGo-Giver\u201d first", body: "It's about what you have to offer, not what you have to gain. This shift in thinking changes everything. Lead with the gift, and show up like you mean it.", cite: "The Go-Giver — Bob Burg & John David Mann" },
-    { icon: "〰️", title: "Careers over cash", body: "Get the stars out of your eyes. We all know someone who took the higher offer and immediately regretted it. The opportunity you feel, in your gut, like you need to explore? That's often the one that changes your life. You already know which one you want." },
-    { icon: "🐸", title: "Generous enthusiasm", body: "The energy you bring into a room is part of the pitch. Showing up with something to give, before there's anything to gain, is the edge most people leave on the table." },
+    { icon: "💙", title: "\u201cGo-Giver\u201d first", body: "Lead with what you have to offer, not what you're hoping to get. That shift changes everything about how you show up.", cite: "The Go-Giver — Bob Burg & John David Mann" },
+    { icon: "〰️", title: "Careers over cash", body: "We all know someone who took the higher offer and immediately regretted it. The one you keep coming back to, the one that feels like it matters? That's usually the one." },
+    { icon: "🐸", title: "Generous enthusiasm", body: "The energy you bring into a room is part of the pitch. Show up with something to give before there's anything to gain. Most people never do that." },
   ];
 
   return (
@@ -360,7 +360,7 @@ function StepPhilosophy({ next }) {
       <div style={{ flex: 1 }}>
         <p style={{ fontSize: 11, letterSpacing: 2, color: C.muted, fontFamily: "monospace", marginBottom: 20 }}>HOW THIS WORKS</p>
         <h2 style={{ fontSize: 26, fontWeight: 400, margin: "0 0 32px", color: C.pearl, lineHeight: 1.35 }}>
-          Three things.
+          Three key principles.
         </h2>
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           {principles.map((p, i) => (
