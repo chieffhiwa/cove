@@ -202,7 +202,7 @@ function StepWelcome({ next }) {
           Find work that<br />actually fits.
         </h1>
         <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.8, margin: "0 0 20px", maxWidth: 280 }}>
-          Not a job board. Not a resume builder.<br />A simple, proven system.
+          Not a job board. Not a resume builder.<br />A simple, proven system to build the career you actually want.
         </p>
         <p style={{ fontSize: 11, letterSpacing: 3, color: C.ocean, fontFamily: "monospace", margin: 0, textTransform: "lowercase" }}>
           your career. your current.
