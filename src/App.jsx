@@ -1220,6 +1220,7 @@ function MainApp({ userData, update, tab, setTab, activeContact, setActiveContac
           {tab === "values"    && <ValuesTab    wants={userData.wants} />}
           {tab === "matrix"    && <MatrixTab    contacts={userData.contacts} openContact={openContact} selfPosition={userData.selfPosition} name={userData.name} />}
           {tab === "vibes"     && <VibesTab />}
+          {tab === "list"      && <List100Tab />}
         </div>
 
         {/* Bottom nav */}
@@ -1235,6 +1236,7 @@ function MainApp({ userData, update, tab, setTab, activeContact, setActiveContac
             { id: "values", label: "Values", icon: "◇" },
             { id: "matrix", label: "Matrix", icon: "⊹" },
             { id: "vibes",  label: "Vibes",  icon: "〰" },
+            { id: "list",   label: "List",   icon: "≡" },
           ].map(t => (
             <div
               key={t.id}
@@ -1713,6 +1715,255 @@ function VibesTab() {
           You're not desperate. You're selective. Show up like someone who's been places and is genuinely excited about where they're going next. That energy is not fake it's what gets you in the room.
         </p>
       </div>
+    </div>
+  );
+}
+
+// ── List of 100 Tab ───────────────────────────────────────────────────────────
+function List100Tab() {
+  const [entries, setEntries] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("cove_list100") || "[]"); }
+    catch { return []; }
+  });
+  const [type, setType]         = useState("job");
+  const [warmLead, setWarmLead] = useState("warm");
+  const [hiring, setHiring]     = useState("check");
+  const [url, setUrl]           = useState("");
+  const [name, setName]         = useState("");
+  const [contact, setContact]   = useState("");
+  const [title, setTitle]       = useState("");
+  const [focus, setFocus]       = useState("");
+  const [notes, setNotes]       = useState("");
+  const [toast, setToast]       = useState(null);
+  const [showForm, setShowForm] = useState(false);
+  const toastTimer = useRef(null);
+
+  const save = (next) => {
+    setEntries(next);
+    localStorage.setItem("cove_list100", JSON.stringify(next));
+  };
+
+  const showToast = (msg) => {
+    setToast(msg);
+    clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(null), 2500);
+  };
+
+  const addEntry = () => {
+    if (!name.trim()) { showToast("add a name first"); return; }
+    save([{
+      id: Date.now(), type,
+      url: url.trim(), name: name.trim(),
+      contact: contact.trim(), title: title.trim(),
+      focus: focus.trim(), warm: warmLead,
+      hiring: type === "job" ? hiring : "",
+      notes: notes.trim(),
+      added: new Date().toLocaleDateString(),
+    }, ...entries]);
+    setUrl(""); setName(""); setContact(""); setTitle(""); setFocus(""); setNotes("");
+    setShowForm(false);
+    showToast(`"${name.trim()}" added`);
+  };
+
+  const deleteEntry = (id) => save(entries.filter(e => e.id !== id));
+
+  const exportCSV = () => {
+    if (!entries.length) { showToast("nothing to export yet"); return; }
+    const rows = [
+      ["Type","Name","Contact","Title","Focus","Warm Lead","Hiring","URL","Notes","Date Added"],
+      ...entries.map(e => [
+        e.type === "job" ? "Job Contact" : "Grad Program",
+        e.name, e.contact, e.title, e.focus, e.warm, e.hiring, e.url, e.notes, e.added,
+      ]),
+    ];
+    const csv = rows.map(r => r.map(v => `"${(v||"").replace(/"/g,'""')}"`).join(",")).join("\n");
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+    a.download = `list_of_100_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    showToast(`exported ${entries.length} entries`);
+  };
+
+  const jobs  = entries.filter(e => e.type === "job").length;
+  const grads = entries.filter(e => e.type === "grad").length;
+  const pct   = Math.min((entries.length / 100) * 100, 100);
+
+  const inputStyle = {
+    width: "100%", background: C.surface, border: `1px solid ${C.border}`,
+    borderRadius: 8, padding: "10px 12px", fontSize: 13,
+    color: C.text, outline: "none", fontFamily: "Georgia, serif",
+  };
+
+  const pillStyle = (active, color = C.ocean) => ({
+    padding: "5px 12px", borderRadius: 20, cursor: "pointer", fontSize: 12,
+    fontFamily: "monospace", letterSpacing: 0.5,
+    border: `1px solid ${active ? color : C.border}`,
+    background: active ? `${color}18` : "transparent",
+    color: active ? color : C.muted,
+    transition: "all 0.15s",
+  });
+
+  return (
+    <div style={{ padding: "24px 20px 0" }}>
+
+      {/* Header row */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+        <div>
+          <SectionLabel>list of 100</SectionLabel>
+          <div style={{ fontSize: 20, color: C.pearl, fontWeight: 400 }}>Your target list</div>
+        </div>
+        <div style={{ textAlign: "right" }}>
+          <div style={{ fontSize: 22, color: C.ocean, fontWeight: 400 }}>{entries.length}<span style={{ fontSize: 13, color: C.muted }}>/100</span></div>
+          <div style={{ fontSize: 10, color: C.muted, fontFamily: "monospace" }}>{jobs} jobs · {grads} grad</div>
+        </div>
+      </div>
+
+      {/* Progress bar */}
+      <div style={{ height: 4, background: C.surface, borderRadius: 4, marginBottom: 24, overflow: "hidden" }}>
+        <div style={{ height: "100%", width: `${pct}%`, background: `linear-gradient(90deg, ${C.oceanDeep}, ${C.ocean})`, borderRadius: 4, transition: "width 0.4s ease" }} />
+      </div>
+
+      {/* Add button / form toggle */}
+      {!showForm ? (
+        <div onClick={() => setShowForm(true)} style={{
+          display: "flex", alignItems: "center", gap: 10, padding: "14px 16px",
+          borderRadius: 12, border: `1px dashed ${C.border}`, cursor: "pointer",
+          color: C.muted, fontSize: 14, marginBottom: 24,
+          transition: "border-color 0.15s, color 0.15s",
+        }}>
+          <span style={{ fontSize: 18, color: C.ocean }}>+</span>
+          add an opportunity
+        </div>
+      ) : (
+        <div style={{ background: C.surface, borderRadius: 12, border: `1px solid ${C.border}`, padding: "18px 16px", marginBottom: 24 }}>
+
+          {/* Type toggle */}
+          <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+            {[{ val: "job", label: "💼 Job / Org" }, { val: "grad", label: "🎓 Grad Program" }].map(t => (
+              <div key={t.val} onClick={() => setType(t.val)} style={{
+                flex: 1, textAlign: "center", padding: "9px 0", borderRadius: 8, cursor: "pointer",
+                fontSize: 12, fontFamily: "monospace",
+                border: `1px solid ${type === t.val ? C.ocean : C.border}`,
+                background: type === t.val ? `${C.ocean}15` : "transparent",
+                color: type === t.val ? C.ocean : C.muted,
+              }}>{t.label}</div>
+            ))}
+          </div>
+
+          {/* URL / paste field */}
+          <input
+            value={url} onChange={e => setUrl(e.target.value)}
+            placeholder="paste a link or just a name / org"
+            style={{ ...inputStyle, marginBottom: 10 }}
+          />
+
+          {/* Name + contact */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
+            <input value={name} onChange={e => setName(e.target.value)}
+              placeholder={type === "grad" ? "University / Program" : "Organization"}
+              style={inputStyle} />
+            <input value={contact} onChange={e => setContact(e.target.value)}
+              placeholder={type === "grad" ? "Key faculty (optional)" : "Contact name"}
+              style={inputStyle} />
+            <input value={title} onChange={e => setTitle(e.target.value)}
+              placeholder={type === "grad" ? "Degree (MA/PhD/MS)" : "Title"}
+              style={inputStyle} />
+            <input value={focus} onChange={e => setFocus(e.target.value)}
+              placeholder={type === "grad" ? "Focus area" : "Sector / focus"}
+              style={inputStyle} />
+          </div>
+
+          {/* Warm lead pills */}
+          <div style={{ display: "flex", gap: 6, marginBottom: 8, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 11, color: C.muted, fontFamily: "monospace", alignSelf: "center", marginRight: 4 }}>LEAD</span>
+            {[{ val: "warm", label: "🔥 warm" }, { val: "cold", label: "❄️ cold" }, { val: "research", label: "🔍 research" }].map(p => (
+              <div key={p.val} onClick={() => setWarmLead(p.val)} style={pillStyle(warmLead === p.val)}>{p.label}</div>
+            ))}
+            {type === "job" && (
+              <>
+                <span style={{ fontSize: 11, color: C.muted, fontFamily: "monospace", alignSelf: "center", marginLeft: 8, marginRight: 4 }}>HIRING</span>
+                {[{ val: "check", label: "check" }, { val: "yes", label: "yes" }, { val: "no", label: "no" }].map(p => (
+                  <div key={p.val} onClick={() => setHiring(p.val)} style={pillStyle(hiring === p.val, C.seafoam)}>{p.label}</div>
+                ))}
+              </>
+            )}
+          </div>
+
+          {/* Notes */}
+          <textarea value={notes} onChange={e => setNotes(e.target.value)}
+            placeholder="how you found it, why it's relevant..."
+            rows={2}
+            style={{ ...inputStyle, resize: "vertical", marginBottom: 12 }}
+          />
+
+          {/* Actions */}
+          <div style={{ display: "flex", gap: 8 }}>
+            <Btn onClick={addEntry} style={{ flex: 1 }}>+ add to list</Btn>
+            <div onClick={() => setShowForm(false)} style={{
+              padding: "14px 16px", borderRadius: 12, cursor: "pointer",
+              border: `1px solid ${C.border}`, color: C.muted, fontSize: 13,
+              fontFamily: "Georgia, serif",
+            }}>cancel</div>
+          </div>
+        </div>
+      )}
+
+      {/* Entries */}
+      {entries.length === 0 ? (
+        <div style={{ textAlign: "center", padding: "48px 0", color: C.muted, fontSize: 13 }}>
+          <div style={{ fontSize: 32, marginBottom: 12 }}>📭</div>
+          no entries yet
+        </div>
+      ) : (
+        <>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+            <SectionLabel>{entries.length} captured</SectionLabel>
+            <div style={{ display: "flex", gap: 8 }}>
+              <div onClick={exportCSV} style={{ fontSize: 11, color: C.seafoam, fontFamily: "monospace", cursor: "pointer" }}>⬇ export csv</div>
+              <div onClick={() => { if (entries.length && window.confirm(`Delete all ${entries.length} entries?`)) save([]); }}
+                style={{ fontSize: 11, color: C.muted, fontFamily: "monospace", cursor: "pointer" }}>clear all</div>
+            </div>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, paddingBottom: 32 }}>
+            {entries.map(e => (
+              <div key={e.id} style={{
+                background: C.surface, borderRadius: 10,
+                borderLeft: `3px solid ${e.type === "job" ? C.ocean : C.seafoam}`,
+                padding: "12px 14px",
+                display: "flex", gap: 10, alignItems: "flex-start",
+              }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 4, flexWrap: "wrap" }}>
+                    <span style={{ fontSize: 10, color: e.type === "job" ? C.ocean : C.seafoam, fontFamily: "monospace" }}>
+                      {e.type === "job" ? "💼 job" : "🎓 grad"}
+                    </span>
+                    {e.warm === "warm" && <span style={{ fontSize: 10, color: "#e07b00", fontFamily: "monospace" }}>🔥 warm</span>}
+                    {e.hiring && e.hiring !== "check" && <span style={{ fontSize: 10, color: C.muted, fontFamily: "monospace" }}>hiring: {e.hiring}</span>}
+                  </div>
+                  <div style={{ fontSize: 14, color: C.pearl, fontWeight: 500 }}>
+                    {e.name}{e.contact ? ` · ${e.contact}` : ""}{e.title ? <span style={{ color: C.muted, fontWeight: 400 }}> ({e.title})</span> : ""}
+                  </div>
+                  {e.focus && <div style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>📌 {e.focus}</div>}
+                  {e.url && <div style={{ fontSize: 11, color: C.tide, marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>🔗 {e.url}</div>}
+                  {e.notes && <div style={{ fontSize: 12, color: C.muted, marginTop: 3, fontStyle: "italic" }}>{e.notes}</div>}
+                  <div style={{ fontSize: 10, color: C.dim, marginTop: 4, fontFamily: "monospace" }}>{e.added}</div>
+                </div>
+                <div onClick={() => deleteEntry(e.id)} style={{ color: C.dim, cursor: "pointer", fontSize: 16, padding: "0 2px", flexShrink: 0 }}>✕</div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* Toast */}
+      {toast && (
+        <div style={{
+          position: "fixed", bottom: 90, left: "50%", transform: "translateX(-50%)",
+          background: C.raised, border: `1px solid ${C.border}`, color: C.pearl,
+          padding: "10px 20px", borderRadius: 8, fontSize: 13, fontFamily: "Georgia, serif",
+          zIndex: 999, whiteSpace: "nowrap",
+        }}>{toast}</div>
+      )}
     </div>
   );
 }
