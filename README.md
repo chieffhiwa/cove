@@ -3,7 +3,7 @@
 
 A mobile-first career coaching app. Not a job board. Not a resume builder. A smart, simple, and clean system for building the career that you want.
 
-Live: **[cove-nu.vercel.app](https://cove-nu.vercel.app)**
+Live: **[cove-main.vercel.app](https://cove-main.vercel.app)**
 
 ---
 
@@ -83,9 +83,9 @@ cove/
 | Milestone | Description | Status |
 |-----------|-------------|--------|
 | M1 | Vercel auto-deploy on push | ✅ Done |
-| M2 | Supabase backend — auth + database | 🔜 Next |
-| M3 | Matrix UX improvements — sticky, animated reveal | 🔜 |
-| M4 | Analytics (PostHog) + coach dashboard | 🔜 |
+| M2 | Supabase backend — auth + database | ✅ Done |
+| M3 | Matrix UX improvements — pause redesign, aggregate data | ✅ Done |
+| M4 | Coach dashboard + analytics | 🔄 In progress |
 | M5 | End-to-end flow: sign up → matrix → dashboard | 🔜 |
 | M6 | Ship to clients — real users, collect phone/email | 🔜 |
 
