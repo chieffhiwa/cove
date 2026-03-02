@@ -101,6 +101,13 @@ const DEFAULT_USER_DATA = {
 };
 
 export default function App() {
+  const isCoach = typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("coach") === "true";
+  if (isCoach) return <CoachDashboard />;
+  return <AppInner />;
+}
+
+function AppInner() {
   const [phase, setPhase] = useState(() =>
     localStorage.getItem("cove_phase") || "onboard"
   );
@@ -1014,6 +1021,37 @@ function StepMatrixPause({ selfPosition, next, goBack }) {
   const qr = QUADRANT_READS[quadrant];
   const qp = QUADRANT_PAUSE[quadrant];
 
+  const [quadrantStats, setQuadrantStats] = useState(null);
+  const [statsLoading, setStatsLoading] = useState(true);
+
+  useEffect(() => {
+    supabase
+      .from("matrix_sessions")
+      .select("quadrant")
+      .then(({ data, error }) => {
+        if (error || !data || data.length === 0) { setStatsLoading(false); return; }
+        const counts = {};
+        data.forEach(row => {
+          const k = row.quadrant || "Unknown";
+          counts[k] = (counts[k] || 0) + 1;
+        });
+        const total = data.length;
+        // Map back to quadrant keys for color lookup
+        const titleToKey = {};
+        Object.entries(QUADRANT_READS).forEach(([k, v]) => { titleToKey[v.title] = k; });
+        const stats = Object.entries(counts)
+          .map(([title, count]) => ({
+            title,
+            count,
+            pct: Math.round((count / total) * 100),
+            color: QUADRANT_READS[titleToKey[title]]?.color || C.muted,
+          }))
+          .sort((a, b) => b.count - a.count);
+        setQuadrantStats(stats);
+        setStatsLoading(false);
+      });
+  }, []);
+
   return (
     <div style={{ ...fadeStyle(visible), minHeight: "100vh", padding: "72px 28px 64px", display: "flex", flexDirection: "column" }}>
 
@@ -1053,12 +1091,40 @@ function StepMatrixPause({ selfPosition, next, goBack }) {
         </p>
       </div>
 
+      {/* Where others landed */}
+      <div style={{ marginBottom: 28 }}>
+        <SectionLabel>where others landed</SectionLabel>
+        {statsLoading ? (
+          <div style={{ fontSize: 12, color: C.dim, fontFamily: "monospace", letterSpacing: 1 }}>loading...</div>
+        ) : quadrantStats ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {quadrantStats.map(stat => (
+              <div key={stat.title}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                  <span style={{ fontSize: 11, color: stat.color, fontFamily: "monospace", letterSpacing: 0.5 }}>{stat.title}</span>
+                  <span style={{ fontSize: 11, color: C.muted, fontFamily: "monospace" }}>{stat.pct}%</span>
+                </div>
+                <div style={{ height: 6, borderRadius: 3, background: C.faint, overflow: "hidden" }}>
+                  <div style={{
+                    height: "100%", borderRadius: 3,
+                    width: `${stat.pct}%`,
+                    background: stat.color,
+                    opacity: 0.7,
+                    transition: "width 0.6s ease",
+                  }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : null}
+      </div>
+
       {/* Back link */}
       <button
         onClick={goBack}
         style={{ background: "none", border: "none", color: C.muted, fontSize: 12, cursor: "pointer", padding: "0 0 28px", textAlign: "left", fontFamily: "Georgia, serif" }}
       >
-        ← that's not me, move my dot
+        that's not me, move my dot
       </button>
 
       <Btn onClick={next}>keep going</Btn>
@@ -2072,6 +2138,202 @@ function List100Tab() {
           padding: "10px 20px", borderRadius: 8, fontSize: 13, fontFamily: "Georgia, serif",
           zIndex: 999, whiteSpace: "nowrap",
         }}>{toast}</div>
+      )}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// COACH DASHBOARD
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const COACH_PASSWORD = process.env.REACT_APP_COACH_PASSWORD || "cove2026";
+
+function CoachDashboard() {
+  const [authed, setAuthed] = useState(false);
+  const [pw, setPw] = useState("");
+  const [pwError, setPwError] = useState(false);
+  const [reflections, setReflections] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = () => {
+    if (pw === COACH_PASSWORD) {
+      setAuthed(true);
+      setPwError(false);
+      setLoading(true);
+      supabase
+        .from("reflections")
+        .select("id, name, quadrant, brave_reflection, fears_reflection, created_at")
+        .order("created_at", { ascending: false })
+        .then(({ data, error }) => {
+          if (!error && data) setReflections(data);
+          setLoading(false);
+        });
+    } else {
+      setPwError(true);
+    }
+  };
+
+  const goBack = () => {
+    const url = new URL(window.location.href);
+    url.searchParams.delete("coach");
+    window.location.href = url.toString();
+  };
+
+  const mono = { fontFamily: "monospace" };
+
+  if (!authed) {
+    return (
+      <div style={{
+        background: C.bg, minHeight: "100vh", color: C.text,
+        fontFamily: "Georgia, serif", display: "flex",
+        flexDirection: "column", justifyContent: "center", alignItems: "center",
+        padding: "48px 32px",
+      }}>
+        <div style={{ width: "100%", maxWidth: 360 }}>
+          <div style={{ ...mono, fontSize: 11, color: C.muted, letterSpacing: 3, marginBottom: 20 }}>COACH ACCESS</div>
+          <h2 style={{ fontSize: 22, fontWeight: 400, color: C.pearl, margin: "0 0 24px" }}>Enter password</h2>
+          <input
+            type="password"
+            autoFocus
+            value={pw}
+            onChange={e => { setPw(e.target.value); setPwError(false); }}
+            onKeyDown={e => e.key === "Enter" && handleLogin()}
+            placeholder="password"
+            style={{
+              width: "100%", background: C.surface,
+              border: `1px solid ${pwError ? "#e05a5a" : C.border}`,
+              borderRadius: 10, padding: "14px 16px", fontSize: 15,
+              color: C.pearl, outline: "none", ...mono,
+              boxSizing: "border-box", marginBottom: 12,
+            }}
+          />
+          {pwError && (
+            <div style={{ fontSize: 12, color: "#e05a5a", ...mono, marginBottom: 12 }}>incorrect password</div>
+          )}
+          <Btn onClick={handleLogin}>Unlock</Btn>
+          <button
+            onClick={goBack}
+            style={{ background: "none", border: "none", color: C.muted, fontSize: 12, cursor: "pointer", marginTop: 20, display: "block", ...mono }}
+          >
+            back to app
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Compute stats once data is loaded
+  const total = reflections ? reflections.length : 0;
+  const quadrantCounts = {};
+  if (reflections) {
+    reflections.forEach(r => {
+      const q = r.quadrant || "Unknown";
+      quadrantCounts[q] = (quadrantCounts[q] || 0) + 1;
+    });
+  }
+  const quadrantRows = Object.entries(quadrantCounts)
+    .map(([title, count]) => {
+      const key = Object.keys(QUADRANT_READS).find(k => QUADRANT_READS[k].title === title);
+      return { title, count, pct: total ? Math.round((count / total) * 100) : 0, color: key ? QUADRANT_READS[key].color : C.muted };
+    })
+    .sort((a, b) => b.count - a.count);
+
+  return (
+    <div style={{
+      background: C.bg, minHeight: "100vh", color: C.text,
+      fontFamily: "Georgia, serif", padding: "40px 28px 80px",
+      maxWidth: 680, margin: "0 auto",
+    }}>
+      {/* Header */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 40 }}>
+        <div>
+          <div style={{ ...mono, fontSize: 11, color: C.muted, letterSpacing: 3, marginBottom: 8 }}>COVE / COACH VIEW</div>
+          <h1 style={{ fontSize: 24, fontWeight: 400, color: C.pearl, margin: 0 }}>Dashboard</h1>
+        </div>
+        <button
+          onClick={goBack}
+          style={{ background: "none", border: "none", color: C.muted, fontSize: 12, cursor: "pointer", ...mono, padding: 0, paddingTop: 4 }}
+        >
+          back to app
+        </button>
+      </div>
+
+      {loading && (
+        <div style={{ ...mono, fontSize: 12, color: C.dim, letterSpacing: 1 }}>loading...</div>
+      )}
+
+      {!loading && reflections && (
+        <>
+          {/* Summary cards */}
+          <div style={{ display: "flex", gap: 12, marginBottom: 32, flexWrap: "wrap" }}>
+            <div style={{
+              flex: "1 1 140px", background: C.surface, border: `1px solid ${C.border}`,
+              borderRadius: 12, padding: "20px 22px",
+            }}>
+              <div style={{ ...mono, fontSize: 10, color: C.muted, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>total users</div>
+              <div style={{ fontSize: 32, color: C.pearl, fontWeight: 400 }}>{total}</div>
+            </div>
+            {quadrantRows.map(qr => (
+              <div key={qr.title} style={{
+                flex: "1 1 140px", background: C.surface, border: `1px solid ${C.border}`,
+                borderRadius: 12, padding: "20px 22px",
+                borderLeft: `3px solid ${qr.color}`,
+              }}>
+                <div style={{ ...mono, fontSize: 10, color: qr.color, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>
+                  {qr.title}
+                </div>
+                <div style={{ fontSize: 28, color: C.pearl, fontWeight: 400 }}>{qr.count}</div>
+                <div style={{ ...mono, fontSize: 11, color: C.muted, marginTop: 4 }}>{qr.pct}% of total</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Recent entries */}
+          <div>
+            <div style={{ ...mono, fontSize: 9, color: C.muted, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 16 }}>
+              recent entries ({total})
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {reflections.map(r => {
+                const key = Object.keys(QUADRANT_READS).find(k => QUADRANT_READS[k].title === r.quadrant);
+                const color = key ? QUADRANT_READS[key].color : C.muted;
+                const date = r.created_at ? new Date(r.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";
+                return (
+                  <div key={r.id} style={{
+                    background: C.surface, border: `1px solid ${C.border}`,
+                    borderLeft: `3px solid ${color}`,
+                    borderRadius: 10, padding: "16px 18px",
+                  }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8, gap: 12, flexWrap: "wrap" }}>
+                      <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                        <span style={{ fontSize: 14, color: C.pearl, fontWeight: 500 }}>{r.name || "Anonymous"}</span>
+                        <span style={{ ...mono, fontSize: 10, color, letterSpacing: 0.5 }}>{r.quadrant || "Unknown"}</span>
+                      </div>
+                      <span style={{ ...mono, fontSize: 10, color: C.dim }}>{date}</span>
+                    </div>
+                    {r.brave_reflection && (
+                      <div style={{ marginBottom: 6 }}>
+                        <span style={{ ...mono, fontSize: 9, color: C.seafoam, letterSpacing: 1, textTransform: "uppercase" }}>brave: </span>
+                        <span style={{ fontSize: 12, color: C.muted, fontStyle: "italic" }}>
+                          {r.brave_reflection.length > 80 ? r.brave_reflection.slice(0, 80) + "..." : r.brave_reflection}
+                        </span>
+                      </div>
+                    )}
+                    {r.fears_reflection && (
+                      <div>
+                        <span style={{ ...mono, fontSize: 9, color: C.ocean, letterSpacing: 1, textTransform: "uppercase" }}>fears: </span>
+                        <span style={{ fontSize: 12, color: C.muted, fontStyle: "italic" }}>
+                          {r.fears_reflection.length > 80 ? r.fears_reflection.slice(0, 80) + "..." : r.fears_reflection}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </>
       )}
     </div>
   );
