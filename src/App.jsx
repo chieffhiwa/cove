@@ -154,7 +154,16 @@ function Onboard({ step, setStep, userData, update, finish }) {
     <StepPrivacy        key={1} next={() => setStep(2)} />,
     <StepPhilosophy     key={2} next={() => setStep(3)} />,
     <StepName           key={3} next={(name) => { update({ name }); setStep(4); }} />,
-    <StepSelfMatrix     key={4} name={userData.name} initialPosition={userData.selfPosition} next={(selfPosition) => { update({ selfPosition }); setStep(5); }} />,
+    <StepSelfMatrix     key={4} name={userData.name} initialPosition={userData.selfPosition} next={(selfPosition) => {
+      update({ selfPosition });
+      const q = getQuadrant(selfPosition.x, selfPosition.y);
+      supabase.from("matrix_sessions").insert({
+        name: userData.name || null,
+        x: selfPosition.x, y: selfPosition.y,
+        quadrant: QUADRANT_READS[q]?.title || q,
+      }).then(() => {});
+      setStep(5);
+    }} />,
     <StepMatrixPause    key={5} selfPosition={userData.selfPosition} next={() => setStep(6)} goBack={() => setStep(4)} />,
     <StepAshStory       key={6} next={() => setStep(7)} />,
     <StepBraveReflect   key={7} next={(braveReflection) => { update({ braveReflection }); setStep(8); }} />,
@@ -1266,20 +1275,28 @@ function MainApp({ userData, update, tab, setTab, activeContact, setActiveContac
             { id: "values", label: "Values", icon: "◇" },
             { id: "matrix", label: "Matrix", icon: "⊹" },
             { id: "vibes",  label: "Vibes",  icon: "〰" },
-            { id: "list",   label: "List",   icon: "≡" },
+            { id: "list",   label: "List",   icon: "≡", isNew: true },
           ].map(t => (
             <div
               key={t.id}
               onClick={() => setTab(t.id)}
               style={{
                 display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
-                padding: "6px 16px", borderRadius: 10, cursor: "pointer",
+                padding: "6px 12px", borderRadius: 10, cursor: "pointer",
                 color: tab === t.id ? C.ocean : C.muted,
-                transition: "color 0.15s",
+                transition: "color 0.15s", position: "relative",
               }}
             >
               <span style={{ fontSize: 18, lineHeight: 1 }}>{t.icon}</span>
               <span style={{ fontSize: 9, letterSpacing: 0.5, fontFamily: "monospace" }}>{t.label.toUpperCase()}</span>
+              {t.isNew && tab !== t.id && (
+                <span style={{
+                  position: "absolute", top: 2, right: 8,
+                  background: C.seafoam, color: C.bg,
+                  fontSize: 7, fontWeight: 700, fontFamily: "monospace",
+                  padding: "1px 4px", borderRadius: 4, letterSpacing: 0.5,
+                }}>NEW</span>
+              )}
             </div>
           ))}
         </div>
@@ -1289,7 +1306,7 @@ function MainApp({ userData, update, tab, setTab, activeContact, setActiveContac
 }
 
 // ── Home Tab ──────────────────────────────────────────────────────────────────
-function HomeTab({ userData }) {
+function HomeTab({ userData, setTab }) {
   const visible = useFadeIn(["home"]);
   const quadrant = userData.selfPosition ? getQuadrant(userData.selfPosition.x, userData.selfPosition.y) : null;
   const qr = quadrant ? QUADRANT_READS[quadrant] : null;
@@ -1342,6 +1359,29 @@ function HomeTab({ userData }) {
               </div>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* List of 100 feature card */}
+      <div style={{ marginBottom: 32 }}>
+        <div style={{
+          padding: "20px", borderRadius: 12,
+          background: C.surface, border: `1px solid ${C.border}`,
+          borderLeft: `3px solid ${C.seafoam}`,
+          cursor: "pointer",
+        }} onClick={() => setTab("list")}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+            <span style={{
+              fontSize: 9, fontWeight: 700, fontFamily: "monospace",
+              background: C.seafoam, color: C.bg,
+              padding: "2px 6px", borderRadius: 4, letterSpacing: 0.5,
+            }}>NEW</span>
+            <span style={{ fontSize: 13, color: C.seafoam, fontWeight: 500 }}>Your scratchpad is ready</span>
+          </div>
+          <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.75, margin: "0 0 10px" }}>
+            One job at a time. The <strong style={{ color: C.pearl }}>List of 100</strong> tab is your quick-capture tool — paste a link, add a name, done. Excel is still your source of truth. This is your scratchpad.
+          </p>
+          <span style={{ fontSize: 12, color: C.seafoam, fontFamily: "monospace" }}>open list →</span>
         </div>
       </div>
 
