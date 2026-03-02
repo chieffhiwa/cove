@@ -1100,7 +1100,11 @@ function StepAshStory({ next }) {
         </p>
 
         <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.85, margin: "0 0 20px" }}>
-          Mewtwo stops. Can't make sense of it. Looks at him. Asks:
+          Mewtwo stops. Can't make sense of it. Asks why.
+        </p>
+
+        <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.85, margin: "0 0 20px" }}>
+          Ash looks back at him and says:
         </p>
 
         <blockquote style={{
@@ -1113,10 +1117,10 @@ function StepAshStory({ next }) {
           <p style={{ fontSize: 18, fontWeight: 300, color: C.pearl, lineHeight: 1.55, margin: "0 0 10px", fontStyle: "italic" }}>
             "Do you always need a reason to help somebody?"
           </p>
-          <p style={{ fontSize: 11, color: C.muted, margin: 0 }}>— Ash Ketchum</p>
+          <p style={{ fontSize: 11, color: C.muted, margin: 0 }}>— Ash Ketchum, Pokémon Trainer</p>
         </blockquote>
 
-        {p("He doesn't answer. He just keeps going.")}
+        {p("Then he keeps going.")}
 
         {/* Ash + Pikachu high five GIF */}
         <div style={{ margin: "0 0 24px", borderRadius: 12, overflow: "hidden", lineHeight: 0 }}>
@@ -1140,7 +1144,7 @@ function StepAshStory({ next }) {
         </p>
       </div>
 
-      <Btn onClick={next}>dope. let's keep going.</Btn>
+      <Btn onClick={next}>hell yea. let's keep it moving.</Btn>
     </div>
   );
 }
