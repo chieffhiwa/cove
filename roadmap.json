@@ -2,8 +2,8 @@
   "milestones": [
     { "id": "M1", "title": "Vercel deployed and building on push", "status": "done" },
     { "id": "M2", "title": "Backend live — Supabase wired, auth working", "status": "done" },
-    { "id": "M3", "title": "Bravery/Curiosity Matrix fully functional + pause page redesigned", "status": "in-progress" },
-    { "id": "M4", "title": "PostHog analytics + coach dashboard", "status": "up-next" },
+    { "id": "M3", "title": "Bravery/Curiosity Matrix fully functional + pause page redesigned", "status": "done" },
+    { "id": "M4", "title": "PostHog analytics + coach dashboard", "status": "in-progress" },
     { "id": "M5", "title": "End-to-end flow QA", "status": "up-next" },
     { "id": "M6", "title": "Phone OTP, referral links, ship to clients", "status": "up-next" }
   ]
