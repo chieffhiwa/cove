@@ -1236,6 +1236,13 @@ function StepDone({ name, finish }) {
 
 function MainApp({ userData, update, tab, setTab, activeContact, setActiveContact }) {
   const openContact = (c) => { setActiveContact(c); setTab("contact"); };
+  const [editingName, setEditingName] = useState(false);
+  const [nameInput, setNameInput] = useState(userData.name || "");
+
+  const saveName = () => {
+    if (nameInput.trim()) update({ name: nameInput.trim() });
+    setEditingName(false);
+  };
 
   return (
     <Shell>
@@ -1258,7 +1265,29 @@ function MainApp({ userData, update, tab, setTab, activeContact, setActiveContac
             : <div style={{ fontSize: 16, letterSpacing: 4, color: C.ocean, fontFamily: "monospace" }}>cove</div>
           }
           <div style={{ fontSize: 12, color: C.dim }}>
-            {tab !== "contact" && `hi, ${userData.name || "you"}`}
+            {tab !== "contact" && (
+              editingName
+                ? <input
+                    autoFocus
+                    value={nameInput}
+                    onChange={e => setNameInput(e.target.value)}
+                    onBlur={saveName}
+                    onKeyDown={e => e.key === "Enter" && saveName()}
+                    style={{
+                      background: "transparent", border: "none",
+                      borderBottom: `1px solid ${C.ocean}`,
+                      color: C.pearl, fontSize: 12, outline: "none",
+                      width: 80, fontFamily: "Georgia, serif",
+                    }}
+                  />
+                : <span
+                    onClick={() => { setNameInput(userData.name || ""); setEditingName(true); }}
+                    style={{ cursor: "pointer", borderBottom: `1px dashed ${C.dim}` }}
+                    title="tap to edit"
+                  >
+                    hi, {userData.name || "you"}
+                  </span>
+            )}
           </div>
         </div>
 
