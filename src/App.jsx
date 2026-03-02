@@ -350,9 +350,9 @@ function StepPricing({ next }) {
 function StepPhilosophy({ next }) {
   const visible = useFadeIn([]);
   const principles = [
-    { icon: "💙", title: "\u201cGo-Giver\u201d first", body: "Lead with what you have to offer, not what you're hoping to get. That shift changes everything about how you show up.", cite: "The Go-Giver — Bob Burg & John David Mann" },
-    { icon: "〰️", title: "Careers over cash", body: "We all know someone who took the higher offer and immediately regretted it. That opportunity you keep coming back to — the one that feels like it matters, in your gut? That's the one worth chasing." },
-    { icon: "🐸", title: "Generous enthusiasm", body: "The energy you bring into a room is part of the pitch. Show up with something to give before there's anything to gain. Most people never do that." },
+    { icon: "💙", title: "\u201cGo-Giver\u201d first", body: "Give before you ask for anything. Show up with something to offer, not something to get. Simple idea. Hard to do. Worth it.", cite: "The Go-Giver — Bob Burg & John David Mann" },
+    { icon: "〰️", title: "Careers over cash", body: "We all know someone who took the higher offer and immediately regretted it. That opportunity you keep coming back to? The one that just feels like it matters? That's the one worth chasing." },
+    { icon: "🐸", title: "Generous enthusiasm", body: "When you know what you bring, the energy takes care of itself. You stop trying to impress people and start actually being useful to them. That's what people remember. That's what Cove helps you get to." },
   ];
 
   return (
