@@ -1,0 +1,38 @@
+name: Roadmap Status
+
+on:
+  push:
+    branches: [main]
+    paths: [roadmap.json]
+
+jobs:
+  post-roadmap:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Post to Discord
+        run: |
+          DONE=$(jq -r '[.milestones[] | select(.status=="done")] | map("✅ **\(.id):** \(.title)") | join("\n")' roadmap.json)
+          WIP=$(jq -r '[.milestones[] | select(.status=="in-progress")] | map("🔨 **\(.id):** \(.title)") | join("\n")' roadmap.json)
+          NEXT=$(jq -r '[.milestones[] | select(.status=="up-next")] | map("⬜ **\(.id):** \(.title)") | join("\n")' roadmap.json)
+          TOTAL=$(jq '.milestones | length' roadmap.json)
+          DONE_CT=$(jq '[.milestones[] | select(.status=="done")] | length' roadmap.json)
+
+          jq -n \
+            --arg done "$DONE" \
+            --arg wip "$WIP" \
+            --arg next "$NEXT" \
+            --arg bar "$DONE_CT / $TOTAL milestones complete" \
+            '{
+              embeds: [{
+                title: "🗺️ Cove Roadmap",
+                color: 5814783,
+                fields: [
+                  {name: "Done", value: $done, inline: false},
+                  {name: "In Progress", value: $wip, inline: false},
+                  {name: "Up Next", value: $next, inline: false}
+                ],
+                footer: {text: $bar}
+              }]
+            }' | curl -s -H "Content-Type: application/json" -d @- "${{ secrets.ROADMAP_WEBHOOK_URL }}"
