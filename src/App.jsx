@@ -201,7 +201,7 @@ function StepWelcome({ next }) {
         <h1 style={{ fontSize: 32, fontWeight: 400, margin: "0 0 20px", color: C.pearl, lineHeight: 1.3, letterSpacing: -0.5 }}>
           Find work that<br />actually fits.
         </h1>
-        <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.8, margin: "0 0 20px", maxWidth: 280 }}>
+        <p style={{ fontSize: 11, letterSpacing: 4, color: C.muted, fontFamily: "monospace", margin: "0 0 20px", textTransform: "uppercase" }}>
           A simple, proven system.
         </p>
         <p style={{ fontSize: 11, letterSpacing: 3, color: C.ocean, fontFamily: "monospace", margin: 0, textTransform: "lowercase" }}>
