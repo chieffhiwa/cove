@@ -1082,7 +1082,7 @@ function StepAshStory({ next }) {
         </p>
 
         <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.85, margin: "0 0 20px" }}>
-          Mewtwo has spent the whole movie trying to destroy everything. Built in a lab. Hunted. Betrayed. He doesn't trust anyone — and he's been actively trying to kill Ash's friends.
+          Mewtwo has spent the whole movie trying to destroy everything. Built in a lab. Hunted. Betrayed. He doesn't trust anyone. He's been actively trying to kill Ash's friends.
         </p>
 
         {/* Mewtwo GIF */}
@@ -1100,7 +1100,7 @@ function StepAshStory({ next }) {
         </p>
 
         <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.85, margin: "0 0 20px" }}>
-          Mewtwo stops. Can't make sense of it. Looks at him. And asks:
+          Mewtwo stops. Can't make sense of it. Looks at him. Asks:
         </p>
 
         <blockquote style={{
@@ -1129,7 +1129,7 @@ function StepAshStory({ next }) {
         </div>
 
         <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.85, margin: "0 0 12px" }}>
-          The people who move well through a job search — who leave rooms better than they found them, who build real relationships instead of a pipeline — they all have some version of that. They show up before the ask. They give before there's anything to gain.
+          The people who move well through a job search are the ones who leave rooms better than they found them. Who build real relationships instead of a pipeline. They show up before the ask. They give before there's anything to gain.
         </p>
 
         <p style={{ fontSize: 15, color: C.pearl, lineHeight: 1.85, margin: "0 0 4px" }}>
@@ -1140,7 +1140,7 @@ function StepAshStory({ next }) {
         </p>
       </div>
 
-      <Btn onClick={next}>no, I don't.</Btn>
+      <Btn onClick={next}>dope. let's keep going.</Btn>
     </div>
   );
 }
