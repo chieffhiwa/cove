@@ -1137,54 +1137,25 @@ function StepPhone({ next }) {
 // ── Step 10: Careers Over Cash ────────────────────────────────────────────────
 function StepCareersOverCash({ next }) {
   const visible = useFadeIn([]);
-
   const p = (txt, col = C.muted) => (
     <p style={{ fontSize: 15, color: col, lineHeight: 1.85, margin: "0 0 20px" }}>{txt}</p>
   );
 
-  const label = (txt) => (
-    <p style={{ fontSize: 11, letterSpacing: 2, color: C.muted, fontFamily: "monospace", margin: "0 0 14px" }}>{txt}</p>
-  );
-
-  const stat = ({ num, body, cite }) => (
-    <div style={{
-      padding: "20px 22px", borderRadius: 12, marginBottom: 14,
-      background: C.surface, border: `1px solid ${C.borderSoft}`,
-    }}>
-      <div style={{ fontSize: 42, fontWeight: 300, color: C.ocean, lineHeight: 1, marginBottom: 10, letterSpacing: -1 }}>{num}</div>
-      <div style={{ fontSize: 13, color: C.text, lineHeight: 1.65, marginBottom: 8 }}>{body}</div>
-      <div style={{ fontSize: 10, color: C.dim, fontStyle: "italic" }}>{cite}</div>
-    </div>
-  );
-
   return (
-    <div style={{ ...fadeStyle(visible), padding: "72px 28px 64px", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+    <div style={{ ...fadeStyle(visible), padding: "72px 28px 56px", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+      <p style={{ fontSize: 11, letterSpacing: 2, color: C.muted, fontFamily: "monospace", margin: "0 0 28px" }}>CAREERS OVER CASH</p>
 
-      {label("CAREERS OVER CASH")}
-
-      <h2 style={{ fontSize: 28, fontWeight: 400, margin: "0 0 24px", color: C.pearl, lineHeight: 1.4 }}>
-        The problem.
+      <h2 style={{ fontSize: 26, fontWeight: 400, margin: "0 0 24px", color: C.pearl, lineHeight: 1.45 }}>
+        One of the most anxious generations ever to enter the workforce.
       </h2>
 
-      {p("One of the most anxious generations ever to enter the workforce.")}
-      {p("The data is clear. The solution is surprisingly simple.")}
+      {p("The solution is simpler than you'd think.")}
 
-      {stat({
-        num: "43%",
-        body: "of recent grads screen positive for anxiety — directly impairing career decision-making.",
-        cite: "Mary Christie Institute / AAC&U, 2023",
-      })}
+      {p('"I gave my college $120,000." Tuition. Room. Board. Four years. Then they called asking for a donation.')}
 
-      <div style={{ margin: "28px 0 28px", borderTop: `1px solid ${C.borderSoft}` }} />
+      {p("Seriously.")}
 
-      {label("THE SETUP")}
-
-      {p('"I gave my college $120,000."')}
-      {p("Tuition. Room. Board. Four years.")}
-      {p("Then...")}
-      {p("They called asking for a donation. After $120,000. Seriously.")}
-
-      <div style={{ margin: "4px 0 24px", borderRadius: 12, overflow: "hidden", lineHeight: 0 }}>
+      <div style={{ margin: "0 0 24px", borderRadius: 12, overflow: "hidden", lineHeight: 0 }}>
         <img
           src="https://media.giphy.com/media/nJKAyxFxyNgze/giphy.gif"
           alt="John Mulaney standup"
@@ -1193,10 +1164,8 @@ function StepCareersOverCash({ next }) {
         <p style={{ fontSize: 9, color: C.dim, margin: "6px 0 0", letterSpacing: 1, textTransform: "uppercase" }}>via GIPHY · John Mulaney</p>
       </div>
 
-      {label("THE BIT")}
-
       <blockquote style={{
-        margin: "0 0 24px",
+        margin: "0 0 28px",
         padding: "20px 24px",
         borderLeft: `3px solid ${C.ocean}`,
         background: C.surface,
@@ -1208,60 +1177,35 @@ function StepCareersOverCash({ next }) {
         <p style={{ fontSize: 11, color: C.muted, margin: 0 }}>— John Mulaney, Kid Gorgeous (2018)</p>
       </blockquote>
 
-      <div style={{ margin: "4px 0 28px", borderRadius: 12, overflow: "hidden", lineHeight: 0 }}>
-        <img
-          src="https://media.giphy.com/media/VoOaKxAfabAmQ/giphy.gif"
-          alt="John Mulaney reaction"
-          style={{ width: "100%", borderRadius: 12, display: "block" }}
-        />
-        <p style={{ fontSize: 9, color: C.dim, margin: "6px 0 0", letterSpacing: 1, textTransform: "uppercase" }}>via GIPHY · John Mulaney</p>
+      {p("He was right. But the answer isn't more money.")}
+
+      <div style={{
+        padding: "20px 22px", borderRadius: 12, marginBottom: 28,
+        background: C.surface, border: `1px solid ${C.borderSoft}`,
+      }}>
+        <div style={{ fontSize: 42, fontWeight: 300, color: C.ocean, lineHeight: 1, marginBottom: 10, letterSpacing: -1 }}>57%</div>
+        <div style={{ fontSize: 13, color: C.text, lineHeight: 1.65, marginBottom: 8 }}>Alumni relationships — not career services, not workshops — are what actually prepares graduates for work.</div>
+        <div style={{ fontSize: 10, color: C.dim, fontStyle: "italic" }}>Inside Higher Ed, 2023</div>
       </div>
 
-      {label("THE POINT")}
-
-      {p("He was right. But we have the answer.")}
-      {p("Not money. A 20-minute phone call.", C.pearl)}
-
-      <div style={{ margin: "28px 0 28px", borderTop: `1px solid ${C.borderSoft}` }} />
-
-      {label("WHAT THE DATA SHOWS")}
-
-      {stat({
-        num: "57%",
-        body: "Alumni and peer relationships — not career services — are what actually prepares graduates for work.",
-        cite: "Inside Higher Ed, 2023",
-      })}
-      {stat({
-        num: "78%",
-        body: "report high stress during their job search. Chronic stress impairs the executive function needed for good decisions.",
-        cite: "BestColleges / ACHA, 2024",
-      })}
-      {stat({
-        num: "20 min",
-        body: "The time it takes for one conversation to shift your direction.",
-        cite: "Pay it Forward, empirically",
-      })}
-
-      <div style={{ margin: "28px 0 28px", borderTop: `1px solid ${C.borderSoft}` }} />
-
-      {label("THE THESIS")}
+      {p("One conversation. Twenty minutes. That's the whole model.", C.pearl)}
 
       <blockquote style={{
-        margin: "0 0 24px",
+        margin: "0 0 28px",
         padding: "20px 24px",
         borderLeft: `3px solid ${C.seafoam}`,
         background: C.surface,
         borderRadius: "0 10px 10px 0",
       }}>
-        <p style={{ fontSize: 18, fontWeight: 300, color: C.pearl, lineHeight: 1.55, margin: "0 0 10px", fontStyle: "italic" }}>
+        <p style={{ fontSize: 17, fontWeight: 300, color: C.pearl, lineHeight: 1.6, margin: "0 0 10px", fontStyle: "italic" }}>
           "You just have to be the one who shows up."
         </p>
         <p style={{ fontSize: 11, color: C.muted, margin: 0 }}>— Gwen Stacy, Spider-Man: Into the Spider-Verse</p>
       </blockquote>
 
-      {p("That's the whole model. One alum. One student. Twenty minutes. No curriculum. No app. Just a person showing up.")}
+      {p("No curriculum. No app. Just a person showing up.")}
 
-      <Btn onClick={next} style={{ marginTop: 16 }}>I'm in.</Btn>
+      <Btn onClick={next} style={{ marginTop: 8 }}>I'm in.</Btn>
     </div>
   );
 }
