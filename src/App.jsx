@@ -1143,6 +1143,10 @@ function StepCareersOverCash({ next }) {
 
   return (
     <div style={{ ...fadeStyle(visible), padding: "72px 28px 56px", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+      <div style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "5px 12px", borderRadius: 20, marginBottom: 20, background: C.faint, border: `1px solid ${C.borderSoft}` }}>
+        <div style={{ width: 5, height: 5, borderRadius: "50%", background: C.ocean }} />
+        <span style={{ fontSize: 10, letterSpacing: 2, color: C.muted, fontFamily: "monospace" }}>COVE ETHOS</span>
+      </div>
       <p style={{ fontSize: 11, letterSpacing: 2, color: C.muted, fontFamily: "monospace", margin: "0 0 28px" }}>CAREERS OVER CASH</p>
 
       <h2 style={{ fontSize: 26, fontWeight: 400, margin: "0 0 24px", color: C.pearl, lineHeight: 1.45 }}>
@@ -1376,6 +1380,10 @@ function StepAshStory({ next }) {
   return (
     <div style={{ ...fadeStyle(visible), padding: "80px 28px 56px", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <div style={{ flex: 1 }}>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "5px 12px", borderRadius: 20, marginBottom: 20, background: C.faint, border: `1px solid ${C.borderSoft}` }}>
+          <div style={{ width: 5, height: 5, borderRadius: "50%", background: C.ocean }} />
+          <span style={{ fontSize: 10, letterSpacing: 2, color: C.muted, fontFamily: "monospace" }}>COVE ETHOS</span>
+        </div>
         <p style={{ fontSize: 11, letterSpacing: 2, color: C.muted, fontFamily: "monospace", margin: "0 0 36px" }}>GENEROUS ENTHUSIASM</p>
 
         <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.85, margin: "0 0 20px" }}>
