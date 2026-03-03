@@ -200,19 +200,21 @@ function Onboard({ step, setStep, userData, update, finish }) {
     }} />,
     <StepMatrixPause    key={5} selfPosition={userData.selfPosition} next={() => go(6, "step_completed", { step_name: "matrix_pause" })} goBack={() => setStep(4)} />,
     <StepAshStory       key={6} next={() => go(7, "step_completed", { step_name: "ash_story" })} />,
-    <StepBraveReflect   key={7} next={(braveReflection) => { update({ braveReflection }); go(8, "step_completed", { step_name: "brave_reflect" }); }} />,
-    <StepFearsReflect   key={8} next={(fearsReflection) => {
+    <StepBraveReflect      key={7} next={(braveReflection) => { update({ braveReflection }); go(8, "step_completed", { step_name: "brave_reflect" }); }} />,
+    <StepFearsReflect      key={8} next={(fearsReflection) => {
       update({ fearsReflection });
+      postReflections({ ...userData, fearsReflection });
+      track("reflection_submitted", { has_brave: !!userData.braveReflection, has_fears: !!fearsReflection });
       go(9, "step_completed", { step_name: "fears_reflect" });
     }} />,
-    <StepWants          key={9} wants={userData.wants} update={update} next={(wants) => {
+    <StepPause             key={9}  next={() => go(10, "step_completed", { step_name: "pause" })} />,
+    <StepCareersOverCash   key={10} next={() => go(11, "step_completed", { step_name: "careers_over_cash" })} />,
+    <StepWants             key={11} wants={userData.wants} update={update} next={(wants) => {
       update({ wants });
-      postReflections({ ...userData, wants });
-      track("reflection_submitted", { has_brave: !!userData.braveReflection, has_fears: !!userData.fearsReflection, wants_count: wants.filter(w => w.feeling).length });
-      go(10, "step_completed", { step_name: "wants" });
+      track("wants_tagged", { wants_count: wants.filter(w => w.feeling).length });
+      go(12, "step_completed", { step_name: "wants" });
     }} />,
-    <StepPause          key={10} next={() => go(11, "step_completed", { step_name: "pause" })} />,
-    <StepPhone          key={11} next={(phone) => {
+    <StepPhone             key={12} next={(phone) => {
       update({ phone });
       track("contact_submitted", { has_phone: !!phone, ref: localStorage.getItem("cove_ref") || null });
       track("onboarding_completed");
@@ -220,9 +222,10 @@ function Onboard({ step, setStep, userData, update, finish }) {
     }} />,
   ];
 
-  // Dots on steps 2–4 (philosophy, name, matrix) and 7–9 (brave, fears, wants). Hide on 0,1,5,6,10.
-  const showDots = [2,3,4,7,8,9].includes(step);
-  const dotStep = step <= 4 ? step - 1 : step - 4;
+  // Dots: philosophy(2), name(3), matrix(4), brave(7), fears(8), wants(11)
+  const dotMap = { 2:1, 3:2, 4:3, 7:4, 8:5, 11:5 };
+  const showDots = step in dotMap;
+  const dotStep = dotMap[step] || 0;
 
   return (
     <Shell>
@@ -1131,6 +1134,138 @@ function StepPhone({ next }) {
   );
 }
 
+// ── Step 10: Careers Over Cash ────────────────────────────────────────────────
+function StepCareersOverCash({ next }) {
+  const visible = useFadeIn([]);
+
+  const p = (txt, col = C.muted) => (
+    <p style={{ fontSize: 15, color: col, lineHeight: 1.85, margin: "0 0 20px" }}>{txt}</p>
+  );
+
+  const label = (txt) => (
+    <p style={{ fontSize: 11, letterSpacing: 2, color: C.muted, fontFamily: "monospace", margin: "0 0 14px" }}>{txt}</p>
+  );
+
+  const stat = ({ num, body, cite }) => (
+    <div style={{
+      padding: "20px 22px", borderRadius: 12, marginBottom: 14,
+      background: C.surface, border: `1px solid ${C.borderSoft}`,
+    }}>
+      <div style={{ fontSize: 42, fontWeight: 300, color: C.ocean, lineHeight: 1, marginBottom: 10, letterSpacing: -1 }}>{num}</div>
+      <div style={{ fontSize: 13, color: C.text, lineHeight: 1.65, marginBottom: 8 }}>{body}</div>
+      <div style={{ fontSize: 10, color: C.dim, fontStyle: "italic" }}>{cite}</div>
+    </div>
+  );
+
+  return (
+    <div style={{ ...fadeStyle(visible), padding: "72px 28px 64px", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+
+      {label("CAREERS OVER CASH")}
+
+      <h2 style={{ fontSize: 28, fontWeight: 400, margin: "0 0 24px", color: C.pearl, lineHeight: 1.4 }}>
+        The problem.
+      </h2>
+
+      {p("One of the most anxious generations ever to enter the workforce.")}
+      {p("The data is clear. The solution is surprisingly simple.")}
+
+      {stat({
+        num: "43%",
+        body: "of recent grads screen positive for anxiety — directly impairing career decision-making.",
+        cite: "Mary Christie Institute / AAC&U, 2023",
+      })}
+
+      <div style={{ margin: "28px 0 28px", borderTop: `1px solid ${C.borderSoft}` }} />
+
+      {label("THE SETUP")}
+
+      {p('"I gave my college $120,000."')}
+      {p("Tuition. Room. Board. Four years.")}
+      {p("Then...")}
+      {p("They called asking for a donation. After $120,000. Seriously.")}
+
+      <div style={{ margin: "4px 0 24px", borderRadius: 12, overflow: "hidden", lineHeight: 0 }}>
+        <img
+          src="https://media.giphy.com/media/nJKAyxFxyNgze/giphy.gif"
+          alt="John Mulaney standup"
+          style={{ width: "100%", borderRadius: 12, display: "block" }}
+        />
+        <p style={{ fontSize: 9, color: C.dim, margin: "6px 0 0", letterSpacing: 1, textTransform: "uppercase" }}>via GIPHY · John Mulaney</p>
+      </div>
+
+      {label("THE BIT")}
+
+      <blockquote style={{
+        margin: "0 0 24px",
+        padding: "20px 24px",
+        borderLeft: `3px solid ${C.ocean}`,
+        background: C.surface,
+        borderRadius: "0 10px 10px 0",
+      }}>
+        <p style={{ fontSize: 20, fontWeight: 300, color: C.pearl, lineHeight: 1.5, margin: "0 0 10px", fontStyle: "italic" }}>
+          "YOU SPENT IT ALREADY?!"
+        </p>
+        <p style={{ fontSize: 11, color: C.muted, margin: 0 }}>— John Mulaney, Kid Gorgeous (2018)</p>
+      </blockquote>
+
+      <div style={{ margin: "4px 0 28px", borderRadius: 12, overflow: "hidden", lineHeight: 0 }}>
+        <img
+          src="https://media.giphy.com/media/VoOaKxAfabAmQ/giphy.gif"
+          alt="John Mulaney reaction"
+          style={{ width: "100%", borderRadius: 12, display: "block" }}
+        />
+        <p style={{ fontSize: 9, color: C.dim, margin: "6px 0 0", letterSpacing: 1, textTransform: "uppercase" }}>via GIPHY · John Mulaney</p>
+      </div>
+
+      {label("THE POINT")}
+
+      {p("He was right. But we have the answer.")}
+      {p("Not money. A 20-minute phone call.", C.pearl)}
+
+      <div style={{ margin: "28px 0 28px", borderTop: `1px solid ${C.borderSoft}` }} />
+
+      {label("WHAT THE DATA SHOWS")}
+
+      {stat({
+        num: "57%",
+        body: "Alumni and peer relationships — not career services — are what actually prepares graduates for work.",
+        cite: "Inside Higher Ed, 2023",
+      })}
+      {stat({
+        num: "78%",
+        body: "report high stress during their job search. Chronic stress impairs the executive function needed for good decisions.",
+        cite: "BestColleges / ACHA, 2024",
+      })}
+      {stat({
+        num: "20 min",
+        body: "The time it takes for one conversation to shift your direction.",
+        cite: "Pay it Forward, empirically",
+      })}
+
+      <div style={{ margin: "28px 0 28px", borderTop: `1px solid ${C.borderSoft}` }} />
+
+      {label("THE THESIS")}
+
+      <blockquote style={{
+        margin: "0 0 24px",
+        padding: "20px 24px",
+        borderLeft: `3px solid ${C.seafoam}`,
+        background: C.surface,
+        borderRadius: "0 10px 10px 0",
+      }}>
+        <p style={{ fontSize: 18, fontWeight: 300, color: C.pearl, lineHeight: 1.55, margin: "0 0 10px", fontStyle: "italic" }}>
+          "You just have to be the one who shows up."
+        </p>
+        <p style={{ fontSize: 11, color: C.muted, margin: 0 }}>— Gwen Stacy, Spider-Man: Into the Spider-Verse</p>
+      </blockquote>
+
+      {p("That's the whole model. One alum. One student. Twenty minutes. No curriculum. No app. Just a person showing up.")}
+
+      <Btn onClick={next} style={{ marginTop: 16 }}>I'm in.</Btn>
+    </div>
+  );
+}
+
 // ── Step 4: Matrix Pause + Return Check-in ───────────────────────────────────
 // eslint-disable-next-line no-unused-vars
 const QUADRANT_TASKS = {
@@ -1375,52 +1510,86 @@ function StepAshStory({ next }) {
 function StepBraveReflect({ next }) {
   const visible = useFadeIn([]);
   const [text, setText] = useState("");
+  const ref = useRef(null);
+
+  useEffect(() => { if (ref.current) ref.current.focus(); }, []);
 
   return (
-    <div style={{ ...fadeStyle(visible), padding: "72px 28px 48px", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+    <div style={{ ...fadeStyle(visible), padding: "80px 28px 48px", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <div style={{ flex: 1 }}>
-        <p style={{ fontSize: 11, letterSpacing: 2, color: C.muted, fontFamily: "monospace", margin: "0 0 16px" }}>BRAVE DECISIONS</p>
-        <h2 style={{ fontSize: 24, fontWeight: 400, margin: "0 0 10px", color: C.pearl, lineHeight: 1.35 }}>
+        <p style={{ fontSize: 11, letterSpacing: 2, color: C.muted, fontFamily: "monospace", margin: "0 0 24px" }}>BRAVE DECISIONS</p>
+        <h2 style={{ fontSize: 26, fontWeight: 400, margin: "0 0 16px", color: C.pearl, lineHeight: 1.45 }}>
           What would a brave career decision look like right now?
         </h2>
-        <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.7, margin: "0 0 24px" }}>
+        <p style={{ fontSize: 14, color: C.dim, lineHeight: 1.8, margin: "0 0 36px", fontStyle: "italic" }}>
           Not the safe answer. The one that keeps surfacing when you're quiet enough to hear it.
         </p>
-        <VoiceOrText
+        <textarea
+          ref={ref}
           value={text}
-          onChange={setText}
+          onChange={e => setText(e.target.value)}
           placeholder="What would you do if you weren't afraid of the outcome?"
+          style={{
+            width: "100%", boxSizing: "border-box",
+            background: C.surface,
+            border: `1px solid ${text ? C.ocean : C.borderSoft}`,
+            borderRadius: 14, padding: "22px 22px",
+            fontSize: 16, color: C.text, outline: "none",
+            fontFamily: "Georgia, serif", resize: "none",
+            minHeight: 220, lineHeight: 1.9,
+            transition: "border-color 0.3s",
+          }}
         />
+        <p style={{ fontSize: 11, color: C.dim, marginTop: 12, fontStyle: "italic", textAlign: "center" }}>
+          take your time.
+        </p>
       </div>
-      <Btn onClick={() => next(text)} disabled={!text.trim()} style={{ marginTop: 28 }}>
+      <Btn onClick={() => next(text)} disabled={!text.trim()} style={{ marginTop: 24 }}>
         That's it
       </Btn>
     </div>
   );
 }
 
-// ── Step 6: Fears Reflection (session 2) ─────────────────────────────────────
+// ── Step 9: Fears Reflection ──────────────────────────────────────────────────
 function StepFearsReflect({ next }) {
   const visible = useFadeIn([]);
   const [text, setText] = useState("");
+  const ref = useRef(null);
+
+  useEffect(() => { if (ref.current) ref.current.focus(); }, []);
 
   return (
-    <div style={{ ...fadeStyle(visible), padding: "72px 28px 48px", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+    <div style={{ ...fadeStyle(visible), padding: "80px 28px 48px", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <div style={{ flex: 1 }}>
-        <p style={{ fontSize: 11, letterSpacing: 2, color: C.muted, fontFamily: "monospace", margin: "0 0 16px" }}>WHAT'S IN THE WAY</p>
-        <h2 style={{ fontSize: 24, fontWeight: 400, margin: "0 0 10px", color: C.pearl, lineHeight: 1.35 }}>
-          What fears or judgments are getting in the way?
+        <p style={{ fontSize: 11, letterSpacing: 2, color: C.muted, fontFamily: "monospace", margin: "0 0 24px" }}>WHAT'S IN THE WAY</p>
+        <h2 style={{ fontSize: 26, fontWeight: 400, margin: "0 0 16px", color: C.pearl, lineHeight: 1.45 }}>
+          What's actually in the way?
         </h2>
-        <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.7, margin: "0 0 24px" }}>
-          Name them. You don't have to solve them here. Just say them out loud.
+        <p style={{ fontSize: 14, color: C.dim, lineHeight: 1.8, margin: "0 0 36px", fontStyle: "italic" }}>
+          Name it. You don't have to solve it here. Just say it out loud.
         </p>
-        <VoiceOrText
+        <textarea
+          ref={ref}
           value={text}
-          onChange={setText}
+          onChange={e => setText(e.target.value)}
           placeholder="The story I keep telling myself is…"
+          style={{
+            width: "100%", boxSizing: "border-box",
+            background: C.surface,
+            border: `1px solid ${text ? C.ocean : C.borderSoft}`,
+            borderRadius: 14, padding: "22px 22px",
+            fontSize: 16, color: C.text, outline: "none",
+            fontFamily: "Georgia, serif", resize: "none",
+            minHeight: 220, lineHeight: 1.9,
+            transition: "border-color 0.3s",
+          }}
         />
+        <p style={{ fontSize: 11, color: C.dim, marginTop: 12, fontStyle: "italic", textAlign: "center" }}>
+          take your time.
+        </p>
       </div>
-      <Btn onClick={() => next(text)} disabled={!text.trim()} style={{ marginTop: 28 }}>
+      <Btn onClick={() => next(text)} disabled={!text.trim()} style={{ marginTop: 24 }}>
         I said it
       </Btn>
     </div>
