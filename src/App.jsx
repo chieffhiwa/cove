@@ -1,16 +1,26 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "./supabase";
+import posthog from "posthog-js";
+
+// ─── ANALYTICS ───────────────────────────────────────────────────────────────
+const PH_KEY = process.env.REACT_APP_POSTHOG_KEY;
+if (PH_KEY) posthog.init(PH_KEY, { api_host: "https://us.i.posthog.com", person_profiles: "identified_only" });
+const track = (event, props) => { if (PH_KEY) posthog.capture(event, props); };
 
 // ─── DISCORD WEBHOOK ─────────────────────────────────────────────────────────
 const DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1477427861706117265/mewcLc9XgpBYM10AiQQl3lpY016KvrmI1sc897YD2yYQJL78TTqVu73lbDrsHbrgwK5i";
 
-function postReflections({ name, selfPosition, braveReflection, fearsReflection }) {
+function postReflections({ name, phone, selfPosition, braveReflection, fearsReflection, wants = [] }) {
   const quadrant = selfPosition ? getQuadrant(selfPosition.x, selfPosition.y) : null;
   const quadrantLabel = quadrant ? QUADRANT_READS[quadrant]?.title : "Unknown";
+  const wantsSummary = wants.filter(w => w.feeling).map(w => `${w.feeling}: ${w.text}`).join("\n") || "_(none tagged)_";
+  const ref = localStorage.getItem("cove_ref") || null;
 
   // Save to Supabase
   supabase.from("reflections").insert({
     name: name || null,
+    phone: phone || null,
+    ref: ref,
     quadrant: quadrantLabel,
     brave_reflection: braveReflection || null,
     fears_reflection: fearsReflection || null,
@@ -27,8 +37,11 @@ function postReflections({ name, selfPosition, braveReflection, fearsReflection 
         color: 0x4a9eca,
         fields: [
           { name: "📍 Matrix placement", value: quadrantLabel, inline: true },
+          { name: "📱 Phone", value: phone || "_(not provided)_", inline: true },
+          { name: "🔗 Ref", value: ref || "_(direct)_", inline: true },
           { name: "💙 Brave decision", value: braveReflection || "_(no response)_" },
           { name: "🌊 What's in the way", value: fearsReflection || "_(no response)_" },
+          { name: "✨ What they want", value: wantsSummary },
         ],
         footer: { text: "cove · your career, your current." },
         timestamp: new Date().toISOString(),
@@ -93,6 +106,7 @@ function useFadeIn(deps = []) {
 const DEFAULT_USER_DATA = {
   name: "",
   email: "",
+  phone: "",
   selfPosition: null,
   braveReflection: "",
   fearsReflection: "",
@@ -122,6 +136,11 @@ function AppInner() {
   const [activeContact, setActiveContact] = useState(null);
 
   const update = (patch) => setUserData(d => ({ ...d, ...patch }));
+
+  useEffect(() => {
+    const ref = new URLSearchParams(window.location.search).get("ref");
+    if (ref) localStorage.setItem("cove_ref", ref);
+  }, []);
 
   useEffect(() => { localStorage.setItem("cove_phase", phase); }, [phase]);
   useEffect(() => { localStorage.setItem("cove_step", String(onboardStep)); }, [onboardStep]);
@@ -156,30 +175,53 @@ function AppInner() {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 function Onboard({ step, setStep, userData, update, finish }) {
+  const go = (nextStep, event, props = {}) => {
+    track(event, { step: nextStep, ...props });
+    setStep(nextStep);
+  };
+
   const steps = [
-    <StepWelcome        key={0} next={() => setStep(1)} />,
-    <StepPrivacy        key={1} next={() => setStep(2)} />,
-    <StepPhilosophy     key={2} next={() => setStep(3)} />,
-    <StepName           key={3} next={(name) => { update({ name }); setStep(4); }} />,
+    <StepWelcome        key={0} next={() => { track("onboarding_started"); go(1, "step_completed", { step_name: "welcome" }); }} />,
+    <StepPrivacy        key={1} next={() => go(2, "step_completed", { step_name: "privacy" })} />,
+    <StepPhilosophy     key={2} next={() => go(3, "step_completed", { step_name: "philosophy" })} />,
+    <StepName           key={3} next={(name) => { update({ name }); if (PH_KEY) posthog.identify(name); go(4, "step_completed", { step_name: "name" }); }} />,
     <StepSelfMatrix     key={4} name={userData.name} initialPosition={userData.selfPosition} next={(selfPosition) => {
       update({ selfPosition });
       const q = getQuadrant(selfPosition.x, selfPosition.y);
+      const quadrantLabel = QUADRANT_READS[q]?.title || q;
       supabase.from("matrix_sessions").insert({
         name: userData.name || null,
         x: selfPosition.x, y: selfPosition.y,
-        quadrant: QUADRANT_READS[q]?.title || q,
+        quadrant: quadrantLabel,
+        ref: localStorage.getItem("cove_ref") || null,
       }).then(() => {});
-      setStep(5);
+      track("matrix_placed", { quadrant: quadrantLabel, x: selfPosition.x, y: selfPosition.y });
+      go(5, "step_completed", { step_name: "matrix" });
     }} />,
-    <StepMatrixPause    key={5} selfPosition={userData.selfPosition} next={() => setStep(6)} goBack={() => setStep(4)} />,
-    <StepAshStory       key={6} next={() => setStep(7)} />,
-    <StepBraveReflect   key={7} next={(braveReflection) => { update({ braveReflection }); setStep(8); }} />,
-    <StepFearsReflect   key={8} next={(fearsReflection) => { update({ fearsReflection }); setStep(9); postReflections({ ...userData, fearsReflection }); }} />,
-    <StepPause          key={9} finish={() => finish()} />,
+    <StepMatrixPause    key={5} selfPosition={userData.selfPosition} next={() => go(6, "step_completed", { step_name: "matrix_pause" })} goBack={() => setStep(4)} />,
+    <StepAshStory       key={6} next={() => go(7, "step_completed", { step_name: "ash_story" })} />,
+    <StepBraveReflect   key={7} next={(braveReflection) => { update({ braveReflection }); go(8, "step_completed", { step_name: "brave_reflect" }); }} />,
+    <StepFearsReflect   key={8} next={(fearsReflection) => {
+      update({ fearsReflection });
+      go(9, "step_completed", { step_name: "fears_reflect" });
+    }} />,
+    <StepWants          key={9} wants={userData.wants} update={update} next={(wants) => {
+      update({ wants });
+      postReflections({ ...userData, wants });
+      track("reflection_submitted", { has_brave: !!userData.braveReflection, has_fears: !!userData.fearsReflection, wants_count: wants.filter(w => w.feeling).length });
+      go(10, "step_completed", { step_name: "wants" });
+    }} />,
+    <StepPause          key={10} next={() => go(11, "step_completed", { step_name: "pause" })} />,
+    <StepPhone          key={11} next={(phone) => {
+      update({ phone });
+      track("contact_submitted", { has_phone: !!phone, ref: localStorage.getItem("cove_ref") || null });
+      track("onboarding_completed");
+      finish();
+    }} />,
   ];
 
-  // Dots on steps 2–4 (philosophy, name, matrix) and 7–8 (brave, fears). Hide on 0,1,5,6,9,10.
-  const showDots = [2,3,4,7,8].includes(step);
+  // Dots on steps 2–4 (philosophy, name, matrix) and 7–9 (brave, fears, wants). Hide on 0,1,5,6,10.
+  const showDots = [2,3,4,7,8,9].includes(step);
   const dotStep = step <= 4 ? step - 1 : step - 4;
 
   return (
@@ -276,6 +318,7 @@ function StepPrivacy({ next }) {
 }
 
 // ── Step 2: Pricing ───────────────────────────────────────────────────────────
+// eslint-disable-next-line no-unused-vars
 function StepPricing({ next }) {
   const visible = useFadeIn([]);
   const [email, setEmail] = useState("");
@@ -748,7 +791,7 @@ function StepWants({ wants, update, next }) {
         <div style={{ fontSize: 11, color: C.muted, marginBottom: 12, textAlign: "center" }}>
           {tagged} tagged {tagged < 3 ? `${3 - tagged} more and we're moving` : "looking good"}
         </div>
-        <Btn onClick={() => { update({ wants: items }); next(); }} disabled={tagged < 3}>
+        <Btn onClick={() => next(items)} disabled={tagged < 3}>
           {tagged < 3 ? `tag ${3 - tagged} more` : "Let's go"}
         </Btn>
       </div>
@@ -941,7 +984,7 @@ function TideWave() {
   );
 }
 
-function StepPause({ finish }) {
+function StepPause({ next }) {
   const visible = useFadeIn([]);
   return (
     <div style={{
@@ -966,7 +1009,7 @@ function StepPause({ finish }) {
         </p>
       </div>
       <div style={{ width: "100%", maxWidth: 320 }}>
-        <Btn onClick={finish}>one last thing →</Btn>
+        <Btn onClick={next}>one last thing →</Btn>
       </div>
       <p style={{ fontSize: 11, color: C.dim, marginTop: 24, fontStyle: "italic" }}>
         "the karma compounds quietly."
@@ -975,7 +1018,121 @@ function StepPause({ finish }) {
   );
 }
 
+// ── Step 11: Phone ────────────────────────────────────────────────────────────
+function StepPhone({ next }) {
+  const visible = useFadeIn([]);
+  const [phone, setPhone] = useState("");
+  const [sending, setSending] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [error, setError] = useState(null);
+
+  const inputStyle = {
+    width: "100%", background: C.surface, border: `1px solid ${C.border}`,
+    borderRadius: 12, padding: "15px 18px", fontSize: 16, color: C.text,
+    outline: "none", fontFamily: "Georgia, serif", boxSizing: "border-box",
+    letterSpacing: 0.5,
+  };
+
+  const handleSend = async () => {
+    const cleaned = phone.trim().replace(/[\s\-().]/g, "");
+    if (!cleaned) { next(""); return; }
+    setSending(true);
+    setError(null);
+    try {
+      const { error } = await supabase.auth.signInWithOtp({ phone: cleaned });
+      if (error) throw error;
+      setOtpSent(true);
+    } catch {
+      // Twilio not configured — save number and continue
+      next(phone.trim());
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleVerify = async () => {
+    setSending(true);
+    setError(null);
+    try {
+      const cleaned = phone.trim().replace(/[\s\-().]/g, "");
+      const { error } = await supabase.auth.verifyOtp({ phone: cleaned, token: otp, type: "sms" });
+      if (error) throw error;
+      next(phone.trim());
+    } catch {
+      setError("That code didn't match. Try again.");
+      setSending(false);
+    }
+  };
+
+  return (
+    <div style={{ ...fadeStyle(visible), padding: "72px 28px 48px", minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+      {!otpSent ? (
+        <>
+          <p style={{ fontSize: 11, letterSpacing: 2, color: C.muted, fontFamily: "monospace", margin: "0 0 20px" }}>ONE LAST THING</p>
+          <h2 style={{ fontSize: 26, fontWeight: 400, color: C.pearl, lineHeight: 1.4, margin: "0 0 14px" }}>
+            Drop your number.
+          </h2>
+          <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.75, margin: "0 0 32px", maxWidth: 300 }}>
+            We'll text you a quick recap of what you named today, and reach out when something new is ready.
+          </p>
+          <input
+            type="tel"
+            value={phone}
+            onChange={e => setPhone(e.target.value)}
+            placeholder="+1 (555) 000-0000"
+            style={inputStyle}
+            autoFocus
+          />
+          <div style={{ marginTop: 14 }}>
+            <Btn onClick={handleSend} disabled={sending}>
+              {sending ? "sending..." : "send recap →"}
+            </Btn>
+          </div>
+          <button
+            onClick={() => next("")}
+            style={{ marginTop: 18, background: "none", border: "none", color: C.muted, fontSize: 12, cursor: "pointer", fontFamily: "Georgia, serif", letterSpacing: 0.3 }}
+          >
+            skip for now
+          </button>
+        </>
+      ) : (
+        <>
+          <p style={{ fontSize: 11, letterSpacing: 2, color: C.ocean, fontFamily: "monospace", margin: "0 0 20px" }}>CHECK YOUR TEXTS</p>
+          <h2 style={{ fontSize: 26, fontWeight: 400, color: C.pearl, lineHeight: 1.4, margin: "0 0 14px" }}>
+            Enter the code.
+          </h2>
+          <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.75, margin: "0 0 32px" }}>
+            Sent to {phone}.
+          </p>
+          <input
+            type="number"
+            value={otp}
+            onChange={e => setOtp(e.target.value.slice(0, 6))}
+            placeholder="000000"
+            style={{ ...inputStyle, fontSize: 24, letterSpacing: 8, textAlign: "center" }}
+            autoFocus
+          />
+          {error && <p style={{ fontSize: 12, color: "#e07070", margin: "10px 0 0", textAlign: "center" }}>{error}</p>}
+          <div style={{ marginTop: 14 }}>
+            <Btn onClick={handleVerify} disabled={sending || otp.length < 6}>
+              {sending ? "verifying..." : "verify →"}
+            </Btn>
+          </div>
+          <button
+            onClick={() => next(phone.trim())}
+            style={{ marginTop: 18, background: "none", border: "none", color: C.muted, fontSize: 12, cursor: "pointer", fontFamily: "Georgia, serif", letterSpacing: 0.3 }}
+          >
+            skip verification
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
+
 // ── Step 4: Matrix Pause + Return Check-in ───────────────────────────────────
+// eslint-disable-next-line no-unused-vars
 const QUADRANT_TASKS = {
   "brave-curious": {
     headline: "You're moving and you're open.",
@@ -1272,6 +1429,7 @@ function StepFearsReflect({ next }) {
 
 
 // ── Step 6: Done ──────────────────────────────────────────────────────────────
+// eslint-disable-next-line no-unused-vars
 function StepDone({ name, finish }) {
   const visible = useFadeIn([]);
   return (
@@ -1516,6 +1674,7 @@ function ContactTab({ contact: c }) {
   ];
 
   const insights = (c.insights || defaultInsights);
+  // eslint-disable-next-line no-unused-vars
   const done = (c.attempts || []).filter(a => a.status !== "pending").length;
 
   return (
@@ -1722,6 +1881,7 @@ function ValuesTab({ wants = [] }) {
 // ── Matrix Tab ────────────────────────────────────────────────────────────────
 function MatrixTab({ contacts = [], openContact, selfPosition, name }) {
   const visible = useFadeIn(["matrix"]);
+  // eslint-disable-next-line no-unused-vars
   const [hovered, setHovered] = useState(null);
   const gridRef = useRef(null);
 
@@ -2386,6 +2546,7 @@ function Btn({ children, onClick, disabled, style }) {
   );
 }
 
+// eslint-disable-next-line no-unused-vars
 function Field({ placeholder, value, onChange }) {
   return (
     <input
