@@ -175,8 +175,7 @@ function Onboard({ step, setStep, userData, update, finish }) {
     <StepAshStory       key={6} next={() => setStep(7)} />,
     <StepBraveReflect   key={7} next={(braveReflection) => { update({ braveReflection }); setStep(8); }} />,
     <StepFearsReflect   key={8} next={(fearsReflection) => { update({ fearsReflection }); setStep(9); postReflections({ ...userData, fearsReflection }); }} />,
-    <StepPause          key={9} finish={() => setStep(10)} />,
-    <StepPricing        key={10} next={(email) => { if (email) update({ email }); finish(); }} />,
+    <StepPause          key={9} finish={() => finish()} />,
   ];
 
   // Dots on steps 2–4 (philosophy, name, matrix) and 7–8 (brave, fears). Hide on 0,1,5,6,9,10.
