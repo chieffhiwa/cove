@@ -359,6 +359,7 @@ function StepPrivacy({ next }) {
     { icon: "🔒", title: "Your data stays yours", body: "Everything you share in Cove (your reflections, your matrix position, your thoughts) belongs to you. We don't sell it, share it, or use it for anything other than making your experience better." },
     { icon: "👁️", title: "No surveillance, no profiling", body: "We're not building an ad business. We're building a career tool. We have zero interest in tracking you across the web or building a profile to sell to anyone." },
     { icon: "💙", title: "A personal commitment", body: "This community works for you, or it doesn't work at all. If you ever feel like we've broken that trust, tell us. We mean it." },
+    { icon: "⚖️", title: "We build against bias", body: "The matrix framework and career guidance in Cove are designed to surface your strengths — not sort you into a box. We actively work to ensure our recommendations don't reflect or reinforce systemic bias. If something feels off, tell us." },
   ];
 
   return (
