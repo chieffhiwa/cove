@@ -323,17 +323,17 @@ function StepWelcome({ next }) {
   const visible = useFadeIn([]);
   return (
     <div style={{ ...fadeStyle(visible), display:"flex", flexDirection:"column", justifyContent:"center", alignItems:"center", minHeight:"100vh", padding:"48px 32px", textAlign:"center" }}>
-      <div style={{ marginBottom: 48 }}>
-        <div style={{ fontSize: 13, letterSpacing: 6, color: C.muted, fontFamily: "monospace", marginBottom: 24 }}>
+      <div style={{ marginBottom: 52 }}>
+        <div style={{ fontSize: 11, letterSpacing: 8, color: C.sky, fontFamily: "monospace", marginBottom: 32, opacity: 0.7 }}>
           C O V E
         </div>
-        <h1 style={{ fontSize: 32, fontWeight: 400, margin: "0 0 20px", color: C.pearl, lineHeight: 1.3, letterSpacing: -0.5 }}>
+        <h1 style={{ fontSize: 38, fontWeight: 400, margin: "0 0 22px", color: "#e8f2fa", lineHeight: 1.25, letterSpacing: -1 }}>
           Find work that<br />actually fits.
         </h1>
-        <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.8, margin: "0 0 20px", maxWidth: 280 }}>
+        <p style={{ fontSize: 15, color: C.mist, lineHeight: 1.9, margin: "0 0 28px", maxWidth: 300 }}>
           Not a job board. Not a resume builder.<br />A simple, proven system to build the career you actually want.
         </p>
-        <p style={{ fontSize: 11, letterSpacing: 3, color: C.ocean, fontFamily: "monospace", margin: 0, textTransform: "lowercase" }}>
+        <p style={{ fontSize: 12, letterSpacing: 4, color: C.ocean, fontFamily: "monospace", margin: 0, textTransform: "lowercase", opacity: 0.85 }}>
           your career. your current.
         </p>
       </div>
@@ -342,7 +342,7 @@ function StepWelcome({ next }) {
         <Btn onClick={next}>Begin</Btn>
       </div>
 
-      <p style={{ fontSize: 11, color: C.dim, marginTop: 28, fontStyle: "italic" }}>
+      <p style={{ fontSize: 12, color: C.muted, marginTop: 28, fontStyle: "italic", letterSpacing: 0.3 }}>
         takes about 5 minutes
       </p>
     </div>
@@ -361,24 +361,24 @@ function StepPrivacy({ next }) {
   return (
     <div style={{ ...fadeStyle(visible), padding: "72px 28px 48px", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <div style={{ flex: 1 }}>
-        <p style={{ fontSize: 11, letterSpacing: 2, color: C.muted, fontFamily: "monospace", margin: "0 0 16px" }}>BEFORE WE START</p>
-        <h2 style={{ fontSize: 26, fontWeight: 400, margin: "0 0 10px", color: C.pearl, lineHeight: 1.35 }}>
+        <p style={{ fontSize: 10, letterSpacing: 3, color: C.sky, fontFamily: "monospace", margin: "0 0 18px", opacity: 0.7 }}>BEFORE WE START</p>
+        <h2 style={{ fontSize: 28, fontWeight: 400, margin: "0 0 12px", color: "#e8f2fa", lineHeight: 1.3 }}>
           We don't touch your data.
         </h2>
-        <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.8, margin: "0 0 28px" }}>
+        <p style={{ fontSize: 14, color: C.mist, lineHeight: 1.85, margin: "0 0 28px" }}>
           Your reflections are personal. We treat them that way.
         </p>
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {commitments.map((c, i) => (
             <div key={i} style={{
-              padding: "18px 20px", borderRadius: 12,
+              padding: "18px 20px", borderRadius: 14,
               background: C.surface, border: `1px solid ${C.borderSoft}`,
               display: "flex", gap: 14, alignItems: "flex-start",
             }}>
               <span style={{ fontSize: 20, lineHeight: 1, marginTop: 2 }}>{c.icon}</span>
               <div>
-                <div style={{ fontSize: 13, color: C.pearl, fontWeight: 500, marginBottom: 5 }}>{c.title}</div>
-                <div style={{ fontSize: 12, color: C.muted, lineHeight: 1.75 }}>{c.body}</div>
+                <div style={{ fontSize: 13, color: "#d8ecf8", fontWeight: 500, marginBottom: 6 }}>{c.title}</div>
+                <div style={{ fontSize: 13, color: C.mist, lineHeight: 1.8 }}>{c.body}</div>
               </div>
             </div>
           ))}
@@ -3546,9 +3546,11 @@ function CoachDashboard() {
 
 function Shell({ children, depth }) {
   const d = depth != null ? getDepthPalette(depth) : null;
+  const bg = d ? d.bg : C.bg;
   return (
     <div style={{
-      background: d ? d.bg : C.bg,
+      background: bg,
+      backgroundImage: `radial-gradient(ellipse at 50% 30%, ${d ? d.accent : C.oceanDeep}18 0%, transparent 70%)`,
       minHeight: "100vh",
       color: d ? d.text : C.text,
       fontFamily: "'Georgia', 'Times New Roman', serif",
@@ -3574,18 +3576,26 @@ function Avatar({ name, size = 36, glow = false }) {
 }
 
 function Btn({ children, onClick, disabled, style }) {
+  const [hovered, setHovered] = useState(false);
   return (
     <div
       onClick={!disabled ? onClick : undefined}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       style={{
-        width: "100%", padding: "16px", borderRadius: 12,
-        background: disabled ? C.faint : `linear-gradient(135deg, ${C.oceanDeep}, ${C.tide})`,
-        color: disabled ? C.muted : "#e8f4fc",
+        width: "100%", padding: "17px", borderRadius: 14,
+        background: disabled ? C.faint : `linear-gradient(135deg, ${C.tide}, ${C.ocean})`,
+        color: disabled ? C.muted : "#f0f8ff",
         fontSize: 15, textAlign: "center", cursor: disabled ? "default" : "pointer",
-        transition: "opacity 0.15s", opacity: disabled ? 0.6 : 1,
+        transition: "opacity 0.2s, transform 0.15s, box-shadow 0.2s",
+        opacity: disabled ? 0.5 : hovered ? 0.92 : 1,
+        transform: hovered && !disabled ? "translateY(-1px)" : "none",
+        boxShadow: hovered && !disabled ? `0 8px 28px ${C.ocean}30` : `0 2px 12px ${C.ocean}18`,
         fontFamily: "Georgia, serif",
+        letterSpacing: 0.3,
         userSelect: "none",
         boxSizing: "border-box",
+        border: `1px solid ${C.ocean}30`,
         ...style,
       }}
     >{children}</div>
