@@ -10,7 +10,27 @@ const track = (event, props) => { if (PH_KEY) posthog.capture(event, props); };
 // ─── DISCORD WEBHOOK ─────────────────────────────────────────────────────────
 const DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1477427861706117265/mewcLc9XgpBYM10AiQQl3lpY016KvrmI1sc897YD2yYQJL78TTqVu73lbDrsHbrgwK5i";
 
-function postReflections({ name, phone, selfPosition, braveReflection, fearsReflection, wants = [] }) {
+async function upsertProfile(userData) {
+  const quadrant = userData.selfPosition ? getQuadrant(userData.selfPosition.x, userData.selfPosition.y) : null;
+  const quadrantLabel = quadrant ? QUADRANT_READS[quadrant]?.title : null;
+  const ref = localStorage.getItem("cove_ref") || null;
+  const { data, error } = await supabase.from("profiles").upsert({
+    name: userData.name || null,
+    email: userData.email || null,
+    quadrant: quadrantLabel,
+    x: userData.selfPosition?.x ?? null,
+    y: userData.selfPosition?.y ?? null,
+    brave_reflection: userData.braveReflection || null,
+    fears_reflection: userData.fearsReflection || null,
+    contacts: userData.contacts || [],
+    ref,
+    updated_at: new Date().toISOString(),
+  }, { onConflict: "email", ignoreDuplicates: false });
+  if (data?.[0]?.id) localStorage.setItem("cove_profile_id", data[0].id);
+  return { data, error };
+}
+
+function postReflections({ name, email, selfPosition, braveReflection, fearsReflection, wants = [] }) {
   const quadrant = selfPosition ? getQuadrant(selfPosition.x, selfPosition.y) : null;
   const quadrantLabel = quadrant ? QUADRANT_READS[quadrant]?.title : "Unknown";
   const wantsSummary = wants.filter(w => w.feeling).map(w => `${w.feeling}: ${w.text}`).join("\n") || "_(none tagged)_";
@@ -19,7 +39,7 @@ function postReflections({ name, phone, selfPosition, braveReflection, fearsRefl
   // Save to Supabase
   supabase.from("reflections").insert({
     name: name || null,
-    phone: phone || null,
+    phone: email || null,
     ref: ref,
     quadrant: quadrantLabel,
     brave_reflection: braveReflection || null,
@@ -37,7 +57,7 @@ function postReflections({ name, phone, selfPosition, braveReflection, fearsRefl
         color: 0x4a9eca,
         fields: [
           { name: "📍 Matrix placement", value: quadrantLabel, inline: true },
-          { name: "📱 Phone", value: phone || "_(not provided)_", inline: true },
+          { name: "📧 Email", value: email || "_(not provided)_", inline: true },
           { name: "🔗 Ref", value: ref || "_(direct)_", inline: true },
           { name: "💙 Brave decision", value: braveReflection || "_(no response)_" },
           { name: "🌊 What's in the way", value: fearsReflection || "_(no response)_" },
@@ -72,12 +92,18 @@ const C = {
 
 // ─── FEELING DEFINITIONS ─────────────────────────────────────────────────────
 const FEELINGS = [
-  { id: "Freedom",   color: C.ocean,    desc: "Autonomy over time, place, and how you work" },
-  { id: "Legacy",    color: C.seafoam,  desc: "Meaning that outlasts the role" },
-  { id: "Curiosity", color: C.sky,      desc: "Problems worth losing yourself in" },
-  { id: "Stability", color: C.mist,     desc: "A floor you can build from" },
-  { id: "Joy",       color: C.pearl,    desc: "People and work that light something up" },
-  { id: "Access",    color: C.tide,     desc: "A seat where decisions actually happen" },
+  { id: "Freedom",     color: "#4a9eca", desc: "Autonomy over when, where, and how you work" },
+  { id: "Stability",   color: "#9cb8cc", desc: "A financial floor you can actually build from" },
+  { id: "Growth",      color: "#6dbb8a", desc: "Getting better at something that matters to you" },
+  { id: "Purpose",     color: "#c4a040", desc: "Work that means something beyond the paycheck" },
+  { id: "Belonging",   color: "#a87ac4", desc: "A team and culture where you genuinely fit" },
+  { id: "Impact",      color: "#e07868", desc: "Changing something real in the world or in people" },
+  { id: "Creativity",  color: "#e0a060", desc: "Making things, solving things, expressing things" },
+  { id: "Legacy",      color: "#5ec4b0", desc: "Meaning that outlasts the role" },
+  { id: "Joy",         color: "#b8ccd8", desc: "People and work that genuinely light something up" },
+  { id: "Curiosity",   color: "#7ab8d8", desc: "Problems worth losing yourself in" },
+  { id: "Recognition", color: "#d4986a", desc: "Being seen and acknowledged for what you bring" },
+  { id: "Access",      color: "#3d7fa8", desc: "A seat where real decisions get made" },
 ];
 
 const SEED_WANTS = [
@@ -90,6 +116,37 @@ const SEED_WANTS = [
   "Have a voice in the room",
   "Build things that get used",
 ];
+
+// ─── DEPTH PALETTE ───────────────────────────────────────────────────────────
+// As the user moves through onboarding (steps 0–17), the water clears.
+// Deep/murky → mid-depth → clearing → surface light.
+function lerp(a, b, t) { return Math.round(a + (b - a) * t); }
+function lerpHex(c1, c2, t) {
+  const p = (h) => [parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16)];
+  const [r1,g1,b1] = p(c1); const [r2,g2,b2] = p(c2);
+  return `#${[lerp(r1,r2,t),lerp(g1,g2,t),lerp(b1,b2,t)].map(v=>v.toString(16).padStart(2,"0")).join("")}`;
+}
+
+const DEPTH_STOPS = [
+  { bg: "#06080c", text: "#5a7a98", accent: "#1e4a6a" },   // 0  — abyss
+  { bg: "#080c14", text: "#7090aa", accent: "#2a5c80" },   // 6  — deep
+  { bg: "#0c1620", text: "#90b0c8", accent: "#3a7aaa" },   // 11 — mid
+  { bg: "#0f1e30", text: "#c8e0f0", accent: "#6ab8e8" },   // 17 — surface
+];
+
+function getDepthPalette(step) {
+  const TOTAL = 17;
+  const t = Math.min(step, TOTAL) / TOTAL;
+  const stops = DEPTH_STOPS;
+  const seg = (stops.length - 1) * t;
+  const i = Math.min(Math.floor(seg), stops.length - 2);
+  const local = seg - i;
+  return {
+    bg:     lerpHex(stops[i].bg,     stops[i+1].bg,     local),
+    text:   lerpHex(stops[i].text,   stops[i+1].text,   local),
+    accent: lerpHex(stops[i].accent, stops[i+1].accent, local),
+  };
+}
 
 // ─── FADE-IN HOOK ─────────────────────────────────────────────────────────────
 function useFadeIn(deps = []) {
@@ -153,10 +210,20 @@ function AppInner() {
         setStep={setStep}
         userData={userData}
         update={update}
-        finish={() => setPhase("main")}
+        finish={() => { upsertProfile(userData); setPhase("main"); }}
       />
     );
   }
+
+  const resetAll = () => {
+    localStorage.removeItem("cove_phase");
+    localStorage.removeItem("cove_step");
+    localStorage.removeItem("cove_userData");
+    setPhase("onboard");
+    setStep(0);
+    setUserData(DEFAULT_USER_DATA);
+    setMainTab("home");
+  };
 
   return (
     <MainApp
@@ -166,6 +233,7 @@ function AppInner() {
       setTab={setMainTab}
       activeContact={activeContact}
       setActiveContact={setActiveContact}
+      onReset={resetAll}
     />
   );
 }
@@ -185,7 +253,9 @@ function Onboard({ step, setStep, userData, update, finish }) {
     <StepPrivacy        key={1} next={() => go(2, "step_completed", { step_name: "privacy" })} />,
     <StepPhilosophy     key={2} next={() => go(3, "step_completed", { step_name: "philosophy" })} />,
     <StepName           key={3} next={(name) => { update({ name }); if (PH_KEY) posthog.identify(name); go(4, "step_completed", { step_name: "name" }); }} />,
-    <StepSelfMatrix     key={4} name={userData.name} initialPosition={userData.selfPosition} next={(selfPosition) => {
+    <StepEmail          key={4} next={(email) => { update({ email }); go(5, "step_completed", { step_name: "email" }); }} />,
+    <StepMatrixIntro    key={5} name={userData.name} next={() => go(6, "step_completed", { step_name: "matrix_intro" })} />,
+    <StepSelfMatrix     key={6} name={userData.name} initialPosition={userData.selfPosition} next={(selfPosition) => {
       update({ selfPosition });
       const q = getQuadrant(selfPosition.x, selfPosition.y);
       const quadrantLabel = QUADRANT_READS[q]?.title || q;
@@ -196,39 +266,38 @@ function Onboard({ step, setStep, userData, update, finish }) {
         ref: localStorage.getItem("cove_ref") || null,
       }).then(() => {});
       track("matrix_placed", { quadrant: quadrantLabel, x: selfPosition.x, y: selfPosition.y });
-      go(5, "step_completed", { step_name: "matrix" });
+      go(7, "step_completed", { step_name: "matrix" });
     }} />,
-    <StepMatrixPause    key={5} selfPosition={userData.selfPosition} next={() => go(6, "step_completed", { step_name: "matrix_pause" })} goBack={() => setStep(4)} />,
-    <StepAshStory       key={6} next={() => go(7, "step_completed", { step_name: "ash_story" })} />,
-    <StepBraveReflect      key={7} next={(braveReflection) => { update({ braveReflection }); go(8, "step_completed", { step_name: "brave_reflect" }); }} />,
-    <StepFearsReflect      key={8} next={(fearsReflection) => {
+    <StepQuadrantReveal key={7} selfPosition={userData.selfPosition} next={() => go(8, "step_completed", { step_name: "quadrant_reveal" })} />,
+    <StepQuadrantRead   key={8} selfPosition={userData.selfPosition} next={() => go(9, "step_completed", { step_name: "quadrant_read" })} />,
+    <StepMatrixPause    key={9} selfPosition={userData.selfPosition} next={() => go(10, "step_completed", { step_name: "matrix_pause" })} goBack={() => setStep(6)} />,
+    <StepAshStory       key={10} next={() => go(11, "step_completed", { step_name: "ash_story" })} />,
+    <StepBraveReflect   key={11} next={(braveReflection) => { update({ braveReflection }); go(12, "step_completed", { step_name: "brave_reflect" }); }} />,
+    <StepFearsReflect   key={12} next={(fearsReflection) => {
       update({ fearsReflection });
       postReflections({ ...userData, fearsReflection });
       track("reflection_submitted", { has_brave: !!userData.braveReflection, has_fears: !!fearsReflection });
-      go(9, "step_completed", { step_name: "fears_reflect" });
+      go(13, "step_completed", { step_name: "fears_reflect" });
     }} />,
-    <StepPause             key={9}  next={() => go(10, "step_completed", { step_name: "pause" })} />,
-    <StepCareersOverCash   key={10} next={() => go(11, "step_completed", { step_name: "careers_over_cash" })} />,
-    <StepWants             key={11} wants={userData.wants} update={update} next={(wants) => {
-      update({ wants });
-      track("wants_tagged", { wants_count: wants.filter(w => w.feeling).length });
-      go(12, "step_completed", { step_name: "wants" });
-    }} />,
-    <StepPhone             key={12} next={(phone) => {
-      update({ phone });
-      track("contact_submitted", { has_phone: !!phone, ref: localStorage.getItem("cove_ref") || null });
+    <StepPause          key={13} next={() => go(14, "step_completed", { step_name: "pause" })} />,
+    <StepCareersOverCash key={14} next={() => go(15, "step_completed", { step_name: "careers_over_cash" })} />,
+    <StepListDialogue   key={15} name={userData.name} next={() => go(16, "step_completed", { step_name: "list_dialogue" })} />,
+    <StepWarmCold       key={16} next={() => go(17, "step_completed", { step_name: "warm_cold" })} />,
+    <StepListBuilder    key={17} contacts={userData.contacts} update={update} next={(contacts) => {
+      update({ contacts });
+      track("list_built", { list_count: contacts.length });
       track("onboarding_completed");
       finish();
     }} />,
   ];
 
-  // Dots: philosophy(2), name(3), matrix(4), brave(7), fears(8), wants(11)
-  const dotMap = { 2:1, 3:2, 4:3, 7:4, 8:5, 11:5 };
+  // Dots: philosophy(2), name(3), matrix intro(5), matrix(6), brave(11), fears(12), list(15-17)
+  const dotMap = { 2:1, 3:2, 5:3, 6:3, 11:4, 12:4, 15:5, 16:5, 17:5 };
   const showDots = step in dotMap;
   const dotStep = dotMap[step] || 0;
 
   return (
-    <Shell>
+    <Shell depth={step}>
       {showDots && (
         <div style={{
           display: "flex", justifyContent: "center", gap: 6,
@@ -484,7 +553,163 @@ function StepName({ next }) {
   );
 }
 
+// ── Step 4: Email ─────────────────────────────────────────────────────────────
+function StepEmail({ next }) {
+  const visible = useFadeIn([]);
+  const [email, setEmail] = useState("");
+
+  const sources = [
+    { icon: "🎓", label: "coaches" },
+    { icon: "🏛️", label: "professors" },
+    { icon: "💼", label: "hiring managers" },
+    { icon: "🤝", label: "peers" },
+  ];
+
+  return (
+    <div style={{ ...fadeStyle(visible), padding: "72px 28px 48px", minHeight: "100vh", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+      <p style={{ fontSize: 11, letterSpacing: 2, color: C.ocean, fontFamily: "monospace", margin: "0 0 20px" }}>WE KNOW SOME PEOPLE</p>
+      <h2 style={{ fontSize: 30, fontWeight: 300, color: C.pearl, lineHeight: 1.4, margin: "0 0 16px" }}>
+        Real content.<br />From real people.
+      </h2>
+      <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.85, margin: "0 0 22px" }}>
+        Once in a while, we'll send you something actually worth reading — curated from the people who've been where you're trying to go.
+      </p>
+
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, margin: "0 0 28px" }}>
+        {sources.map(s => (
+          <div key={s.label} style={{
+            display: "flex", alignItems: "center", gap: 7,
+            background: C.surface, border: `1px solid ${C.borderSoft}`,
+            borderRadius: 20, padding: "8px 14px",
+          }}>
+            <span style={{ fontSize: 14 }}>{s.icon}</span>
+            <span style={{ fontSize: 12, color: C.muted, letterSpacing: 0.3 }}>{s.label}</span>
+          </div>
+        ))}
+      </div>
+
+      <input
+        type="email"
+        value={email}
+        onChange={e => setEmail(e.target.value)}
+        onKeyDown={e => e.key === "Enter" && next(email.trim())}
+        placeholder="your@email.com"
+        autoFocus
+        style={{
+          width: "100%", background: C.surface, border: `1px solid ${email ? C.ocean : C.border}`,
+          borderRadius: 12, padding: "15px 18px", fontSize: 16, color: C.text,
+          outline: "none", fontFamily: "Georgia, serif", boxSizing: "border-box",
+          letterSpacing: 0.5, transition: "border-color 0.2s",
+        }}
+      />
+      <p style={{ fontSize: 11, color: C.dim, margin: "10px 0 28px", letterSpacing: 0.2 }}>
+        No spam. Ever. Just stuff worth reading.
+      </p>
+
+      <Btn onClick={() => next(email.trim())}>
+        {email.trim() ? "send it my way →" : "skip for now →"}
+      </Btn>
+    </div>
+  );
+}
+
+// ── Step 5: Matrix Intro ──────────────────────────────────────────────────────
+function StepMatrixIntro({ name, next }) {
+  const visible = useFadeIn([]);
+  return (
+    <div style={{ ...fadeStyle(visible), padding: "72px 28px 48px", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+      <div style={{ flex: 1 }}>
+        <p style={{ fontSize: 11, letterSpacing: 2, color: C.muted, fontFamily: "monospace", margin: "0 0 20px" }}>THE MATRIX</p>
+        <h2 style={{ fontSize: 26, fontWeight: 400, margin: "0 0 16px", color: C.pearl, lineHeight: 1.4 }}>
+          Where are you sitting right now{name ? `, ${name}` : ""}?
+        </h2>
+        <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.8, margin: "0 0 32px" }}>
+          Not who you are. Not who you want to be. Just where you actually are today — in your career headspace.
+        </p>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 32 }}>
+          <div style={{ padding: "18px 20px", borderRadius: 12, background: C.surface, border: `1px solid ${C.borderSoft}` }}>
+            <div style={{ fontSize: 13, color: C.seafoam, fontFamily: "monospace", letterSpacing: 1, marginBottom: 8 }}>BRAVE ↕ FEARFUL</div>
+            <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.7, margin: 0 }}>
+              Are you making career moves right now — or holding back? Research on psychological safety shows that people operating from fear optimise to avoid loss, not to find fit. They take the safe offer, not the right one.
+            </p>
+          </div>
+          <div style={{ padding: "18px 20px", borderRadius: 12, background: C.surface, border: `1px solid ${C.borderSoft}` }}>
+            <div style={{ fontSize: 13, color: C.ocean, fontFamily: "monospace", letterSpacing: 1, marginBottom: 8 }}>CURIOUS ↔ JUDGMENTAL</div>
+            <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.7, margin: 0 }}>
+              Are you still exploring — or have you already decided what's possible? Carol Dweck's research on mindset shows that staying open to new information is the single biggest predictor of good long-term decisions.
+            </p>
+          </div>
+        </div>
+
+        <p style={{ fontSize: 13, color: C.pearl, lineHeight: 1.75, margin: "0 0 8px", fontStyle: "italic" }}>
+          This isn't a personality type. It's a snapshot of right now.
+        </p>
+        <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.75, margin: "0 0 28px" }}>
+          Where you land tells us something about what kind of support will actually move you forward.
+        </p>
+
+        {/* Stuart attribution */}
+        <div style={{
+          padding: "16px 20px", borderRadius: 12,
+          background: C.surface, border: `1px solid ${C.borderSoft}`,
+        }}>
+          <p style={{ fontSize: 12, color: C.muted, lineHeight: 1.75, margin: "0 0 6px" }}>
+            This framework was created by{" "}
+            <a
+              href="https://www.linkedin.com/in/stuarthillston/"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: C.ocean, textDecoration: "none" }}
+            >Stuart Hillston</a>
+            {" "}— one of the most impactful people I've ever met, and undoubtedly the best coach I know.
+          </p>
+          <p style={{ fontSize: 10, color: C.dim, margin: 0, fontStyle: "italic" }}>
+            Psychotherapeutic coach · 40 years · five continents
+          </p>
+        </div>
+      </div>
+
+      <Btn onClick={next} style={{ marginTop: 32 }}>Place yourself →</Btn>
+    </div>
+  );
+}
+
 // ── Step 3: Self Matrix ───────────────────────────────────────────────────────
+
+// Landscape images per quadrant — rotates by day+hour for freshness
+const QUADRANT_IMAGES = {
+  "brave-curious": [
+    "https://source.unsplash.com/featured/900x400/?ocean,dawn,horizon",
+    "https://source.unsplash.com/featured/900x400/?open,sea,sunrise,sailing",
+    "https://source.unsplash.com/featured/900x400/?coastline,wave,morning,light",
+    "https://source.unsplash.com/featured/900x400/?adventure,wide,sky,open",
+  ],
+  "brave-judgmental": [
+    "https://source.unsplash.com/featured/900x400/?mountain,peak,clear,sky",
+    "https://source.unsplash.com/featured/900x400/?summit,alpine,sharp,ridge",
+    "https://source.unsplash.com/featured/900x400/?cliff,bold,height,blue",
+    "https://source.unsplash.com/featured/900x400/?glacier,crisp,vast,ice",
+  ],
+  "fearful-curious": [
+    "https://source.unsplash.com/featured/900x400/?forest,light,depth,trees",
+    "https://source.unsplash.com/featured/900x400/?underwater,blue,deep,ocean",
+    "https://source.unsplash.com/featured/900x400/?jungle,green,quiet,canopy",
+    "https://source.unsplash.com/featured/900x400/?cave,light,dark,explore",
+  ],
+  "fearful-judgmental": [
+    "https://source.unsplash.com/featured/900x400/?fog,mist,morning,path",
+    "https://source.unsplash.com/featured/900x400/?still,lake,reflection,calm",
+    "https://source.unsplash.com/featured/900x400/?winter,quiet,snow,soft",
+    "https://source.unsplash.com/featured/900x400/?mist,valley,gentle,earth",
+  ],
+};
+
+function getQuadrantImage(quadrant) {
+  const arr = QUADRANT_IMAGES[quadrant] || QUADRANT_IMAGES["brave-curious"];
+  return arr[(new Date().getDate() + new Date().getHours()) % arr.length];
+}
+
 const QUADRANT_READS = {
   "brave-curious": {
     title: "Brave + Curious",
@@ -682,17 +907,318 @@ function StepSelfMatrix({ name, initialPosition, next }) {
   );
 }
 
-// ── Step 4: Wants + Feelings ──────────────────────────────────────────────────
+// ── Step 14: Adam Grenier intro ───────────────────────────────────────────────
+function StepAdamIntro({ next }) {
+  const visible = useFadeIn([]);
+  return (
+    <div style={{ ...fadeStyle(visible), padding: "80px 28px 56px", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+      <div style={{ flex: 1 }}>
+        <p style={{ fontSize: 11, letterSpacing: 2, color: C.muted, fontFamily: "monospace", margin: "0 0 28px" }}>YOUR VALUES</p>
+
+        <h2 style={{ fontSize: 26, fontWeight: 400, margin: "0 0 20px", color: C.pearl, lineHeight: 1.45 }}>
+          What do you actually want from work?
+        </h2>
+
+        <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.85, margin: "0 0 20px" }}>
+          Not the title. Not the salary. The feeling underneath. That's the part that tells you whether a role is actually right.
+        </p>
+
+        <p style={{ fontSize: 15, color: C.pearl, lineHeight: 1.85, margin: "0 0 32px", fontStyle: "italic" }}>
+          Most people never slow down enough to name it.
+        </p>
+
+        <div style={{
+          padding: "16px 20px", borderRadius: 12,
+          background: C.surface, border: `1px solid ${C.borderSoft}`,
+        }}>
+          <p style={{ fontSize: 12, color: C.muted, lineHeight: 1.75, margin: 0 }}>
+            Shaped and designed by{" "}
+            <a
+              href="https://www.linkedin.com/in/akgrenier/"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: C.ocean, textDecoration: "none" }}
+            >Adam Grenier</a>.
+          </p>
+        </div>
+      </div>
+
+      <Btn onClick={next} style={{ marginTop: 36 }}>Let's name it →</Btn>
+    </div>
+  );
+}
+
+// ── Step 16: List — cinematic intro ───────────────────────────────────────────
+function StepListDialogue({ name, next }) {
+  const visible = useFadeIn([]);
+  return (
+    <div style={{ ...fadeStyle(visible), minHeight: "100vh", display: "flex", flexDirection: "column", position: "relative" }}>
+
+      {/* Full-bleed hero — crowd at night */}
+      <div style={{ position: "relative", height: "58vh", overflow: "hidden", flexShrink: 0 }}>
+        <img
+          src="https://images.pexels.com/photos/1529636/pexels-photo-1529636.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+          alt=""
+          style={{
+            width: "100%", height: "100%",
+            objectFit: "cover", objectPosition: "center top",
+            filter: "saturate(0.55) brightness(0.45)",
+          }}
+        />
+        <div style={{
+          position: "absolute", inset: 0,
+          background: `linear-gradient(to bottom, rgba(11,15,20,0.2) 0%, transparent 30%, ${C.bg} 100%)`,
+        }} />
+        <p style={{
+          position: "absolute", top: 52, left: 28,
+          fontSize: 10, letterSpacing: 3, color: "rgba(180,200,220,0.4)",
+          fontFamily: "monospace", margin: 0,
+        }}>YOUR LIST</p>
+      </div>
+
+      {/* Text — spare, cinematic */}
+      <div style={{ padding: "8px 28px 56px", flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+        <div>
+          <h2 style={{ fontSize: 28, fontWeight: 300, color: C.pearl, lineHeight: 1.4, margin: "0 0 14px" }}>
+            {name ? `${name}, they're` : "They're"} already out there.
+          </h2>
+          <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.85, margin: "0 0 8px" }}>
+            Thirty people whose careers you actually look at and think —
+            <em style={{ color: C.pearl }}> I want what they have.</em>
+          </p>
+          <p style={{ fontSize: 13, color: C.dim, lineHeight: 1.75, margin: 0 }}>
+            A founder. A professor. A hiring manager at a company you love. Your friend's older sister who somehow got in.
+          </p>
+        </div>
+
+        <button
+          onClick={next}
+          style={{
+            background: "none", border: "none",
+            color: C.muted, fontSize: 13, cursor: "pointer",
+            letterSpacing: 1.5, fontFamily: "monospace",
+            padding: 0, textAlign: "left",
+          }}
+        >
+          show me how →
+        </button>
+      </div>
+
+    </div>
+  );
+}
+
+// ── Step 17: Warm vs Cold ─────────────────────────────────────────────────────
+function StepWarmCold({ next }) {
+  const visible = useFadeIn([]);
+  return (
+    <div style={{ ...fadeStyle(visible), minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+
+      {/* COLD — full bleed */}
+      <div style={{ background: "#04080f", flex: 1, display: "flex", flexDirection: "column" }}>
+        <div style={{ padding: "56px 28px 0" }}>
+          <p style={{ fontSize: 11, letterSpacing: 2, color: "#2d4055", fontFamily: "monospace", margin: "0 0 16px" }}>THE RULE</p>
+          <h2 style={{ fontSize: 28, fontWeight: 300, color: "#4a6070", lineHeight: 1.35, margin: "0 0 6px" }}>
+            Cold outreach.
+          </h2>
+          <p style={{ fontSize: 14, color: "#2d4055", margin: "0 0 20px", lineHeight: 1.7 }}>
+            Needs Ash just to get warm. Position of weakness.
+          </p>
+        </div>
+
+        {/* Pikachu GIF */}
+        <div style={{ position: "relative", overflow: "hidden" }}>
+          <img
+            src="/pikachu-rain.png"
+            alt="Pikachu in the rain"
+            style={{ width: "100%", height: 220, objectFit: "cover", filter: "saturate(0.3) brightness(0.6)" }}
+          />
+          <div style={{
+            position: "absolute", inset: 0,
+            background: "linear-gradient(to bottom, #04080f 0%, transparent 20%, #04080f 100%)",
+          }} />
+          <div style={{
+            position: "absolute", bottom: 16, left: 28,
+            display: "flex", flexDirection: "column", gap: 4,
+          }}>
+            {["a stranger's inbox", "zero context", "~0.3% reply rate"].map(t => (
+              <span key={t} style={{ fontSize: 11, color: "#3a5560", fontFamily: "monospace" }}>— {t}</span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* WARM — full bleed */}
+      <div style={{ background: "#100900", flex: 1, display: "flex", flexDirection: "column" }}>
+        {/* Charmander GIF */}
+        <div style={{ position: "relative", overflow: "hidden" }}>
+          <img
+            src="https://gifdb.com/images/high/charmander-flame-thrower-fire-qxys4rpoptjp8tqq.gif"
+            alt="Charmander flame thrower"
+            style={{ width: "100%", height: 220, objectFit: "cover", filter: "saturate(1.4) brightness(0.85)" }}
+          />
+          <div style={{
+            position: "absolute", inset: 0,
+            background: "linear-gradient(to bottom, #100900 0%, transparent 20%, #100900 100%)",
+          }} />
+          <div style={{
+            position: "absolute", top: 16, right: 20,
+            display: "flex", flexDirection: "column", gap: 4, alignItems: "flex-end",
+          }}>
+            {["a mutual connection", "context that matters", "40–70% reply rate"].map(t => (
+              <span key={t} style={{ fontSize: 11, color: "#a06020", fontFamily: "monospace" }}>— {t}</span>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ padding: "0 28px 32px" }}>
+          <h2 style={{ fontSize: 28, fontWeight: 300, color: "#e08830", lineHeight: 1.35, margin: "0 0 6px" }}>
+            Warm intro.
+          </h2>
+          <p style={{ fontSize: 14, color: "#a06830", margin: "0 0 24px", lineHeight: 1.7 }}>
+            Small, but bursting with warmth. Exudes energy. Proactive.
+          </p>
+
+          <div style={{ padding: "18px 20px", borderRadius: 12, background: "#1a0e00", border: "1px solid #cc780030", marginBottom: 10 }}>
+            <p style={{ fontSize: 15, color: "#e08830", lineHeight: 1.8, margin: "0 0 8px", fontWeight: 400 }}>
+              Why go cold when you can go warm?
+            </p>
+            <p style={{ fontSize: 13, color: "#a06020", lineHeight: 1.75, margin: 0 }}>
+              Cold outreach is devil's advocacy. Literally advocating for the devil. A demon. Why would you do that to yourself?
+            </p>
+          </div>
+
+          <p style={{ fontSize: 12, color: "#6a4010", margin: "0 0 28px", fontStyle: "italic", textAlign: "center" }}>
+            warm is always better. this is not up for debate.
+          </p>
+
+          <Btn onClick={next}>always go warm. let's build the list →</Btn>
+        </div>
+      </div>
+
+    </div>
+  );
+}
+
+// ── Step 18: List builder ─────────────────────────────────────────────────────
+function StepListBuilder({ contacts = [], update, next }) {
+  const visible = useFadeIn([]);
+  const [input, setInput] = useState("");
+  const [list, setList] = useState(contacts.length ? contacts : []);
+
+  const addName = () => {
+    const name = input.trim();
+    if (!name) return;
+    setList(prev => [...prev, { name }]);
+    setInput("");
+  };
+
+  return (
+    <div style={{ ...fadeStyle(visible), padding: "72px 28px 48px", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+      <div style={{ flex: 1 }}>
+        <p style={{ fontSize: 11, letterSpacing: 2, color: C.ocean, fontFamily: "monospace", margin: "0 0 20px" }}>YOUR LIST</p>
+        <h2 style={{ fontSize: 26, fontWeight: 300, color: C.pearl, lineHeight: 1.4, margin: "0 0 10px" }}>
+          Who do you actually want to talk to?
+        </h2>
+        <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.8, margin: "0 0 24px" }}>
+          Heroes, mentors, people in roles you want. Don't filter yet — just name them.
+        </p>
+
+        {/* Input row */}
+        <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
+          <input
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && addName()}
+            placeholder="a name, a company, a role..."
+            autoFocus
+            style={{
+              flex: 1, background: C.surface, border: `1px solid ${input ? C.ocean : C.border}`,
+              borderRadius: 10, padding: "13px 16px", fontSize: 15, color: C.text,
+              outline: "none", fontFamily: "Georgia, serif", transition: "border-color 0.2s",
+            }}
+          />
+          <button onClick={addName} style={{
+            background: C.ocean, border: "none", borderRadius: 10,
+            padding: "13px 20px", color: C.bg, fontSize: 20,
+            cursor: "pointer", fontWeight: 600, lineHeight: 1,
+          }}>+</button>
+        </div>
+
+        {/* Empty state */}
+        {list.length === 0 && (
+          <p style={{ fontSize: 13, color: C.dim, fontStyle: "italic", margin: "0 0 20px" }}>
+            Your list is empty. Start with whoever comes to mind first.
+          </p>
+        )}
+
+        {/* The list */}
+        {list.length > 0 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
+            {list.map((c, i) => (
+              <div key={i} style={{
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                background: C.surface, border: `1px solid ${C.borderSoft}`,
+                borderRadius: 10, padding: "12px 16px",
+              }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <span style={{ fontSize: 11, color: C.dim, fontFamily: "monospace", minWidth: 20 }}>{i + 1}</span>
+                  <span style={{ fontSize: 15, color: C.pearl }}>{c.name}</span>
+                </div>
+                <button
+                  onClick={() => setList(prev => prev.filter((_, j) => j !== i))}
+                  style={{ background: "none", border: "none", color: C.muted, cursor: "pointer", fontSize: 17, padding: "2px 6px", lineHeight: 1 }}
+                >×</button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Encouragement */}
+        {list.length > 0 && list.length < 5 && (
+          <p style={{ fontSize: 13, color: C.dim, margin: "0 0 8px" }}>
+            Good start. Keep going — aim for at least five.
+          </p>
+        )}
+        {list.length >= 5 && (
+          <p style={{ fontSize: 13, color: "#e08830", margin: "0 0 8px" }}>
+            🔥 {list.length} people. That's a real list.
+          </p>
+        )}
+      </div>
+
+      <Btn onClick={() => { update({ contacts: list }); next(list); }} disabled={list.length === 0}>
+        {list.length === 0 ? "add at least one →" : `that's my list (${list.length}) →`}
+      </Btn>
+      {list.length === 0 && (
+        <button
+          onClick={() => { update({ contacts: [] }); next([]); }}
+          style={{ marginTop: 14, background: "none", border: "none", color: C.dim, fontSize: 12, cursor: "pointer", fontFamily: "Georgia, serif", letterSpacing: 0.3 }}
+        >
+          skip for now
+        </button>
+      )}
+    </div>
+  );
+}
+
+// ── Step 19: Wants + Feelings ──────────────────────────────────────────────────
 function StepWants({ wants, update, next }) {
   const visible = useFadeIn([]);
   const [items, setItems] = useState(
     SEED_WANTS.map(w => ({ text: w, feeling: null }))
   );
   const [customText, setCustomText] = useState("");
-  const [activePicker, setActivePicker] = useState(null); // index
+  const [activePicker, setActivePicker] = useState(null);
 
   const setFeeling = (idx, feeling) => {
     setItems(prev => prev.map((it, i) => i === idx ? { ...it, feeling } : it));
+    setActivePicker(null);
+  };
+
+  const clearFeeling = (e, idx) => {
+    e.stopPropagation();
+    setItems(prev => prev.map((it, i) => i === idx ? { ...it, feeling: null } : it));
     setActivePicker(null);
   };
 
@@ -712,7 +1238,7 @@ function StepWants({ wants, update, next }) {
           What are you really after?
         </h2>
         <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.7, margin: 0 }}>
-          Behind every "I want..." there's a real feeling. Name it. That's the part that tells you whether a job is actually right not the title, not the salary.
+          Tap a want → then pick the feeling behind it.
         </p>
       </div>
 
@@ -723,7 +1249,8 @@ function StepWants({ wants, update, next }) {
               <div
                 onClick={() => setActivePicker(activePicker === idx ? null : idx)}
                 style={{
-                  padding: "14px 16px", borderRadius: activePicker === idx ? "10px 10px 0 0" : 10,
+                  padding: "14px 16px",
+                  borderRadius: activePicker === idx ? "10px 10px 0 0" : 10,
                   background: C.surface,
                   border: `1px solid ${item.feeling ? C.tide : activePicker === idx ? C.ocean : C.borderSoft}`,
                   display: "flex", justifyContent: "space-between", alignItems: "center",
@@ -731,35 +1258,57 @@ function StepWants({ wants, update, next }) {
                 }}
               >
                 <span style={{ fontSize: 13, color: item.feeling ? C.text : C.muted, flex: 1 }}>{item.text}</span>
-                {item.feeling
-                  ? <span style={{
+                {item.feeling ? (
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: 10, flexShrink: 0 }}>
+                    <span style={{
                       fontSize: 10, padding: "3px 10px", borderRadius: 20,
                       background: (FEELINGS.find(f => f.id === item.feeling)?.color || C.ocean) + "20",
                       color: FEELINGS.find(f => f.id === item.feeling)?.color || C.ocean,
                       border: `1px solid ${(FEELINGS.find(f => f.id === item.feeling)?.color || C.ocean)}40`,
-                      whiteSpace: "nowrap", marginLeft: 10,
+                      whiteSpace: "nowrap",
                     }}>{item.feeling}</span>
-                  : <span style={{ fontSize: 11, color: C.dim, marginLeft: 10 }}>tag →</span>
-                }
+                    <span
+                      onClick={(e) => clearFeeling(e, idx)}
+                      style={{ fontSize: 16, color: C.muted, lineHeight: 1, cursor: "pointer", padding: "2px 4px" }}
+                    >×</span>
+                  </div>
+                ) : (
+                  <span style={{
+                    fontSize: 11, marginLeft: 10, flexShrink: 0,
+                    color: activePicker === idx ? C.ocean : C.dim,
+                  }}>
+                    {activePicker === idx ? "pick one ↓" : "tag →"}
+                  </span>
+                )}
               </div>
+
               {activePicker === idx && (
                 <div style={{
                   background: C.raised, border: `1px solid ${C.ocean}`,
                   borderTop: "none", borderRadius: "0 0 10px 10px",
-                  padding: "12px", display: "flex", flexWrap: "wrap", gap: 7,
+                  padding: "10px 12px 14px",
+                  maxHeight: 300, overflowY: "auto",
                 }}>
-                  {FEELINGS.map(f => (
-                    <div
-                      key={f.id}
-                      onClick={() => setFeeling(idx, f.id)}
-                      style={{
-                        padding: "6px 14px", borderRadius: 20, cursor: "pointer",
-                        background: f.color + "18", color: f.color,
-                        border: `1px solid ${f.color}40`,
-                        fontSize: 12, transition: "all 0.12s",
-                      }}
-                    >{f.id}</div>
-                  ))}
+                  <p style={{ fontSize: 10, color: C.ocean, fontFamily: "monospace", letterSpacing: 1.5, margin: "0 0 8px" }}>
+                    CHOOSE THE FEELING BEHIND IT
+                  </p>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                    {FEELINGS.map(f => (
+                      <div
+                        key={f.id}
+                        onClick={() => setFeeling(idx, f.id)}
+                        style={{
+                          padding: "10px 12px", borderRadius: 8, cursor: "pointer",
+                          background: item.feeling === f.id ? f.color + "22" : "transparent",
+                          border: `1px solid ${item.feeling === f.id ? f.color + "55" : "transparent"}`,
+                          transition: "all 0.1s",
+                        }}
+                      >
+                        <div style={{ fontSize: 13, color: f.color, fontWeight: item.feeling === f.id ? 600 : 400, marginBottom: 2 }}>{f.id}</div>
+                        <div style={{ fontSize: 11, color: C.muted, lineHeight: 1.5 }}>{f.desc}</div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -792,7 +1341,7 @@ function StepWants({ wants, update, next }) {
 
       <div style={{ padding: "16px 28px 36px", borderTop: `1px solid ${C.borderSoft}` }}>
         <div style={{ fontSize: 11, color: C.muted, marginBottom: 12, textAlign: "center" }}>
-          {tagged} tagged {tagged < 3 ? `${3 - tagged} more and we're moving` : "looking good"}
+          {tagged < 3 ? `${3 - tagged} more to go` : "looking good ✓"}
         </div>
         <Btn onClick={() => next(items)} disabled={tagged < 3}>
           {tagged < 3 ? `tag ${3 - tagged} more` : "Let's go"}
@@ -992,31 +1541,52 @@ function StepPause({ next }) {
   return (
     <div style={{
       ...fadeStyle(visible),
+      minHeight: "100vh",
       display: "flex", flexDirection: "column",
-      justifyContent: "center", alignItems: "center",
-      minHeight: "100vh", padding: "48px 32px", textAlign: "center",
+      justifyContent: "space-between",
+      alignItems: "center",
+      padding: "0",
+      textAlign: "center",
+      background: C.bg,
     }}>
-      <div style={{ marginBottom: 48 }}>
-        <div style={{ fontSize: 52, display: "inline-block", animation: "pulse 3.5s ease-in-out infinite", marginBottom: 28 }}>
-          💙
+
+      {/* Top space */}
+      <div style={{ flex: 1 }} />
+
+      {/* Center content */}
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0 }}>
+        <p style={{ fontSize: 11, letterSpacing: 3, color: C.dim, fontFamily: "monospace", margin: "0 0 52px" }}>
+          your career. your current.
+        </p>
+
+        {/* Wave — scaled up for presence */}
+        <div style={{ transform: "scale(1.5)", transformOrigin: "center", marginBottom: 52 }}>
+          <TideWave />
         </div>
-        <TideWave />
-        <h2 style={{ fontSize: 26, fontWeight: 400, margin: "36px 0 18px", color: C.pearl, lineHeight: 1.4 }}>
-          That took something.
+
+        <h2 style={{ fontSize: 24, fontWeight: 300, color: C.pearl, margin: "0 0 14px", letterSpacing: 0.5 }}>
+          You named it.
         </h2>
-        <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.85, margin: "0 auto", maxWidth: 272 }}>
-          You named the brave thing and the fear underneath it. Most people never get that far.
-        </p>
-        <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.85, margin: "20px auto 0", maxWidth: 272 }}>
-          Take a breath. More soon.
+        <p style={{ fontSize: 14, color: C.dim, lineHeight: 1.8, margin: 0, maxWidth: 220 }}>
+          That's rare. Sit with it.
         </p>
       </div>
-      <div style={{ width: "100%", maxWidth: 320 }}>
-        <Btn onClick={next}>one last thing →</Btn>
+
+      {/* Bottom — barely-there continue */}
+      <div style={{ flex: 1, display: "flex", alignItems: "flex-end", paddingBottom: 52 }}>
+        <button
+          onClick={next}
+          style={{
+            background: "none", border: "none",
+            color: C.muted, fontSize: 13, cursor: "pointer",
+            letterSpacing: 1.5, fontFamily: "monospace",
+            opacity: 0.7,
+          }}
+        >
+          continue
+        </button>
       </div>
-      <p style={{ fontSize: 11, color: C.dim, marginTop: 24, fontStyle: "italic" }}>
-        "the karma compounds quietly."
-      </p>
+
     </div>
   );
 }
@@ -1147,25 +1717,21 @@ function StepCareersOverCash({ next }) {
         <div style={{ width: 5, height: 5, borderRadius: "50%", background: C.ocean }} />
         <span style={{ fontSize: 10, letterSpacing: 2, color: C.muted, fontFamily: "monospace" }}>COVE ETHOS</span>
       </div>
-      <p style={{ fontSize: 11, letterSpacing: 2, color: C.muted, fontFamily: "monospace", margin: "0 0 28px" }}>CAREERS OVER CASH</p>
-
       <h2 style={{ fontSize: 26, fontWeight: 400, margin: "0 0 24px", color: C.pearl, lineHeight: 1.45 }}>
-        One of the most anxious generations ever to enter the workforce.
+        It's about careers, over cash.
       </h2>
 
-      {p("The solution is simpler than you'd think.")}
-
-      {p('"I gave my college $120,000." Tuition. Room. Board. Four years. Then they called asking for a donation.')}
-
-      {p("Seriously.")}
+      <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.85, margin: "0 0 20px" }}>
+        John Mulaney made this case better than we ever could. In <em style={{ color: C.pearl }}>Kid Gorgeous</em>, his 2018 Netflix special, he does a bit about paying $120,000 to Georgetown for an English degree — "a language," he says, "I already spoke. Fluently. For free. Since I was three." Four years later, $120k gone, the university called asking for a donation.
+      </p>
 
       <div style={{ margin: "0 0 24px", borderRadius: 12, overflow: "hidden", lineHeight: 0 }}>
         <img
-          src="https://media.giphy.com/media/nJKAyxFxyNgze/giphy.gif"
-          alt="John Mulaney standup"
+          src="/mulaney.jpeg"
+          alt="John Mulaney — and now you have the audacity to ask me for more money."
           style={{ width: "100%", borderRadius: 12, display: "block" }}
         />
-        <p style={{ fontSize: 9, color: C.dim, margin: "6px 0 0", letterSpacing: 1, textTransform: "uppercase" }}>via GIPHY · John Mulaney</p>
+        <p style={{ fontSize: 9, color: C.dim, margin: "6px 0 0", letterSpacing: 1, textTransform: "uppercase" }}>John Mulaney · Kid Gorgeous (2018)</p>
       </div>
 
       <blockquote style={{
@@ -1176,12 +1742,14 @@ function StepCareersOverCash({ next }) {
         borderRadius: "0 10px 10px 0",
       }}>
         <p style={{ fontSize: 20, fontWeight: 300, color: C.pearl, lineHeight: 1.5, margin: "0 0 10px", fontStyle: "italic" }}>
-          "YOU SPENT IT ALREADY?!"
+          "and now you have the audacity to ask me for more money?"
         </p>
-        <p style={{ fontSize: 11, color: C.muted, margin: 0 }}>— John Mulaney, Kid Gorgeous (2018)</p>
+        <p style={{ fontSize: 11, color: C.muted, margin: 0 }}>— John Mulaney, <em>Kid Gorgeous</em> (2018)</p>
       </blockquote>
 
-      {p("He was right. But the answer isn't more money.")}
+      {p("The joke lands because most graduates know the feeling. You paid, showed up, did everything the system asked — and walked out the other side with a credential and no real map. Career services gave you a template. Your professors cared about the discipline, not what came after. The people who could've helped were somewhere else, untapped.", C.pearl)}
+
+      {p("Turns out the most important thing college was supposed to give you wasn't the degree.")}
 
       <div style={{
         padding: "20px 22px", borderRadius: 12, marginBottom: 28,
@@ -1191,8 +1759,6 @@ function StepCareersOverCash({ next }) {
         <div style={{ fontSize: 13, color: C.text, lineHeight: 1.65, marginBottom: 8 }}>Alumni relationships — not career services, not workshops — are what actually prepares graduates for work.</div>
         <div style={{ fontSize: 10, color: C.dim, fontStyle: "italic" }}>Inside Higher Ed, 2023</div>
       </div>
-
-      {p("One conversation. Twenty minutes. That's the whole model.", C.pearl)}
 
       <blockquote style={{
         margin: "0 0 28px",
@@ -1207,7 +1773,7 @@ function StepCareersOverCash({ next }) {
         <p style={{ fontSize: 11, color: C.muted, margin: 0 }}>— Gwen Stacy, Spider-Man: Into the Spider-Verse</p>
       </blockquote>
 
-      {p("No curriculum. No app. Just a person showing up.")}
+      {p("One conversation. Twenty minutes. Someone who's been where you're trying to go. That's the whole model — and it's what Cove is built around.", C.pearl)}
 
       <Btn onClick={next} style={{ marginTop: 8 }}>I'm in.</Btn>
     </div>
@@ -1371,7 +1937,210 @@ function StepMatrixPause({ selfPosition, next, goBack }) {
   );
 }
 
-// ── Step 6: Ash Ketchum / Generous Enthusiasm ────────────────────────────────
+// ── Step 6: Quadrant Reveal ───────────────────────────────────────────────────
+function StepQuadrantReveal({ selfPosition, next }) {
+  const [visible, setVisible] = useState(false);
+  const [imgLoaded, setImgLoaded] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setVisible(true), 80);
+    return () => clearTimeout(t);
+  }, []);
+
+  const quadrant = selfPosition ? getQuadrant(selfPosition.x, selfPosition.y) : "brave-curious";
+  const qr = QUADRANT_READS[quadrant];
+  const imageUrl = getQuadrantImage(quadrant);
+
+  return (
+    <div style={{
+      opacity: visible ? 1 : 0,
+      transition: "opacity 0.9s ease",
+      display: "flex", flexDirection: "column",
+      minHeight: "100vh", textAlign: "center",
+      background: C.bg,
+    }}>
+      {/* Full-bleed landscape banner */}
+      <div style={{ position: "relative", height: 260, overflow: "hidden", flexShrink: 0 }}>
+        {/* Colour wash fallback — always visible */}
+        <div style={{
+          position: "absolute", inset: 0,
+          background: `linear-gradient(135deg, ${qr.color}28 0%, ${C.bg} 100%)`,
+        }} />
+        {/* Landscape photo */}
+        <img
+          src={imageUrl}
+          alt=""
+          style={{
+            position: "absolute", inset: 0,
+            width: "100%", height: "100%",
+            objectFit: "cover",
+            opacity: imgLoaded ? 0.55 : 0,
+            transition: "opacity 1s ease",
+            filter: "saturate(0.7) brightness(0.85)",
+          }}
+          onLoad={() => setImgLoaded(true)}
+        />
+        {/* Colour tint overlay */}
+        <div style={{
+          position: "absolute", inset: 0,
+          background: `${qr.color}18`,
+          mixBlendMode: "color",
+        }} />
+        {/* Bottom fade into bg */}
+        <div style={{
+          position: "absolute", bottom: 0, left: 0, right: 0, height: 100,
+          background: `linear-gradient(to bottom, transparent, ${C.bg})`,
+        }} />
+      </div>
+
+      {/* Content */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", padding: "8px 28px 48px" }}>
+        <div style={{ maxWidth: 340, width: "100%" }}>
+          {/* Dot */}
+          <div style={{ marginBottom: 24 }}>
+            <div style={{
+              width: 56, height: 56, borderRadius: "50%",
+              background: `radial-gradient(circle at 35% 35%, ${qr.color}45, ${qr.color}10)`,
+              border: `1px solid ${qr.color}40`,
+              margin: "0 auto",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              boxShadow: `0 0 28px ${qr.color}20`,
+            }}>
+              <div style={{ width: 16, height: 16, borderRadius: "50%", background: qr.color, opacity: 0.8 }} />
+            </div>
+          </div>
+
+          <p style={{ fontSize: 11, letterSpacing: 3, color: qr.color, fontFamily: "monospace", margin: "0 0 14px" }}>
+            YOU PLACED YOURSELF
+          </p>
+
+          <h1 style={{ fontSize: 36, fontWeight: 300, color: C.pearl, lineHeight: 1.2, margin: "0 0 18px", letterSpacing: -0.5 }}>
+            {qr.title}
+          </h1>
+
+          <p style={{ fontSize: 17, color: C.text, lineHeight: 1.7, margin: "0 0 32px", fontStyle: "italic" }}>
+            {qr.short}
+          </p>
+
+          <div style={{
+            padding: "20px 24px", borderRadius: 14,
+            background: C.surface, border: `1px solid ${qr.color}28`,
+            borderLeft: `3px solid ${qr.color}`,
+            textAlign: "left", marginBottom: 40,
+          }}>
+            <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.85, margin: 0 }}>
+              {qr.read}
+            </p>
+          </div>
+
+          <Btn onClick={next}>What does this mean for you? →</Btn>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Step 7: Quadrant Read — per-quadrant "so what" story ─────────────────────
+const QUADRANT_STORIES = {
+  "brave-curious": {
+    label: "THE FAST MOVER",
+    headline: "You ask the question before anyone else knows it's a question.",
+    body: [
+      "There's a moment in every room when someone decides to go first. To say the thing. To try the approach that might not work. You're usually that person — or you're the one who sees it clearly enough that you should be.",
+      "Carol Dweck spent years studying what separates people who improve from people who plateau. Her finding was simple: the learners believe ability grows. They lean toward challenges instead of away from them. That's you, right now. Brave enough to move. Curious enough to keep updating.",
+      "Your risk isn't failure. Your risk is moving so fast you skip the step that would have made the next ten easier. The best version of this quadrant doesn't just move — it moves with a question in its hand.",
+      "Environments that fit you: early-stage startups, innovation roles, places still figuring out the playbook. Places where \"we haven't tried that yet\" is an invitation, not a warning.",
+    ],
+  },
+  "brave-judgmental": {
+    label: "THE STANDARD HOLDER",
+    headline: "You know what good looks like. That's not common.",
+    body: [
+      "There's a version of \"high standards\" that's just fear of being wrong. But there's another version — the one you have — where you've actually seen enough to know the difference. You've built a model of quality, and you hold it.",
+      "The research on conscientiousness shows it's one of the strongest predictors of long-term career success. Not charisma. Not raw intelligence. The willingness to do the thing right, even when no one's checking.",
+      "Where this gets complicated: the line between conviction and rigidity. The best standard-holders stay open to the possibility that their model of good is incomplete. Not because they're wishy-washy — because they're curious enough to update.",
+      "Environments that fit you: operations, editorial, leadership, policy — anywhere that needs someone who won't fold under pressure. Watch for places that mistake loudness for confidence. You deserve rooms where substance is the currency.",
+    ],
+  },
+  "fearful-curious": {
+    label: "THE DEEP THINKER",
+    headline: "You process differently. That's not a flaw.",
+    body: [
+      "Here's what looks like hesitation from the outside: you reading the room before you move. Noticing the thing no one else noticed. Asking the question quietly, to yourself first, before you know whether the room is safe enough for it.",
+      "Amy Edmondson's research on psychological safety changed how we think about high-performing teams. Her finding: teams don't perform well because they never fail. They perform well because they're safe enough to try — and safe enough to say when something's not working.",
+      "You do your best thinking in environments with that kind of safety. Not the absence of challenge — the presence of trust. You don't need easy. You need a room that rewards depth over speed.",
+      "The move for you right now isn't bravery for its own sake. It's finding one environment — one mentor, one team, one role — where you can be fully visible. The output that comes after that tends to surprise people. Including you.",
+    ],
+  },
+  "fearful-judgmental": {
+    label: "FINDING FOOTING",
+    headline: "Something made you careful. That's information.",
+    body: [
+      "Most people have been here. The cautious place. The place where you're sizing up the terrain before you commit to a direction. It doesn't mean you're behind — it means something, probably something real, taught you to be careful.",
+      "Edward Deci and Richard Ryan spent decades studying what makes people actually move. Their conclusion: we need three things — some sense of autonomy, some sense of competence, and some sense of connection. When those are missing, we go quiet. We protect.",
+      "The question isn't how to force yourself to be brave. The question is: what's the smallest environment where you'd feel safe enough to be honest? One person. One conversation. One low-stakes experiment. That's where this starts.",
+      "You don't need a breakthrough. You need a foothold. Cove is designed for exactly this moment — to help you find the people and the context that make the next step feel possible.",
+    ],
+  },
+};
+
+function StepQuadrantRead({ selfPosition, next }) {
+  const visible = useFadeIn([]);
+  const quadrant = selfPosition ? getQuadrant(selfPosition.x, selfPosition.y) : "brave-curious";
+  const qr = QUADRANT_READS[quadrant];
+  const story = QUADRANT_STORIES[quadrant];
+
+  return (
+    <div style={{ ...fadeStyle(visible), padding: "80px 28px 56px", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+      <div style={{ flex: 1 }}>
+        {/* Badge */}
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "5px 12px", borderRadius: 20, marginBottom: 20, background: qr.color + "15", border: `1px solid ${qr.color}40` }}>
+          <div style={{ width: 5, height: 5, borderRadius: "50%", background: qr.color }} />
+          <span style={{ fontSize: 10, letterSpacing: 2, color: qr.color, fontFamily: "monospace" }}>{story.label}</span>
+        </div>
+
+        <p style={{ fontSize: 11, letterSpacing: 2, color: C.muted, fontFamily: "monospace", margin: "0 0 28px" }}>WHAT THIS MEANS</p>
+
+        <h2 style={{ fontSize: 24, fontWeight: 400, margin: "0 0 28px", color: C.pearl, lineHeight: 1.45 }}>
+          {story.headline}
+        </h2>
+
+        {story.body.map((text, i) => (
+          <p key={i} style={{
+            fontSize: 15,
+            color: i === story.body.length - 1 ? C.text : C.muted,
+            lineHeight: 1.85, margin: "0 0 20px",
+          }}>{text}</p>
+        ))}
+
+        {/* Stuart credit */}
+        <div style={{
+          padding: "16px 20px", borderRadius: 12, marginTop: 8, marginBottom: 4,
+          background: C.surface, border: `1px solid ${C.borderSoft}`,
+        }}>
+          <p style={{ fontSize: 12, color: C.muted, lineHeight: 1.75, margin: "0 0 6px" }}>
+            Framework by{" "}
+            <a
+              href="https://www.linkedin.com/in/stuarthillston/"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: C.ocean, textDecoration: "none" }}
+            >Stuart Hillston</a>
+            {" "}— psychotherapeutic coach, 40 years, five continents.
+          </p>
+        </div>
+
+        <p style={{ fontSize: 10, color: C.dim, fontStyle: "italic", margin: "12px 0 0" }}>
+          [Placeholder — contributing writer for this quadrant TBD]
+        </p>
+      </div>
+
+      <Btn onClick={next} style={{ marginTop: 32 }}>keep going →</Btn>
+    </div>
+  );
+}
+
+// ── Step 8: Ash Ketchum / Generous Enthusiasm ────────────────────────────────
 function StepAshStory({ next }) {
   const visible = useFadeIn([]);
   const p = (text, extra = {}) => (
@@ -1578,7 +2347,7 @@ function StepDone({ name, finish }) {
 // MAIN APP
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function MainApp({ userData, update, tab, setTab, activeContact, setActiveContact }) {
+function MainApp({ userData, update, tab, setTab, activeContact, setActiveContact, onReset }) {
   const openContact = (c) => { setActiveContact(c); setTab("contact"); };
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(userData.name || "");
@@ -1642,7 +2411,8 @@ function MainApp({ userData, update, tab, setTab, activeContact, setActiveContac
           {tab === "values"    && <ValuesTab    wants={userData.wants} />}
           {tab === "matrix"    && <MatrixTab    contacts={userData.contacts} openContact={openContact} selfPosition={userData.selfPosition} name={userData.name} />}
           {tab === "vibes"     && <VibesTab />}
-          {tab === "list"      && <List100Tab />}
+          {tab === "list"      && <List100Tab userData={userData} />}
+          {tab === "you"       && <ProfileTab   userData={userData} onReset={onReset} />}
         </div>
 
         {/* Bottom nav */}
@@ -1655,10 +2425,10 @@ function MainApp({ userData, update, tab, setTab, activeContact, setActiveContac
         }}>
           {[
             { id: "home",   label: "Home",   icon: "⌂" },
-            { id: "values", label: "Values", icon: "◇" },
             { id: "matrix", label: "Matrix", icon: "⊹" },
+            { id: "list",   label: "List",   icon: "≡" },
             { id: "vibes",  label: "Vibes",  icon: "〰" },
-            { id: "list",   label: "List",   icon: "≡", isNew: true },
+            { id: "you",    label: "You",    icon: "◉" },
           ].map(t => (
             <div
               key={t.id}
@@ -2175,23 +2945,56 @@ function VibesTab() {
 }
 
 // ── List of 100 Tab ───────────────────────────────────────────────────────────
-function List100Tab() {
+const ATTEMPT_STATUSES = ["—", "sent", "replied", "call", "pass"];
+const ATTEMPT_COLORS   = { sent: C.ocean, replied: "#6dbb8a", call: "#c4a040", pass: C.muted };
+
+function makeEntry(firstName = "", lastName = "") {
+  return {
+    id: Date.now() + Math.random(),
+    firstName, lastName,
+    company: "", email: "", phone: "", linkedin: "",
+    why: "", ask: "",
+    attempt1: "", attempt2: "",
+    warm: "warm", notes: "",
+    added: new Date().toLocaleDateString(),
+  };
+}
+
+function List100Tab({ userData }) {
   const [entries, setEntries] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("cove_list100") || "[]"); }
-    catch { return []; }
+    try {
+      const saved = JSON.parse(localStorage.getItem("cove_list100") || "[]");
+      // Migrate old-format entries (had "name" field instead of firstName/lastName)
+      const migrated = saved.map(e => e.firstName !== undefined ? e : {
+        ...makeEntry(),
+        id: e.id,
+        firstName: (e.contact || e.name || "").split(" ")[0] || "",
+        lastName:  (e.contact || e.name || "").split(" ").slice(1).join(" ") || "",
+        company:   e.name || "",
+        why:       e.focus || "",
+        notes:     e.notes || "",
+        warm:      e.warm || "warm",
+        added:     e.added || "",
+      });
+      // Import from onboarding contacts (dedupe by full name)
+      const contacts = userData?.contacts || [];
+      const existing = new Set(migrated.map(e => `${e.firstName} ${e.lastName}`.trim().toLowerCase()));
+      const imported = contacts
+        .filter(c => c.name && !existing.has(c.name.trim().toLowerCase()))
+        .map(c => {
+          const parts = c.name.trim().split(" ");
+          return makeEntry(parts[0] || "", parts.slice(1).join(" ") || "");
+        });
+      return [...imported, ...migrated];
+    } catch { return []; }
   });
-  const [type, setType]         = useState("job");
-  const [warmLead, setWarmLead] = useState("warm");
-  const [hiring, setHiring]     = useState("check");
-  const [url, setUrl]           = useState("");
-  const [name, setName]         = useState("");
-  const [contact, setContact]   = useState("");
-  const [title, setTitle]       = useState("");
-  const [focus, setFocus]       = useState("");
-  const [notes, setNotes]       = useState("");
-  const [toast, setToast]       = useState(null);
+
+  const [view, setView]         = useState("cards");
   const [showForm, setShowForm] = useState(false);
-  const toastTimer = useRef(null);
+  const [editId, setEditId]     = useState(null);
+  const [form, setForm]         = useState(makeEntry());
+  const [toast, setToast]       = useState(null);
+  const toastTimer              = useRef(null);
 
   const save = (next) => {
     setEntries(next);
@@ -2204,213 +3007,331 @@ function List100Tab() {
     toastTimer.current = setTimeout(() => setToast(null), 2500);
   };
 
-  const addEntry = () => {
-    if (!name.trim()) { showToast("add a name first"); return; }
-    save([{
-      id: Date.now(), type,
-      url: url.trim(), name: name.trim(),
-      contact: contact.trim(), title: title.trim(),
-      focus: focus.trim(), warm: warmLead,
-      hiring: type === "job" ? hiring : "",
-      notes: notes.trim(),
-      added: new Date().toLocaleDateString(),
-    }, ...entries]);
-    setUrl(""); setName(""); setContact(""); setTitle(""); setFocus(""); setNotes("");
+  const openAdd = () => {
+    setEditId(null);
+    setForm(makeEntry());
+    setShowForm(true);
+  };
+
+  const openEdit = (e) => {
+    setEditId(e.id);
+    setForm({ ...e });
+    setShowForm(true);
+  };
+
+  const saveForm = () => {
+    const fullName = `${form.firstName} ${form.lastName}`.trim();
+    if (!fullName) { showToast("add a name first"); return; }
+    if (editId) {
+      save(entries.map(e => e.id === editId ? { ...form } : e));
+      showToast("saved");
+    } else {
+      save([{ ...form, id: Date.now() + Math.random(), added: new Date().toLocaleDateString() }, ...entries]);
+      showToast(`${fullName} added`);
+    }
     setShowForm(false);
-    showToast(`"${name.trim()}" added`);
+    setEditId(null);
   };
 
   const deleteEntry = (id) => save(entries.filter(e => e.id !== id));
 
+  const cycleAttempt = (id, field) => {
+    const entry = entries.find(e => e.id === id);
+    if (!entry) return;
+    const cur = entry[field] || "—";
+    const next = ATTEMPT_STATUSES[(ATTEMPT_STATUSES.indexOf(cur) + 1) % ATTEMPT_STATUSES.length];
+    save(entries.map(e => e.id === id ? { ...e, [field]: next } : e));
+  };
+
   const exportCSV = () => {
     if (!entries.length) { showToast("nothing to export yet"); return; }
-    const rows = [
-      ["Type","Name","Contact","Title","Focus","Warm Lead","Hiring","URL","Notes","Date Added"],
-      ...entries.map(e => [
-        e.type === "job" ? "Job Contact" : "Grad Program",
-        e.name, e.contact, e.title, e.focus, e.warm, e.hiring, e.url, e.notes, e.added,
-      ]),
-    ];
-    const csv = rows.map(r => r.map(v => `"${(v||"").replace(/"/g,'""')}"`).join(",")).join("\n");
+    const headers = ["First Name","Last Name","Company","Email","Phone","LinkedIn","Why","Ask","Attempt 1","Attempt 2","Warm/Cold","Notes","Added"];
+    const rows = entries.map(e => [
+      e.firstName, e.lastName, e.company, e.email, e.phone, e.linkedin,
+      e.why, e.ask, e.attempt1, e.attempt2, e.warm, e.notes, e.added,
+    ]);
+    const csv = [headers, ...rows].map(r => r.map(v => `"${(v||"").replace(/"/g,'""')}"`).join(",")).join("\n");
     const a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
-    a.download = `list_of_100_${new Date().toISOString().slice(0,10)}.csv`;
+    a.download = `cove_list_${new Date().toISOString().slice(0,10)}.csv`;
     a.click();
     showToast(`exported ${entries.length} entries`);
   };
 
-  const jobs  = entries.filter(e => e.type === "job").length;
-  const grads = entries.filter(e => e.type === "grad").length;
-  const pct   = Math.min((entries.length / 100) * 100, 100);
+  const pct      = Math.min((entries.length / 100) * 100, 100);
+  const warm     = entries.filter(e => e.warm === "warm").length;
+  const reached  = entries.filter(e => e.attempt1 && e.attempt1 !== "—").length;
 
   const inputStyle = {
-    width: "100%", background: C.surface, border: `1px solid ${C.border}`,
+    width: "100%", background: C.bg, border: `1px solid ${C.border}`,
     borderRadius: 8, padding: "10px 12px", fontSize: 13,
     color: C.text, outline: "none", fontFamily: "Georgia, serif",
+    boxSizing: "border-box",
   };
 
-  const pillStyle = (active, color = C.ocean) => ({
-    padding: "5px 12px", borderRadius: 20, cursor: "pointer", fontSize: 12,
-    fontFamily: "monospace", letterSpacing: 0.5,
-    border: `1px solid ${active ? color : C.border}`,
-    background: active ? `${color}18` : "transparent",
-    color: active ? color : C.muted,
-    transition: "all 0.15s",
-  });
+  // ── Entry card ────────────────────────────────────────────────────────────
+  const EntryCard = ({ e }) => {
+    const fullName = `${e.firstName} ${e.lastName}`.trim();
+    const a1Color  = ATTEMPT_COLORS[e.attempt1] || C.dim;
+    const a2Color  = ATTEMPT_COLORS[e.attempt2] || C.dim;
+    return (
+      <div style={{
+        background: C.surface, borderRadius: 12,
+        border: `1px solid ${C.borderSoft}`,
+        borderLeft: `3px solid ${e.warm === "warm" ? "#c47020" : C.border}`,
+        padding: "14px 16px",
+      }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 6 }}>
+          <div>
+            <div style={{ fontSize: 15, color: C.pearl, fontWeight: 500 }}>{fullName || "—"}</div>
+            {e.company && <div style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>{e.company}</div>}
+          </div>
+          <div style={{ display: "flex", gap: 12, flexShrink: 0, marginLeft: 12 }}>
+            <span onClick={() => openEdit(e)} style={{ fontSize: 11, color: C.muted, cursor: "pointer", fontFamily: "monospace" }}>edit</span>
+            <span onClick={() => deleteEntry(e.id)} style={{ fontSize: 13, color: C.dim, cursor: "pointer" }}>✕</span>
+          </div>
+        </div>
+        {e.why && (
+          <div style={{ fontSize: 12, color: C.muted, marginBottom: 3, lineHeight: 1.6 }}>
+            <span style={{ color: C.dim, fontFamily: "monospace", fontSize: 9, marginRight: 6, letterSpacing: 1 }}>WHY</span>{e.why}
+          </div>
+        )}
+        {e.ask && (
+          <div style={{ fontSize: 12, color: C.muted, marginBottom: 8, lineHeight: 1.6 }}>
+            <span style={{ color: C.dim, fontFamily: "monospace", fontSize: 9, marginRight: 6, letterSpacing: 1 }}>ASK</span>{e.ask}
+          </div>
+        )}
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+          <span style={{
+            fontSize: 10, fontFamily: "monospace", padding: "3px 8px", borderRadius: 20,
+            background: e.warm === "warm" ? "#c4702018" : `${C.ocean}10`,
+            color: e.warm === "warm" ? "#c47020" : C.muted,
+            border: `1px solid ${e.warm === "warm" ? "#c4702030" : C.border}`,
+          }}>
+            {e.warm === "warm" ? "🔥 warm" : "❄️ cold"}
+          </span>
+          <span onClick={() => cycleAttempt(e.id, "attempt1")} title="click to cycle" style={{
+            fontSize: 10, fontFamily: "monospace", padding: "3px 8px", borderRadius: 20, cursor: "pointer",
+            background: e.attempt1 && e.attempt1 !== "—" ? `${a1Color}15` : "transparent",
+            color: e.attempt1 && e.attempt1 !== "—" ? a1Color : C.dim,
+            border: `1px solid ${e.attempt1 && e.attempt1 !== "—" ? a1Color + "50" : C.border}`,
+          }}>
+            {e.attempt1 && e.attempt1 !== "—" ? `A1: ${e.attempt1}` : "A1 —"}
+          </span>
+          <span onClick={() => cycleAttempt(e.id, "attempt2")} title="click to cycle" style={{
+            fontSize: 10, fontFamily: "monospace", padding: "3px 8px", borderRadius: 20, cursor: "pointer",
+            background: e.attempt2 && e.attempt2 !== "—" ? `${a2Color}15` : "transparent",
+            color: e.attempt2 && e.attempt2 !== "—" ? a2Color : C.dim,
+            border: `1px solid ${e.attempt2 && e.attempt2 !== "—" ? a2Color + "50" : C.border}`,
+          }}>
+            {e.attempt2 && e.attempt2 !== "—" ? `A2: ${e.attempt2}` : "A2 —"}
+          </span>
+          {e.linkedin && (
+            <a href={e.linkedin.startsWith("http") ? e.linkedin : `https://${e.linkedin}`}
+              target="_blank" rel="noopener noreferrer"
+              style={{ fontSize: 10, color: C.tide, fontFamily: "monospace", textDecoration: "none" }}>in ↗</a>
+          )}
+        </div>
+        {e.notes && <div style={{ fontSize: 11, color: C.dim, fontStyle: "italic", marginTop: 8, lineHeight: 1.6 }}>{e.notes}</div>}
+        <div style={{ fontSize: 9, color: C.dim, fontFamily: "monospace", marginTop: 6, opacity: 0.5 }}>{e.added}</div>
+      </div>
+    );
+  };
+
+  // ── Table row ─────────────────────────────────────────────────────────────
+  const TableRow = ({ e, i }) => {
+    const fullName = `${e.firstName} ${e.lastName}`.trim();
+    const a1Color  = ATTEMPT_COLORS[e.attempt1] || C.dim;
+    const a2Color  = ATTEMPT_COLORS[e.attempt2] || C.dim;
+    return (
+      <div style={{
+        display: "grid", gridTemplateColumns: "28px 1fr 80px 56px 56px 32px",
+        gap: 8, alignItems: "center",
+        padding: "9px 0", borderBottom: `1px solid ${C.borderSoft}`,
+      }}>
+        <span style={{ color: C.dim, fontFamily: "monospace", fontSize: 10 }}>{i + 1}</span>
+        <div style={{ minWidth: 0 }}>
+          <span style={{ fontSize: 13, color: C.text }}>{fullName || "—"}</span>
+          {e.company && <span style={{ fontSize: 11, color: C.dim, marginLeft: 8 }}>{e.company}</span>}
+        </div>
+        <span style={{ fontSize: 10, fontFamily: "monospace", color: e.warm === "warm" ? "#c47020" : C.muted }}>
+          {e.warm === "warm" ? "🔥 warm" : "❄️ cold"}
+        </span>
+        <span onClick={() => cycleAttempt(e.id, "attempt1")} style={{
+          fontSize: 10, fontFamily: "monospace", cursor: "pointer",
+          color: e.attempt1 && e.attempt1 !== "—" ? a1Color : C.dim,
+        }}>
+          {e.attempt1 && e.attempt1 !== "—" ? e.attempt1 : "—"}
+        </span>
+        <span onClick={() => cycleAttempt(e.id, "attempt2")} style={{
+          fontSize: 10, fontFamily: "monospace", cursor: "pointer",
+          color: e.attempt2 && e.attempt2 !== "—" ? a2Color : C.dim,
+        }}>
+          {e.attempt2 && e.attempt2 !== "—" ? e.attempt2 : "—"}
+        </span>
+        <span onClick={() => openEdit(e)} style={{ fontSize: 11, color: C.muted, fontFamily: "monospace", cursor: "pointer" }}>edit</span>
+      </div>
+    );
+  };
+
+  // ── Add / Edit form (bottom sheet) ────────────────────────────────────────
+  const EntryForm = () => (
+    <div style={{
+      position: "fixed", inset: 0, background: "#000000cc",
+      zIndex: 200, display: "flex", alignItems: "flex-end",
+    }} onClick={e => { if (e.target === e.currentTarget) setShowForm(false); }}>
+      <div style={{
+        width: "100%", maxHeight: "88vh", overflowY: "auto",
+        background: C.surface, borderRadius: "20px 20px 0 0",
+        padding: "24px 20px 44px",
+      }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+          <span style={{ fontSize: 10, fontFamily: "monospace", letterSpacing: 2, color: C.muted }}>
+            {editId ? "EDIT CONTACT" : "ADD CONTACT"}
+          </span>
+          <span onClick={() => setShowForm(false)} style={{ color: C.muted, cursor: "pointer", fontSize: 18 }}>✕</span>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
+          <input value={form.firstName} onChange={e => setForm(f => ({ ...f, firstName: e.target.value }))}
+            placeholder="First name" style={inputStyle} />
+          <input value={form.lastName} onChange={e => setForm(f => ({ ...f, lastName: e.target.value }))}
+            placeholder="Last name" style={inputStyle} />
+        </div>
+        <input value={form.company} onChange={e => setForm(f => ({ ...f, company: e.target.value }))}
+          placeholder="Company / Organization" style={{ ...inputStyle, marginBottom: 8 }} />
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
+          <input value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+            placeholder="Email" style={inputStyle} />
+          <input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+            placeholder="Phone" style={inputStyle} />
+        </div>
+        <input value={form.linkedin} onChange={e => setForm(f => ({ ...f, linkedin: e.target.value }))}
+          placeholder="LinkedIn URL" style={{ ...inputStyle, marginBottom: 8 }} />
+        <textarea value={form.why} onChange={e => setForm(f => ({ ...f, why: e.target.value }))}
+          placeholder="Why this person? What do you admire or want to learn?" rows={2}
+          style={{ ...inputStyle, resize: "none", lineHeight: 1.6, marginBottom: 8 }} />
+        <textarea value={form.ask} onChange={e => setForm(f => ({ ...f, ask: e.target.value }))}
+          placeholder="What's the ask? Coffee chat, referral, advice, intro..." rows={2}
+          style={{ ...inputStyle, resize: "none", lineHeight: 1.6, marginBottom: 12 }} />
+
+        <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+          {[{ val: "warm", label: "🔥 warm" }, { val: "cold", label: "❄️ cold" }].map(p => (
+            <div key={p.val} onClick={() => setForm(f => ({ ...f, warm: p.val }))} style={{
+              flex: 1, textAlign: "center", padding: "9px 0", borderRadius: 8, cursor: "pointer",
+              fontSize: 12, fontFamily: "monospace",
+              border: `1px solid ${form.warm === p.val ? (p.val === "warm" ? "#c47020" : C.ocean) : C.border}`,
+              background: form.warm === p.val ? (p.val === "warm" ? "#c4702015" : `${C.ocean}15`) : "transparent",
+              color: form.warm === p.val ? (p.val === "warm" ? "#c47020" : C.ocean) : C.muted,
+            }}>{p.label}</div>
+          ))}
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12 }}>
+          {[{ field: "attempt1", label: "ATTEMPT 1" }, { field: "attempt2", label: "ATTEMPT 2" }].map(({ field, label }) => (
+            <div key={field}>
+              <div style={{ fontSize: 9, color: C.dim, fontFamily: "monospace", letterSpacing: 1, marginBottom: 6 }}>{label}</div>
+              <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+                {ATTEMPT_STATUSES.map(s => (
+                  <div key={s} onClick={() => setForm(f => ({ ...f, [field]: s }))} style={{
+                    padding: "4px 9px", borderRadius: 20, cursor: "pointer", fontSize: 11, fontFamily: "monospace",
+                    border: `1px solid ${form[field] === s ? (ATTEMPT_COLORS[s] || C.muted) + "80" : C.border}`,
+                    background: form[field] === s ? `${ATTEMPT_COLORS[s] || C.muted}15` : "transparent",
+                    color: form[field] === s ? (ATTEMPT_COLORS[s] || C.muted) : C.dim,
+                  }}>{s}</div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+          placeholder="Notes..." rows={2}
+          style={{ ...inputStyle, resize: "none", lineHeight: 1.6, marginBottom: 16 }} />
+        <Btn onClick={saveForm} style={{ width: "100%" }}>{editId ? "save changes" : "+ add to list"}</Btn>
+      </div>
+    </div>
+  );
 
   return (
     <div style={{ padding: "24px 20px 0" }}>
 
-      {/* Header row */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 18 }}>
         <div>
           <SectionLabel>list of 100</SectionLabel>
           <div style={{ fontSize: 20, color: C.pearl, fontWeight: 400 }}>Your target list</div>
         </div>
         <div style={{ textAlign: "right" }}>
-          <div style={{ fontSize: 22, color: C.ocean, fontWeight: 400 }}>{entries.length}<span style={{ fontSize: 13, color: C.muted }}>/100</span></div>
-          <div style={{ fontSize: 10, color: C.muted, fontFamily: "monospace" }}>{jobs} jobs · {grads} grad</div>
+          <div style={{ fontSize: 24, color: C.ocean, fontWeight: 400 }}>
+            {entries.length}<span style={{ fontSize: 13, color: C.muted }}>/100</span>
+          </div>
+          <div style={{ fontSize: 10, color: C.muted, fontFamily: "monospace" }}>
+            {warm} warm · {reached} reached
+          </div>
         </div>
       </div>
 
       {/* Progress bar */}
-      <div style={{ height: 4, background: C.surface, borderRadius: 4, marginBottom: 24, overflow: "hidden" }}>
-        <div style={{ height: "100%", width: `${pct}%`, background: `linear-gradient(90deg, ${C.oceanDeep}, ${C.ocean})`, borderRadius: 4, transition: "width 0.4s ease" }} />
+      <div style={{ height: 3, background: C.borderSoft, borderRadius: 4, marginBottom: 20, overflow: "hidden" }}>
+        <div style={{
+          height: "100%", width: `${pct}%`,
+          background: `linear-gradient(90deg, ${C.oceanDeep}, ${C.ocean})`,
+          borderRadius: 4, transition: "width 0.4s ease",
+        }} />
       </div>
 
-      {/* Add button / form toggle */}
-      {!showForm ? (
-        <div onClick={() => setShowForm(true)} style={{
-          display: "flex", alignItems: "center", gap: 10, padding: "14px 16px",
-          borderRadius: 12, border: `1px dashed ${C.border}`, cursor: "pointer",
-          color: C.muted, fontSize: 14, marginBottom: 24,
-          transition: "border-color 0.15s, color 0.15s",
+      {/* Toolbar */}
+      <div style={{ display: "flex", gap: 8, marginBottom: 20, alignItems: "center" }}>
+        <div onClick={openAdd} style={{
+          flex: 1, display: "flex", alignItems: "center", gap: 8,
+          padding: "11px 16px", borderRadius: 10,
+          border: `1px dashed ${C.ocean}60`, cursor: "pointer",
+          color: C.ocean, fontSize: 13,
         }}>
-          <span style={{ fontSize: 18, color: C.ocean }}>+</span>
-          add an opportunity
+          <span style={{ fontSize: 16 }}>+</span> add contact
         </div>
-      ) : (
-        <div style={{ background: C.surface, borderRadius: 12, border: `1px solid ${C.border}`, padding: "18px 16px", marginBottom: 24 }}>
-
-          {/* Type toggle */}
-          <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
-            {[{ val: "job", label: "💼 Job / Org" }, { val: "grad", label: "🎓 Grad Program" }].map(t => (
-              <div key={t.val} onClick={() => setType(t.val)} style={{
-                flex: 1, textAlign: "center", padding: "9px 0", borderRadius: 8, cursor: "pointer",
-                fontSize: 12, fontFamily: "monospace",
-                border: `1px solid ${type === t.val ? C.ocean : C.border}`,
-                background: type === t.val ? `${C.ocean}15` : "transparent",
-                color: type === t.val ? C.ocean : C.muted,
-              }}>{t.label}</div>
-            ))}
-          </div>
-
-          {/* URL / paste field */}
-          <input
-            value={url} onChange={e => setUrl(e.target.value)}
-            placeholder="paste a link or just a name / org"
-            style={{ ...inputStyle, marginBottom: 10 }}
-          />
-
-          {/* Name + contact */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
-            <input value={name} onChange={e => setName(e.target.value)}
-              placeholder={type === "grad" ? "University / Program" : "Organization"}
-              style={inputStyle} />
-            <input value={contact} onChange={e => setContact(e.target.value)}
-              placeholder={type === "grad" ? "Key faculty (optional)" : "Contact name"}
-              style={inputStyle} />
-            <input value={title} onChange={e => setTitle(e.target.value)}
-              placeholder={type === "grad" ? "Degree (MA/PhD/MS)" : "Title"}
-              style={inputStyle} />
-            <input value={focus} onChange={e => setFocus(e.target.value)}
-              placeholder={type === "grad" ? "Focus area" : "Sector / focus"}
-              style={inputStyle} />
-          </div>
-
-          {/* Warm lead pills */}
-          <div style={{ display: "flex", gap: 6, marginBottom: 8, flexWrap: "wrap" }}>
-            <span style={{ fontSize: 11, color: C.muted, fontFamily: "monospace", alignSelf: "center", marginRight: 4 }}>LEAD</span>
-            {[{ val: "warm", label: "🔥 warm" }, { val: "cold", label: "❄️ cold" }, { val: "research", label: "🔍 research" }].map(p => (
-              <div key={p.val} onClick={() => setWarmLead(p.val)} style={pillStyle(warmLead === p.val)}>{p.label}</div>
-            ))}
-            {type === "job" && (
-              <>
-                <span style={{ fontSize: 11, color: C.muted, fontFamily: "monospace", alignSelf: "center", marginLeft: 8, marginRight: 4 }}>HIRING</span>
-                {[{ val: "check", label: "check" }, { val: "yes", label: "yes" }, { val: "no", label: "no" }].map(p => (
-                  <div key={p.val} onClick={() => setHiring(p.val)} style={pillStyle(hiring === p.val, C.seafoam)}>{p.label}</div>
-                ))}
-              </>
-            )}
-          </div>
-
-          {/* Notes */}
-          <textarea value={notes} onChange={e => setNotes(e.target.value)}
-            placeholder="how you found it, why it's relevant..."
-            rows={2}
-            style={{ ...inputStyle, resize: "vertical", marginBottom: 12 }}
-          />
-
-          {/* Actions */}
-          <div style={{ display: "flex", gap: 8 }}>
-            <Btn onClick={addEntry} style={{ flex: 1 }}>+ add to list</Btn>
-            <div onClick={() => setShowForm(false)} style={{
-              padding: "14px 16px", borderRadius: 12, cursor: "pointer",
-              border: `1px solid ${C.border}`, color: C.muted, fontSize: 13,
-              fontFamily: "Georgia, serif",
-            }}>cancel</div>
-          </div>
+        <div style={{ display: "flex", background: C.surface, borderRadius: 8, border: `1px solid ${C.border}`, overflow: "hidden" }}>
+          {[{ v: "cards", icon: "⊞" }, { v: "table", icon: "≡" }].map(({ v, icon }) => (
+            <div key={v} onClick={() => setView(v)} style={{
+              padding: "8px 13px", cursor: "pointer", fontSize: 14,
+              background: view === v ? C.raised : "transparent",
+              color: view === v ? C.ocean : C.muted,
+            }}>{icon}</div>
+          ))}
         </div>
-      )}
+        {entries.length > 0 && (
+          <div onClick={exportCSV} style={{ fontSize: 11, color: C.muted, fontFamily: "monospace", cursor: "pointer", padding: "8px 10px" }} title="export csv">⬇</div>
+        )}
+      </div>
 
-      {/* Entries */}
+      {/* Empty state */}
       {entries.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "48px 0", color: C.muted, fontSize: 13 }}>
-          <div style={{ fontSize: 32, marginBottom: 12 }}>📭</div>
-          no entries yet
+        <div style={{ textAlign: "center", padding: "56px 0 32px" }}>
+          <div style={{ fontSize: 36, marginBottom: 16, opacity: 0.4 }}>◉</div>
+          <div style={{ fontSize: 14, color: C.muted, marginBottom: 6 }}>your list is empty</div>
+          <div style={{ fontSize: 12, color: C.dim }}>add the people you want in your corner</div>
+        </div>
+      ) : view === "cards" ? (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, paddingBottom: 32 }}>
+          {entries.map(e => <EntryCard key={e.id} e={e} />)}
         </div>
       ) : (
-        <>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-            <SectionLabel>{entries.length} captured</SectionLabel>
-            <div style={{ display: "flex", gap: 8 }}>
-              <div onClick={exportCSV} style={{ fontSize: 11, color: C.seafoam, fontFamily: "monospace", cursor: "pointer" }}>⬇ export csv</div>
-              <div onClick={() => { if (entries.length && window.confirm(`Delete all ${entries.length} entries?`)) save([]); }}
-                style={{ fontSize: 11, color: C.muted, fontFamily: "monospace", cursor: "pointer" }}>clear all</div>
-            </div>
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8, paddingBottom: 32 }}>
-            {entries.map(e => (
-              <div key={e.id} style={{
-                background: C.surface, borderRadius: 10,
-                borderLeft: `3px solid ${e.type === "job" ? C.ocean : C.seafoam}`,
-                padding: "12px 14px",
-                display: "flex", gap: 10, alignItems: "flex-start",
-              }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 4, flexWrap: "wrap" }}>
-                    <span style={{ fontSize: 10, color: e.type === "job" ? C.ocean : C.seafoam, fontFamily: "monospace" }}>
-                      {e.type === "job" ? "💼 job" : "🎓 grad"}
-                    </span>
-                    {e.warm === "warm" && <span style={{ fontSize: 10, color: "#e07b00", fontFamily: "monospace" }}>🔥 warm</span>}
-                    {e.hiring && e.hiring !== "check" && <span style={{ fontSize: 10, color: C.muted, fontFamily: "monospace" }}>hiring: {e.hiring}</span>}
-                  </div>
-                  <div style={{ fontSize: 14, color: C.pearl, fontWeight: 500 }}>
-                    {e.name}{e.contact ? ` · ${e.contact}` : ""}{e.title ? <span style={{ color: C.muted, fontWeight: 400 }}> ({e.title})</span> : ""}
-                  </div>
-                  {e.focus && <div style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>📌 {e.focus}</div>}
-                  {e.url && <div style={{ fontSize: 11, color: C.tide, marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>🔗 {e.url}</div>}
-                  {e.notes && <div style={{ fontSize: 12, color: C.muted, marginTop: 3, fontStyle: "italic" }}>{e.notes}</div>}
-                  <div style={{ fontSize: 10, color: C.dim, marginTop: 4, fontFamily: "monospace" }}>{e.added}</div>
-                </div>
-                <div onClick={() => deleteEntry(e.id)} style={{ color: C.dim, cursor: "pointer", fontSize: 16, padding: "0 2px", flexShrink: 0 }}>✕</div>
-              </div>
+        <div style={{ paddingBottom: 32 }}>
+          <div style={{
+            display: "grid", gridTemplateColumns: "28px 1fr 80px 56px 56px 32px",
+            gap: 8, padding: "0 0 8px", borderBottom: `1px solid ${C.border}`,
+          }}>
+            {["#", "NAME", "LEAD", "A1", "A2", ""].map((h, i) => (
+              <span key={i} style={{ fontSize: 9, color: C.dim, fontFamily: "monospace", letterSpacing: 1 }}>{h}</span>
             ))}
           </div>
-        </>
+          {entries.map((e, i) => <TableRow key={e.id} e={e} i={i} />)}
+        </div>
       )}
 
-      {/* Toast */}
+      {showForm && <EntryForm />}
+
       {toast && (
         <div style={{
           position: "fixed", bottom: 90, left: "50%", transform: "translateX(-50%)",
@@ -2623,13 +3544,17 @@ function CoachDashboard() {
 // PRIMITIVES
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function Shell({ children }) {
+function Shell({ children, depth }) {
+  const d = depth != null ? getDepthPalette(depth) : null;
   return (
     <div style={{
-      background: C.bg, minHeight: "100vh", color: C.text,
+      background: d ? d.bg : C.bg,
+      minHeight: "100vh",
+      color: d ? d.text : C.text,
       fontFamily: "'Georgia', 'Times New Roman', serif",
       maxWidth: 480, margin: "0 auto",
       position: "relative",
+      transition: "background 0.8s ease, color 0.8s ease",
     }}>
       {children}
     </div>
@@ -2693,6 +3618,88 @@ function SectionLabel({ children }) {
       fontFamily: "monospace", textTransform: "uppercase",
       marginBottom: 12,
     }}>{children}</div>
+  );
+}
+
+// ── You / Profile Tab ─────────────────────────────────────────────────────────
+function ProfileTab({ userData, onReset }) {
+  const visible = useFadeIn(["you"]);
+  const quadrant = userData.selfPosition ? getQuadrant(userData.selfPosition.x, userData.selfPosition.y) : null;
+  const qr = quadrant ? QUADRANT_READS[quadrant] : null;
+  const [confirming, setConfirming] = useState(false);
+
+  const row = (label, value) => value ? (
+    <div style={{ marginBottom: 16 }}>
+      <p style={{ fontSize: 9, letterSpacing: 2, color: C.muted, fontFamily: "monospace", margin: "0 0 5px" }}>{label}</p>
+      <p style={{ fontSize: 14, color: C.text, lineHeight: 1.7, margin: 0 }}>{value}</p>
+    </div>
+  ) : null;
+
+  return (
+    <div style={{ ...fadeStyle(visible), padding: "28px 24px 40px" }}>
+
+      {/* Identity */}
+      <div style={{ marginBottom: 32 }}>
+        <div style={{ width: 52, height: 52, borderRadius: 26, background: C.ocean + "22", border: `1.5px solid ${C.ocean}40`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 14 }}>
+          <span style={{ fontSize: 22, color: C.ocean }}>◉</span>
+        </div>
+        <h2 style={{ fontSize: 24, fontWeight: 300, color: C.pearl, margin: "0 0 4px" }}>{userData.name || "—"}</h2>
+        <p style={{ fontSize: 13, color: C.muted, margin: 0 }}>{userData.email || "no email saved"}</p>
+      </div>
+
+      {/* Matrix */}
+      {qr && (
+        <div style={{ padding: "18px 20px", borderRadius: 14, background: C.surface, border: `1px solid ${qr.color}40`, borderLeft: `3px solid ${qr.color}`, marginBottom: 20 }}>
+          <p style={{ fontSize: 9, letterSpacing: 2, color: C.muted, fontFamily: "monospace", margin: "0 0 6px" }}>YOUR MATRIX</p>
+          <p style={{ fontSize: 16, fontWeight: 400, color: qr.color, margin: "0 0 6px" }}>{qr.title}</p>
+          <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.7, margin: 0 }}>{qr.short}</p>
+        </div>
+      )}
+
+      {/* Reflections */}
+      {(userData.braveReflection || userData.fearsReflection) && (
+        <div style={{ padding: "18px 20px", borderRadius: 14, background: C.surface, border: `1px solid ${C.borderSoft}`, marginBottom: 20 }}>
+          <p style={{ fontSize: 9, letterSpacing: 2, color: C.muted, fontFamily: "monospace", margin: "0 0 16px" }}>YOUR REFLECTIONS</p>
+          {row("THE BRAVE THING", userData.braveReflection)}
+          {row("WHAT'S IN THE WAY", userData.fearsReflection)}
+        </div>
+      )}
+
+      {/* List */}
+      {userData.contacts?.length > 0 && (
+        <div style={{ padding: "18px 20px", borderRadius: 14, background: C.surface, border: `1px solid ${C.borderSoft}`, marginBottom: 20 }}>
+          <p style={{ fontSize: 9, letterSpacing: 2, color: C.muted, fontFamily: "monospace", margin: "0 0 14px" }}>YOUR LIST ({userData.contacts.length})</p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {userData.contacts.map((c, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <span style={{ fontSize: 10, color: C.dim, fontFamily: "monospace", minWidth: 18 }}>{i + 1}</span>
+                <span style={{ fontSize: 14, color: C.text }}>{c.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Reset */}
+      <div style={{ marginTop: 32 }}>
+        {!confirming ? (
+          <button
+            onClick={() => setConfirming(true)}
+            style={{ background: "none", border: `1px solid ${C.borderSoft}`, borderRadius: 10, padding: "12px 20px", color: C.muted, fontSize: 12, cursor: "pointer", fontFamily: "monospace", letterSpacing: 1, width: "100%" }}
+          >
+            start over / redo onboarding
+          </button>
+        ) : (
+          <div style={{ padding: "16px 20px", borderRadius: 12, background: C.surface, border: `1px solid ${C.border}` }}>
+            <p style={{ fontSize: 13, color: C.muted, margin: "0 0 14px", lineHeight: 1.7 }}>This will clear your local data and restart the flow. Your Supabase record stays intact.</p>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button onClick={() => setConfirming(false)} style={{ flex: 1, background: "none", border: `1px solid ${C.border}`, borderRadius: 8, padding: "10px", color: C.muted, fontSize: 12, cursor: "pointer" }}>cancel</button>
+              <button onClick={onReset} style={{ flex: 1, background: "#e07070", border: "none", borderRadius: 8, padding: "10px", color: "#fff", fontSize: 12, cursor: "pointer", fontWeight: 600 }}>yes, start over</button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 
