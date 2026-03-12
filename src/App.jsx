@@ -333,8 +333,11 @@ function StepWelcome({ next }) {
         <p style={{ fontSize: 15, color: C.mist, lineHeight: 1.9, margin: "0 0 28px", maxWidth: 300 }}>
           Not a job board. Not a resume builder.<br />A simple, proven system to build the career you actually want.
         </p>
-        <p style={{ fontSize: 12, letterSpacing: 4, color: C.ocean, fontFamily: "monospace", margin: 0, textTransform: "lowercase", opacity: 0.85 }}>
+        <p style={{ fontSize: 12, letterSpacing: 4, color: C.ocean, fontFamily: "monospace", margin: "0 0 10px", textTransform: "lowercase", opacity: 0.85 }}>
           your career. your current.
+        </p>
+        <p style={{ fontSize: 11, color: C.muted, margin: 0, fontStyle: "italic", letterSpacing: 0.3, opacity: 0.7 }}>
+          current — the force that moves you forward.
         </p>
       </div>
 
@@ -481,8 +484,8 @@ function StepPhilosophy({ next }) {
   const visible = useFadeIn([]);
   const principles = [
     { icon: "💙", title: "\u201cGo-Giver\u201d first", body: "Give before you ask for anything. Show up with something to offer, not something to get. That's the whole playbook.", cite: "The Go-Giver — Bob Burg & John David Mann" },
-    { icon: "〰️", title: "Careers over cash", body: "We all know someone who took the higher offer and immediately regretted it. That opportunity you keep coming back to? The one that just feels like it matters? That's the one worth chasing." },
-    { icon: "🐸", title: "Generous enthusiasm", body: "When you're clear on what you have to offer, the energy shifts. You stop performing and start actually connecting. That kind of enthusiasm is rare. People remember it." },
+    { icon: "〰️", title: "Careers over cash", body: "We all know someone who took the higher offer and immediately regretted it. That opportunity you keep coming back to? The one that just feels like it matters? That's the one worth chasing.", cite: "Cal Newport, So Good They Can't Ignore You" },
+    { icon: "🐸", title: "Generous enthusiasm", body: "When you're clear on what you have to offer, the energy shifts. You stop performing and start actually connecting. That kind of enthusiasm is rare. People remember it.", cite: "Ash Ketchum, Pokémon: Mewtwo Returns — \"Do you always need a reason to help somebody?\"" },
   ];
 
   return (
@@ -504,7 +507,7 @@ function StepPhilosophy({ next }) {
                 <div style={{ fontSize: 14, fontWeight: 500, color: C.pearl, marginBottom: 5 }}>{p.title}</div>
                 <div style={{ fontSize: 13, color: C.muted, lineHeight: 1.7 }}>{p.body}</div>
                 {p.cite && (
-                  <div style={{ fontSize: 10, color: C.dim, fontStyle: "italic", marginTop: 8 }}>{p.cite}</div>
+                  <div style={{ fontSize: 11, color: C.muted, fontStyle: "italic", marginTop: 10, opacity: 0.7, letterSpacing: 0.2 }}>— {p.cite}</div>
                 )}
               </div>
             </div>
@@ -575,15 +578,14 @@ function StepEmail({ next }) {
         Once in a while, we'll send you something actually worth reading — curated from the people who've been where you're trying to go.
       </p>
 
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, margin: "0 0 28px" }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 10, margin: "0 0 28px" }}>
         {sources.map(s => (
           <div key={s.label} style={{
-            display: "flex", alignItems: "center", gap: 7,
-            background: C.surface, border: `1px solid ${C.borderSoft}`,
-            borderRadius: 20, padding: "8px 14px",
+            display: "flex", alignItems: "center", gap: 8,
+            padding: "4px 0",
           }}>
-            <span style={{ fontSize: 14 }}>{s.icon}</span>
-            <span style={{ fontSize: 12, color: C.muted, letterSpacing: 0.3 }}>{s.label}</span>
+            <span style={{ fontSize: 16 }}>{s.icon}</span>
+            <span style={{ fontSize: 13, color: C.mist, letterSpacing: 0.2 }}>{s.label}</span>
           </div>
         ))}
       </div>
@@ -2018,20 +2020,9 @@ function StepQuadrantReveal({ selfPosition, next }) {
             {qr.title}
           </h1>
 
-          <p style={{ fontSize: 17, color: C.text, lineHeight: 1.7, margin: "0 0 32px", fontStyle: "italic" }}>
+          <p style={{ fontSize: 17, color: C.mist, lineHeight: 1.75, margin: "0 0 48px", fontStyle: "italic" }}>
             {qr.short}
           </p>
-
-          <div style={{
-            padding: "20px 24px", borderRadius: 14,
-            background: C.surface, border: `1px solid ${qr.color}28`,
-            borderLeft: `3px solid ${qr.color}`,
-            textAlign: "left", marginBottom: 40,
-          }}>
-            <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.85, margin: 0 }}>
-              {qr.read}
-            </p>
-          </div>
 
           <Btn onClick={next}>What does this mean for you? →</Btn>
         </div>
@@ -2786,6 +2777,20 @@ function MatrixTab({ contacts = [], openContact, selfPosition, name }) {
           You on the grid. Your people on the grid. Now you see the whole picture.
         </p>
       </div>
+
+      {/* Empty state */}
+      {!selfPosition && (
+        <div style={{
+          padding: "28px 24px", borderRadius: 14, marginBottom: 20,
+          background: C.surface, border: `1px dashed ${C.border}`,
+          textAlign: "center",
+        }}>
+          <div style={{ fontSize: 28, marginBottom: 12 }}>⊹</div>
+          <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.8, margin: 0 }}>
+            Your placement will appear here after you complete the matrix step.
+          </p>
+        </div>
+      )}
 
       {/* Self read card */}
       {selfQuadrant && (
