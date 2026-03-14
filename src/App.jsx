@@ -336,9 +336,6 @@ function StepWelcome({ next }) {
         <p style={{ fontSize: 12, letterSpacing: 4, color: C.ocean, fontFamily: "monospace", margin: "0 0 10px", textTransform: "lowercase", opacity: 0.85 }}>
           your career. your current.
         </p>
-        <p style={{ fontSize: 11, color: C.muted, margin: 0, fontStyle: "italic", letterSpacing: 0.3, opacity: 0.7 }}>
-          current — the force that moves you forward.
-        </p>
       </div>
 
       <div style={{ width: "100%", maxWidth: 320 }}>
@@ -986,11 +983,14 @@ function StepListDialogue({ name, next }) {
             {name ? `${name}, they're` : "They're"} already out there.
           </h2>
           <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.85, margin: "0 0 8px" }}>
-            Thirty people whose careers you actually look at and think —
+            <strong style={{ color: C.pearl }}>Thirty people</strong> whose careers you actually look at and think —
             <em style={{ color: C.pearl }}> I want what they have.</em>
           </p>
-          <p style={{ fontSize: 13, color: C.dim, lineHeight: 1.75, margin: 0 }}>
+          <p style={{ fontSize: 13, color: C.dim, lineHeight: 1.75, margin: "0 0 10px" }}>
             A founder. A professor. A hiring manager at a company you love. Your friend's older sister who somehow got in.
+          </p>
+          <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.75, margin: 0 }}>
+            The list is easier to make than you think. And we can help you build it.
           </p>
         </div>
 
@@ -2105,26 +2105,6 @@ function StepQuadrantRead({ selfPosition, next }) {
           }}>{text}</p>
         ))}
 
-        {/* Stuart credit */}
-        <div style={{
-          padding: "16px 20px", borderRadius: 12, marginTop: 8, marginBottom: 4,
-          background: C.surface, border: `1px solid ${C.borderSoft}`,
-        }}>
-          <p style={{ fontSize: 12, color: C.muted, lineHeight: 1.75, margin: "0 0 6px" }}>
-            Framework by{" "}
-            <a
-              href="https://www.linkedin.com/in/stuarthillston/"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: C.ocean, textDecoration: "none" }}
-            >Stuart Hillston</a>
-            {" "}— psychotherapeutic coach, 40 years, five continents.
-          </p>
-        </div>
-
-        <p style={{ fontSize: 10, color: C.dim, fontStyle: "italic", margin: "12px 0 0" }}>
-          [Placeholder — contributing writer for this quadrant TBD]
-        </p>
       </div>
 
       <Btn onClick={next} style={{ marginTop: 32 }}>keep going →</Btn>
