@@ -2360,10 +2360,10 @@ function StepBetaForm({ name, selfPosition, contacts, finish }) {
               you're in
             </p>
             <h2 style={{ fontSize: 28, fontWeight: 400, margin: "0 0 14px", color: C.pearl, lineHeight: 1.3 }}>
-              We'll find you, {fields.firstName}.
+              We hope that helped, {fields.firstName}.
             </h2>
             <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.8, margin: "0 0 32px" }}>
-              Every early user matters to us. We read every submission and we'll be in touch personally — not with a newsletter, with an actual message.
+              We think we can keep helping you out — but we're still building this, open-source. If you want to get involved or support what we're making, reach out to Fhiwa directly.
             </p>
 
             {/* Builder card */}
