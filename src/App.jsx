@@ -77,17 +77,17 @@ const C = {
   raised:     "#131c28",
   border:     "#1a2535",
   borderSoft: "#141e2c",
-  text:       "#c2cfe0",
-  muted:      "#4d6480",
+  text:       "#d4e4f0",
+  muted:      "#8aabbf",
   faint:      "#1e2d40",
-  dim:        "#253447",
+  dim:        "#4a6880",
   ocean:      "#4a9eca",
   oceanDeep:  "#2a6a9a",
   seafoam:    "#5ec4b0",
   sky:        "#7ab8d8",
   mist:       "#9cb8cc",
   tide:       "#3d7fa8",
-  pearl:      "#b8ccd8",
+  pearl:      "#ccdde8",
 };
 
 // ─── FEELING DEFINITIONS ─────────────────────────────────────────────────────
@@ -299,6 +299,18 @@ function Onboard({ step, setStep, userData, update, finish }) {
 
   return (
     <Shell depth={step}>
+      {/* Back button */}
+      {step > 0 && (
+        <div
+          onClick={() => setStep(Math.max(0, step - 1))}
+          style={{
+            position: "absolute", top: 16, left: 18, zIndex: 20,
+            fontSize: 22, color: C.muted, cursor: "pointer",
+            padding: "6px 10px", borderRadius: 8,
+            lineHeight: 1,
+          }}
+        >‹</div>
+      )}
       {showDots && (
         <div style={{
           display: "flex", justifyContent: "center", gap: 6,
@@ -2523,42 +2535,96 @@ function StepBetaForm({ name, selfPosition, contacts, finish }) {
 
           {/* Sunrise banner */}
           <div style={{
-            height: 180, flexShrink: 0, position: "relative", overflow: "hidden",
+            height: 200, flexShrink: 0, position: "relative", overflow: "hidden",
             background: "linear-gradient(180deg, #f5c842 0%, #f09a38 30%, #e06b50 60%, #7a4a8a 85%, #0f1520 100%)",
           }}>
             <div style={{
-              position: "absolute", bottom: 0, left: 0, right: 0, height: 60,
+              position: "absolute", bottom: 0, left: 0, right: 0, height: 80,
               background: "linear-gradient(180deg, transparent, #0f1520)",
             }} />
             <div style={{
-              position: "absolute", top: "36%", left: "50%", transform: "translate(-50%, -50%)",
-              width: 56, height: 56, borderRadius: "50%",
+              position: "absolute", top: "38%", left: "50%", transform: "translate(-50%, -50%)",
+              width: 60, height: 60, borderRadius: "50%",
               background: "radial-gradient(circle, #fff8dc 0%, #f5c842 50%, #f09a3880 100%)",
-              boxShadow: "0 0 40px 20px #f5c84260, 0 0 80px 40px #f09a3830",
+              boxShadow: "0 0 50px 24px #f5c84260, 0 0 90px 45px #f09a3830",
             }} />
           </div>
 
-          <div style={{ padding: "32px 28px 56px", display: "flex", flexDirection: "column", flex: 1 }}>
+          <div style={{ padding: "28px 28px 56px", display: "flex", flexDirection: "column", flex: 1 }}>
             <p style={{ fontSize: 11, letterSpacing: 3, color: "#c4a040", textTransform: "uppercase", margin: "0 0 10px", fontFamily: "monospace" }}>
               got it — thank you
             </p>
-            <h2 style={{ fontSize: 26, fontWeight: 400, margin: "0 0 14px", color: C.pearl, lineHeight: 1.35 }}>
+            <h2 style={{ fontSize: 26, fontWeight: 400, margin: "0 0 12px", color: C.pearl, lineHeight: 1.35 }}>
               We hope that helped, {fields.firstName}.
             </h2>
-            <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.85, margin: "0 0 32px" }}>
-              We think we can keep helping you out — but we're still building this, open-source. If you want to get involved or support what we're making, reach out to Fhiwa directly.
+            <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.85, margin: "0 0 28px" }}>
+              Cove is open-source and free — built by real career advisors for real people. We're looking for folks who want to keep building it.
             </p>
 
+            {/* Who we're looking for */}
+            <div style={{ marginBottom: 28 }}>
+              {[
+                { role: "UX Testers", desc: "Tell us what's broken or confusing" },
+                { role: "Designers", desc: "Make it more beautiful and clear" },
+                { role: "Engineers & Builders", desc: "Help us ship new features" },
+                { role: "Eng Managers", desc: "Advise on direction and systems" },
+                { role: "Funders", desc: "Help us keep this free for everyone" },
+              ].map(({ role, desc }) => (
+                <div key={role} style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 10 }}>
+                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: C.ocean, marginTop: 5, flexShrink: 0 }} />
+                  <div>
+                    <span style={{ fontSize: 13, color: C.pearl }}>{role}</span>
+                    <span style={{ fontSize: 12, color: C.muted }}> — {desc}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
             {/* Builder card */}
-            <div style={{ padding: "20px 22px", borderRadius: 14, marginBottom: 32, background: C.surface, border: `1px solid ${C.borderSoft}` }}>
-              <p style={{ fontSize: 10, letterSpacing: 2, color: C.dim, textTransform: "uppercase", margin: "0 0 4px", fontFamily: "monospace" }}>built by</p>
-              <p style={{ fontSize: 15, fontWeight: 500, color: C.pearl, margin: "0 0 10px" }}>Tshifhiwa (Fhiwa) Ndou</p>
-              <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.75, margin: "0 0 18px" }}>
-                I built Cove because I watched too many smart people take the wrong job for the wrong reasons. Career advice shouldn't cost $300/hr. It should be honest, personal, and available to everyone.
-              </p>
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                <a href="mailto:ndou.fhiwa@gmail.com" style={{ fontSize: 13, color: C.ocean, textDecoration: "none" }}>✉️  ndou.fhiwa@gmail.com</a>
-                <a href="https://www.linkedin.com/in/fndou/" target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, color: C.ocean, textDecoration: "none" }}>🔗  Connect on LinkedIn</a>
+            <div style={{
+              borderRadius: 14, marginBottom: 28, overflow: "hidden",
+              background: C.surface, border: `1px solid ${C.borderSoft}`,
+            }}>
+              {/* Kid photo */}
+              <div style={{ position: "relative", height: 140, overflow: "hidden", background: C.raised }}>
+                <img
+                  src="/fhiwa-kid.jpg"
+                  alt="Fhiwa as a kid"
+                  style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top", opacity: 0.85 }}
+                  onError={e => { e.target.style.display = "none"; }}
+                />
+                <div style={{
+                  position: "absolute", inset: 0,
+                  background: "linear-gradient(180deg, transparent 40%, #0f1520 100%)",
+                }} />
+                <div style={{
+                  position: "absolute", bottom: 10, left: 16,
+                  fontSize: 10, color: C.pearl, fontFamily: "monospace", letterSpacing: 1,
+                }}>me, probably plotting something</div>
+              </div>
+              <div style={{ padding: "16px 20px 20px" }}>
+                <p style={{ fontSize: 10, letterSpacing: 2, color: C.dim, textTransform: "uppercase", margin: "0 0 4px", fontFamily: "monospace" }}>built by</p>
+                <p style={{ fontSize: 15, fontWeight: 500, color: C.pearl, margin: "0 0 8px" }}>Tshifhiwa (Fhiwa) Ndou</p>
+                <p style={{ fontSize: 12, color: C.muted, lineHeight: 1.75, margin: "0 0 14px" }}>
+                  I built Cove because I watched too many smart people take the wrong job for the wrong reasons. Career advice shouldn't cost $300/hr.
+                </p>
+                <a
+                  href="https://github.com/chieffhiwa/cove/issues/new?template=get-involved.md"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: "block", padding: "10px 16px", borderRadius: 10,
+                    background: C.ocean + "18", border: `1px solid ${C.ocean}40`,
+                    color: C.ocean, fontSize: 13, textDecoration: "none",
+                    textAlign: "center", marginBottom: 8,
+                  }}
+                >Open a GitHub issue to get involved →</a>
+                <a
+                  href="https://www.linkedin.com/in/fndou/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ fontSize: 12, color: C.muted, textDecoration: "none", display: "block", textAlign: "center" }}
+                >or find me on LinkedIn</a>
               </div>
             </div>
 
@@ -2674,13 +2740,13 @@ function MainApp({ userData, update, tab, setTab, activeContact, setActiveContac
 
   return (
     <Shell>
-      <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+      <div style={{ display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden" }}>
 
         {/* Header */}
         <div style={{
           display: "flex", alignItems: "center", justifyContent: "space-between",
           padding: "16px 22px", borderBottom: `1px solid ${C.borderSoft}`,
-          position: "sticky", top: 0, background: C.bg, zIndex: 20,
+          flexShrink: 0, background: C.bg, zIndex: 20,
         }}>
           {tab === "contact" && activeContact
             ? <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -2720,7 +2786,7 @@ function MainApp({ userData, update, tab, setTab, activeContact, setActiveContac
         </div>
 
         {/* Content */}
-        <div style={{ flex: 1, overflowY: "auto", paddingBottom: 90 }}>
+        <div style={{ flex: 1, height: 0, overflowY: "auto", WebkitOverflowScrolling: "touch", paddingBottom: 16 }}>
           {tab === "home"      && <HomeTab      userData={userData} openContact={openContact} setTab={setTab} />}
           {tab === "contact"   && activeContact && <ContactTab contact={activeContact} />}
           {tab === "values"    && <ValuesTab    wants={userData.wants} />}
@@ -2736,7 +2802,7 @@ function MainApp({ userData, update, tab, setTab, activeContact, setActiveContac
           padding: "12px 8px 24px",
           borderTop: `1px solid ${C.borderSoft}`,
           background: C.bg,
-          position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 20,
+          flexShrink: 0, zIndex: 20,
         }}>
           {[
             { id: "home",   label: "Home",   icon: "⌂" },
@@ -3284,28 +3350,34 @@ function MatrixTab({ contacts = [], openContact, selfPosition, name }) {
         )}
 
         {/* Contact dots */}
-        {contacts.map((c, i) => (
-          <div
-            key={i}
-            onClick={() => openContact(c)}
-            onTouchStart={() => setHovered(c.first)}
-            onTouchEnd={() => setHovered(null)}
-            style={{
-              position: "absolute",
-              left: `${c.quadrant?.x || 65}%`,
-              top: `${c.quadrant?.y || 30}%`,
-              transform: "translate(-50%,-50%)",
-              cursor: "pointer", zIndex: 10,
-            }}
-          >
-            <Avatar name={c.first} size={36} />
-            <div style={{
-              position: "absolute", top: "110%", left: "50%", transform: "translateX(-50%)",
-              fontSize: 8, color: C.muted, whiteSpace: "nowrap", marginTop: 3,
-              fontFamily: "monospace",
-            }}>{c.first}</div>
-          </div>
-        ))}
+        {contacts.map((c, i) => {
+          const displayName = c.first ? `${c.first} ${c.last || ""}`.trim() : (c.name || "?");
+          const initials = displayName[0]?.toUpperCase() || "?";
+          const dotX = c.quadrant?.x || (50 + ((i * 17 + 13) % 40) - 20);
+          const dotY = c.quadrant?.y || (50 + ((i * 23 + 7) % 40) - 20);
+          return (
+            <div
+              key={i}
+              onClick={() => openContact(c)}
+              onTouchStart={() => setHovered(displayName)}
+              onTouchEnd={() => setHovered(null)}
+              style={{
+                position: "absolute",
+                left: `${dotX}%`,
+                top: `${dotY}%`,
+                transform: "translate(-50%,-50%)",
+                cursor: "pointer", zIndex: 10,
+              }}
+            >
+              <Avatar name={initials} size={36} />
+              <div style={{
+                position: "absolute", top: "110%", left: "50%", transform: "translateX(-50%)",
+                fontSize: 8, color: C.muted, whiteSpace: "nowrap", marginTop: 3,
+                fontFamily: "monospace",
+              }}>{displayName.split(" ")[0]}</div>
+            </div>
+          );
+        })}
       </div>
 
       <div style={{
@@ -4124,8 +4196,40 @@ function ProfileTab({ userData, onReset }) {
         </div>
       )}
 
+      {/* About Cove */}
+      <div style={{
+        borderRadius: 14, marginBottom: 20, overflow: "hidden",
+        background: C.surface, border: `1px solid ${C.borderSoft}`,
+      }}>
+        <div style={{ position: "relative", height: 110, overflow: "hidden", background: C.raised }}>
+          <img
+            src="/fhiwa-kid.jpg"
+            alt=""
+            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 30%", opacity: 0.75 }}
+            onError={e => { e.target.style.display = "none"; }}
+          />
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, transparent 30%, #0f1520 100%)" }} />
+        </div>
+        <div style={{ padding: "14px 18px 18px" }}>
+          <p style={{ fontSize: 9, letterSpacing: 2, color: C.dim, textTransform: "uppercase", margin: "0 0 6px", fontFamily: "monospace" }}>open source project</p>
+          <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.75, margin: "0 0 14px" }}>
+            Cove is free and open-source. We need UX testers, designers, engineers, and people who believe career advice should be accessible to everyone.
+          </p>
+          <a
+            href="https://github.com/chieffhiwa/cove/issues/new"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: "block", padding: "10px 14px", borderRadius: 10, textAlign: "center",
+              background: C.ocean + "18", border: `1px solid ${C.ocean}40`,
+              color: C.ocean, fontSize: 12, textDecoration: "none",
+            }}
+          >Get involved on GitHub →</a>
+        </div>
+      </div>
+
       {/* Reset */}
-      <div style={{ marginTop: 32 }}>
+      <div style={{ marginTop: 0 }}>
         {!confirming ? (
           <button
             onClick={() => setConfirming(true)}
