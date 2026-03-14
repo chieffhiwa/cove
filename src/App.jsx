@@ -2311,18 +2311,29 @@ function StepBetaForm({ name, finish }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus("submitting");
+    const payload = {
+      "First Name": fields.firstName,
+      "Last Name": fields.lastName,
+      "email": fields.email,
+      "College": fields.college || "—",
+      "LinkedIn": fields.linkedin || "—",
+    };
     try {
+      // Primary: Formspree
       const res = await fetch("https://formspree.io/f/xdawdvwd", {
         method: "POST",
         headers: { "Accept": "application/json", "Content-Type": "application/json" },
-        body: JSON.stringify({
-          "First Name": fields.firstName,
-          "Last Name": fields.lastName,
-          "email": fields.email,
-          "College": fields.college || "—",
-          "LinkedIn": fields.linkedin || "—",
-        }),
+        body: JSON.stringify(payload),
       });
+      // Also fire to Google Sheets (non-blocking — don't fail the UX if this errors)
+      const sheetsUrl = process.env.REACT_APP_SHEETS_URL;
+      if (sheetsUrl) {
+        fetch(sheetsUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }).catch(() => {});
+      }
       setStatus(res.ok ? "success" : "error");
     } catch {
       setStatus("error");
@@ -2332,15 +2343,52 @@ function StepBetaForm({ name, finish }) {
   if (status === "success") {
     return (
       <Shell depth={17}>
-        <div style={{ ...fadeStyle(visible), display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", minHeight: "100vh", padding: "48px 32px", textAlign: "center" }}>
-          <div style={{ fontSize: 48, marginBottom: 24 }}>💙</div>
-          <h2 style={{ fontSize: 28, fontWeight: 400, margin: "0 0 16px", color: C.pearl, lineHeight: 1.3 }}>
-            You're on the list, {fields.firstName}.
-          </h2>
-          <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.8, margin: "0 0 40px" }}>
-            We're building fast. We'll be in touch soon.
+        <div style={{ ...fadeStyle(visible), padding: "56px 28px 48px", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+
+          {/* Pikachu in the rain */}
+          <div style={{ borderRadius: 16, overflow: "hidden", marginBottom: 32, lineHeight: 0 }}>
+            <img src="/pikachu-rain.png" alt="Pikachu in the rain" style={{ width: "100%", display: "block", borderRadius: 16 }} />
+          </div>
+
+          <p style={{ fontSize: 11, letterSpacing: 3, color: C.ocean, textTransform: "uppercase", margin: "0 0 12px" }}>
+            You're in, {fields.firstName}.
           </p>
-          <Btn onClick={finish}>Open Cove →</Btn>
+          <h2 style={{ fontSize: 26, fontWeight: 400, margin: "0 0 16px", color: C.pearl, lineHeight: 1.35 }}>
+            We'll be in touch. For real.
+          </h2>
+          <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.8, margin: "0 0 36px" }}>
+            We're building fast and we take every early user seriously. Expect to hear from us.
+          </p>
+
+          {/* Builder card */}
+          <div style={{
+            padding: "20px 22px", borderRadius: 14, marginBottom: 36,
+            background: C.surface, border: `1px solid ${C.borderSoft}`,
+          }}>
+            <p style={{ fontSize: 10, letterSpacing: 2, color: C.ocean, textTransform: "uppercase", margin: "0 0 12px", fontFamily: "monospace" }}>Built by</p>
+            <p style={{ fontSize: 16, fontWeight: 500, color: C.pearl, margin: "0 0 8px" }}>Tshifhiwa (Fhiwa) Ndou</p>
+            <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.75, margin: "0 0 16px" }}>
+              I built Cove because I watched too many smart people take the wrong job for the wrong reasons — and never recover the momentum. Career advice shouldn't be behind a $300/hr paywall. It should be honest, personal, and available to everyone.
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <a
+                href="mailto:ndou.fhiwa@gmail.com"
+                style={{ fontSize: 13, color: C.ocean, textDecoration: "none", display: "flex", alignItems: "center", gap: 6 }}
+              >
+                ✉️ ndou.fhiwa@gmail.com
+              </a>
+              <a
+                href="https://www.linkedin.com/in/fndou/"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ fontSize: 13, color: C.ocean, textDecoration: "none", display: "flex", alignItems: "center", gap: 6 }}
+              >
+                🔗 Connect on LinkedIn
+              </a>
+            </div>
+          </div>
+
+          <Btn onClick={finish}>Open my dashboard →</Btn>
         </div>
       </Shell>
     );
