@@ -288,7 +288,7 @@ function Onboard({ step, setStep, userData, update, finish }) {
       track("onboarding_completed");
       go(17, "step_completed", { step_name: "list_built" });
     }} />,
-    <StepBetaForm       key={17} name={userData.name} finish={finish} />,
+    <StepBetaForm       key={17} name={userData.name} selfPosition={userData.selfPosition} contacts={userData.contacts} finish={finish} />,
   ];
 
   // Dots: philosophy(2), name(3), matrix intro(4), matrix(5), brave(10), fears(11), list(14-16)
@@ -2293,17 +2293,27 @@ function StepFearsReflect({ next }) {
 // ── Step 6: Done ──────────────────────────────────────────────────────────────
 // eslint-disable-next-line no-unused-vars
 // ── Step Final: Beta Sign-Up ──────────────────────────────────────────────────
-function StepBetaForm({ name, finish }) {
+function StepBetaForm({ name, selfPosition, contacts, finish }) {
   const visible = useFadeIn([]);
-  const firstName = name?.split(" ")[0] || "";
+  const firstName = name?.split(" ")[0] || "you";
   const lastName = name?.split(" ").slice(1).join(" ") || "";
   const [fields, setFields] = useState({ firstName, lastName, email: "", college: "", linkedin: "" });
   const [status, setStatus] = useState("idle");
+  const quadrant = selfPosition ? getQuadrant(selfPosition.x, selfPosition.y) : null;
+  const listCount = contacts?.length || 0;
+
+  const quadrantLabel = {
+    "brave-curious":   "Brave & Curious",
+    "brave-judging":   "Brave & Discerning",
+    "fearful-curious": "Curious & Growing",
+    "fearful-judging": "Reflective & Careful",
+  }[quadrant] || null;
 
   const inputStyle = {
-    width: "100%", background: C.surface, border: `1px solid ${C.border}`,
-    borderRadius: 12, padding: "14px 18px", fontSize: 15, color: C.text,
-    outline: "none", fontFamily: "Georgia, serif", boxSizing: "border-box",
+    width: "100%", background: "rgba(255,255,255,0.04)", border: `1px solid ${C.borderSoft}`,
+    borderRadius: 10, padding: "16px 18px", fontSize: 15, color: C.text,
+    outline: "none", fontFamily: "inherit", boxSizing: "border-box",
+    transition: "border-color 0.15s",
   };
 
   const set = (k) => (e) => setFields((p) => ({ ...p, [k]: e.target.value }));
@@ -2317,113 +2327,117 @@ function StepBetaForm({ name, finish }) {
       "email": fields.email,
       "College": fields.college || "—",
       "LinkedIn": fields.linkedin || "—",
+      "Quadrant": quadrantLabel || "—",
+      "List Count": listCount,
     };
     try {
-      // Primary: Formspree
       const res = await fetch("https://formspree.io/f/xdawdvwd", {
         method: "POST",
         headers: { "Accept": "application/json", "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      // Also fire to Google Sheets (non-blocking — don't fail the UX if this errors)
       const sheetsUrl = process.env.REACT_APP_SHEETS_URL;
-      if (sheetsUrl) {
-        fetch(sheetsUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        }).catch(() => {});
-      }
+      if (sheetsUrl) fetch(sheetsUrl, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }).catch(() => {});
       setStatus(res.ok ? "success" : "error");
     } catch {
       setStatus("error");
     }
   };
 
+  // ── Success / thank you screen ───────────────────────────────────────────────
   if (status === "success") {
     return (
       <Shell depth={17}>
-        <div style={{ ...fadeStyle(visible), padding: "56px 28px 48px", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+        <div style={{ ...fadeStyle(visible), minHeight: "100vh", display: "flex", flexDirection: "column" }}>
 
-          {/* Pikachu in the rain */}
-          <div style={{ borderRadius: 16, overflow: "hidden", marginBottom: 32, lineHeight: 0 }}>
-            <img src="/pikachu-rain.png" alt="Pikachu in the rain" style={{ width: "100%", display: "block", borderRadius: 16 }} />
+          {/* Pikachu hero */}
+          <div style={{ lineHeight: 0, flexShrink: 0 }}>
+            <img src="/pikachu-rain.png" alt="Pikachu in the rain" style={{ width: "100%", display: "block", maxHeight: 260, objectFit: "cover", objectPosition: "center top" }} />
           </div>
 
-          <p style={{ fontSize: 11, letterSpacing: 3, color: C.ocean, textTransform: "uppercase", margin: "0 0 12px" }}>
-            You're in, {fields.firstName}.
-          </p>
-          <h2 style={{ fontSize: 26, fontWeight: 400, margin: "0 0 16px", color: C.pearl, lineHeight: 1.35 }}>
-            We'll be in touch. For real.
-          </h2>
-          <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.8, margin: "0 0 36px" }}>
-            We're building fast and we take every early user seriously. Expect to hear from us.
-          </p>
-
-          {/* Builder card */}
-          <div style={{
-            padding: "20px 22px", borderRadius: 14, marginBottom: 36,
-            background: C.surface, border: `1px solid ${C.borderSoft}`,
-          }}>
-            <p style={{ fontSize: 10, letterSpacing: 2, color: C.ocean, textTransform: "uppercase", margin: "0 0 12px", fontFamily: "monospace" }}>Built by</p>
-            <p style={{ fontSize: 16, fontWeight: 500, color: C.pearl, margin: "0 0 8px" }}>Tshifhiwa (Fhiwa) Ndou</p>
-            <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.75, margin: "0 0 16px" }}>
-              I built Cove because I watched too many smart people take the wrong job for the wrong reasons — and never recover the momentum. Career advice shouldn't be behind a $300/hr paywall. It should be honest, personal, and available to everyone.
+          <div style={{ padding: "36px 28px 56px", display: "flex", flexDirection: "column", flex: 1 }}>
+            <p style={{ fontSize: 11, letterSpacing: 3, color: C.ocean, textTransform: "uppercase", margin: "0 0 10px", fontFamily: "monospace" }}>
+              you're in
             </p>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              <a
-                href="mailto:ndou.fhiwa@gmail.com"
-                style={{ fontSize: 13, color: C.ocean, textDecoration: "none", display: "flex", alignItems: "center", gap: 6 }}
-              >
-                ✉️ ndou.fhiwa@gmail.com
-              </a>
-              <a
-                href="https://www.linkedin.com/in/fndou/"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ fontSize: 13, color: C.ocean, textDecoration: "none", display: "flex", alignItems: "center", gap: 6 }}
-              >
-                🔗 Connect on LinkedIn
-              </a>
-            </div>
-          </div>
+            <h2 style={{ fontSize: 28, fontWeight: 400, margin: "0 0 14px", color: C.pearl, lineHeight: 1.3 }}>
+              We'll find you, {fields.firstName}.
+            </h2>
+            <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.8, margin: "0 0 32px" }}>
+              Every early user matters to us. We read every submission and we'll be in touch personally — not with a newsletter, with an actual message.
+            </p>
 
-          <Btn onClick={finish}>Open my dashboard →</Btn>
+            {/* Builder card */}
+            <div style={{ padding: "20px 22px", borderRadius: 14, marginBottom: 32, background: C.surface, border: `1px solid ${C.borderSoft}` }}>
+              <p style={{ fontSize: 10, letterSpacing: 2, color: C.dim, textTransform: "uppercase", margin: "0 0 4px", fontFamily: "monospace" }}>a note from the builder</p>
+              <p style={{ fontSize: 15, fontWeight: 500, color: C.pearl, margin: "0 0 10px" }}>Tshifhiwa (Fhiwa) Ndou</p>
+              <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.75, margin: "0 0 18px" }}>
+                I built Cove because I watched too many smart people take the wrong job for the wrong reasons — and struggle to recover. Career advice shouldn't cost $300/hr. It should be honest, personal, and available to everyone.
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <a href="mailto:ndou.fhiwa@gmail.com" style={{ fontSize: 13, color: C.ocean, textDecoration: "none" }}>
+                  ✉️ ndou.fhiwa@gmail.com
+                </a>
+                <a href="https://www.linkedin.com/in/fndou/" target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, color: C.ocean, textDecoration: "none" }}>
+                  🔗 Connect on LinkedIn — let's stay in touch
+                </a>
+              </div>
+            </div>
+
+            <Btn onClick={finish}>See my dashboard →</Btn>
+          </div>
         </div>
       </Shell>
     );
   }
 
+  // ── Form ─────────────────────────────────────────────────────────────────────
   return (
     <Shell depth={17}>
-      <div style={{ ...fadeStyle(visible), padding: "72px 28px 48px", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-        <div style={{ marginBottom: 32 }}>
-          <p style={{ fontSize: 11, letterSpacing: 3, color: C.ocean, textTransform: "uppercase", margin: "0 0 16px" }}>You made it</p>
-          <h2 style={{ fontSize: 26, fontWeight: 400, margin: "0 0 12px", color: C.pearl, lineHeight: 1.3 }}>
-            This is definitely a beta.
+      <div style={{ ...fadeStyle(visible), padding: "64px 28px 56px", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+
+        {/* Header */}
+        <div style={{ marginBottom: 40 }}>
+          <p style={{ fontSize: 11, letterSpacing: 3, color: C.ocean, textTransform: "uppercase", margin: "0 0 14px", fontFamily: "monospace" }}>
+            you made it
+          </p>
+          <h2 style={{ fontSize: 28, fontWeight: 400, margin: "0 0 16px", color: C.pearl, lineHeight: 1.3 }}>
+            {firstName !== "you" ? `Nice work, ${firstName}.` : "Nice work."}
           </h2>
-          <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.7, margin: 0 }}>
-            We're building fast. Drop your info and we promise to follow up.
+
+          {/* Journey recap pills */}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
+            <span style={{ fontSize: 11, padding: "5px 12px", borderRadius: 20, background: C.surface, border: `1px solid ${C.borderSoft}`, color: C.muted }}>✓ Matrix placed</span>
+            <span style={{ fontSize: 11, padding: "5px 12px", borderRadius: 20, background: C.surface, border: `1px solid ${C.borderSoft}`, color: C.muted }}>✓ Reflected</span>
+            {listCount > 0 && <span style={{ fontSize: 11, padding: "5px 12px", borderRadius: 20, background: C.surface, border: `1px solid ${C.borderSoft}`, color: C.ocean }}>{listCount} people on your list</span>}
+            {quadrantLabel && <span style={{ fontSize: 11, padding: "5px 12px", borderRadius: 20, background: C.surface, border: `1px solid ${C.borderSoft}`, color: C.seafoam }}>{quadrantLabel}</span>}
+          </div>
+
+          <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.75, margin: 0 }}>
+            Drop your info below. We'll follow up personally — no spam, just a real message from the team.
           </p>
         </div>
-        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12, flex: 1 }}>
           <div style={{ display: "flex", gap: 10 }}>
             <input style={{ ...inputStyle, flex: 1 }} placeholder="First name" value={fields.firstName} onChange={set("firstName")} required />
-            <input style={{ ...inputStyle, flex: 1 }} placeholder="Last name" value={fields.lastName} onChange={set("lastName")} required />
+            <input style={{ ...inputStyle, flex: 1 }} placeholder="Last name" value={fields.lastName} onChange={set("lastName")} />
           </div>
-          <input style={inputStyle} type="email" placeholder="Email" value={fields.email} onChange={set("email")} required />
-          <input style={inputStyle} placeholder="College / university (if applicable)" value={fields.college} onChange={set("college")} />
+          <input style={inputStyle} type="email" placeholder="Email address" value={fields.email} onChange={set("email")} required />
+          <input style={inputStyle} placeholder="College or university (optional)" value={fields.college} onChange={set("college")} />
           <input style={inputStyle} placeholder="LinkedIn URL (optional)" value={fields.linkedin} onChange={set("linkedin")} />
-          <div style={{ marginTop: 8 }}>
+
+          <div style={{ marginTop: 16 }}>
             <Btn disabled={status === "submitting"}>
-              {status === "submitting" ? "Sending…" : "Get early access →"}
+              {status === "submitting" ? "Sending…" : "I'm in →"}
             </Btn>
           </div>
           {status === "error" && (
-            <p style={{ fontSize: 13, color: "#ff6b6b", textAlign: "center", margin: 0 }}>Something went wrong. Try again.</p>
+            <p style={{ fontSize: 13, color: "#ff6b6b", textAlign: "center", margin: "8px 0 0" }}>Something went wrong. Try again.</p>
           )}
         </form>
-        <p style={{ fontSize: 11, color: C.dim, marginTop: 24, textAlign: "center", fontStyle: "italic" }}>
+
+        <p style={{ fontSize: 11, color: C.dim, marginTop: 20, textAlign: "center" }}>
           Responses go to the Cove team only.
         </p>
       </div>
