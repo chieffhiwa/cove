@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cove · UX Feedback</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #f0f4ff; color: #0f1c3f; font-family: 'Inter', sans-serif; min-height: 100vh; }
+  .header { background: #1a3bcc; padding: 20px 32px; display: flex; align-items: center; gap: 10px; }
+  .logo { font-weight: 600; font-size: 16px; color: white; letter-spacing: 0.02em; }
+  .badge { font-size: 11px; color: rgba(255,255,255,0.6); background: rgba(255,255,255,0.12); padding: 3px 9px; border-radius: 20px; letter-spacing: 0.05em; text-transform: uppercase; }
+  .container { max-width: 640px; margin: 0 auto; padding: 56px 24px 100px; }
+  .intro { margin-bottom: 48px; }
+  .intro h1 { font-size: 26px; font-weight: 600; color: #0f1c3f; margin-bottom: 10px; line-height: 1.25; }
+  .intro p { font-size: 15px; color: #4a5980; line-height: 1.65; }
+  .form-group { margin-bottom: 34px; }
+  .q-label { display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px; }
+  .q-num { font-size: 11px; font-weight: 600; color: #1a3bcc; letter-spacing: 0.1em; text-transform: uppercase; min-width: 26px; flex-shrink: 0; }
+  label { font-size: 15px; font-weight: 500; color: #0f1c3f; line-height: 1.4; }
+  textarea, input[type="text"], input[type="email"] { width: 100%; background: white; border: 1.5px solid #d0d8f0; border-radius: 8px; padding: 12px 14px; font-family: 'Inter', sans-serif; font-size: 14px; color: #0f1c3f; resize: none; transition: border-color 0.15s, box-shadow 0.15s; outline: none; -webkit-appearance: none; }
+  textarea:focus, input:focus { border-color: #1a3bcc; box-shadow: 0 0 0 3px rgba(26,59,204,0.1); }
+  textarea { min-height: 96px; line-height: 1.6; }
+  textarea.tall { min-height: 118px; }
+  ::placeholder { color: #a0aac0; }
+  .rating-row { display: flex; gap: 6px; margin-bottom: 6px; }
+  .r-btn { width: 40px; height: 40px; border: 1.5px solid #d0d8f0; border-radius: 6px; background: white; color: #7080a0; font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.12s; flex-shrink: 0; }
+  .r-btn:hover { border-color: #1a3bcc; color: #1a3bcc; }
+  .r-btn.on { background: #1a3bcc; border-color: #1a3bcc; color: white; }
+  .r-labels { display: flex; justify-content: space-between; font-size: 11px; color: #7080a0; margin-bottom: 12px; }
+  .divider { border: none; border-top: 1px solid #d0d8f0; margin: 40px 0; }
+  .name-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 480px) { .name-row { grid-template-columns: 1fr; } }
+  .submit-btn { width: 100%; background: #1a3bcc; color: white; border: none; border-radius: 8px; padding: 14px; font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 500; cursor: pointer; transition: background 0.15s; margin-top: 40px; }
+  .submit-btn:hover { background: #1432b0; }
+  .submit-btn:disabled { background: #8aa0e8; cursor: not-allowed; }
+  .note { text-align: center; font-size: 12px; color: #7080a0; margin-top: 12px; }
+  .hint { font-size: 12px; color: #7080a0; margin-top: 5px; }
+  .error-banner { display: none; background: #fff0f0; border: 1px solid #ffcccc; color: #cc0000; font-size: 13px; padding: 10px 14px; border-radius: 6px; margin-top: 12px; }
+  .success { display: none; text-align: center; padding: 100px 24px; }
+  .success.show { display: block; }
+  .form-wrap.hide { display: none; }
+  .success-circle { width: 56px; height: 56px; background: #1a3bcc; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; color: white; font-size: 22px; }
+  .success h2 { font-size: 22px; font-weight: 600; color: #0f1c3f; margin-bottom: 10px; }
+  .success p { font-size: 15px; color: #4a5980; line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <span class="logo">Cove</span>
+  <span class="badge">Beta Feedback</span>
+</div>
+
+<div class="container">
+  <div class="intro">
+    <h1>What was it like to use Cove?</h1>
+    <p>Answer whatever feels relevant. Honesty beats politeness — this goes directly to the team building it.</p>
+  </div>
+
+  <div class="form-wrap" id="formWrap">
+  <form id="form">
+
+    <div class="form-group">
+      <div class="q-label"><span class="q-num">01</span><label>What did you think this app was for in the first 10–20 seconds?</label></div>
+      <textarea name="first_impression" placeholder="Your gut reaction..."></textarea>
+    </div>
+
+    <div class="form-group">
+      <div class="q-label"><span class="q-num">02</span><label>Where did you get stuck or hesitate?</label></div>
+      <textarea name="friction" placeholder="A specific screen, question, or moment..."></textarea>
+    </div>
+
+    <div class="form-group">
+      <div class="q-label"><span class="q-num">03</span><label>Did the "brave career decision" framing land, or feel abstract?</label></div>
+      <div class="rating-row" id="brave-r">
+        <button type="button" class="r-btn" data-v="1">1</button>
+        <button type="button" class="r-btn" data-v="2">2</button>
+        <button type="button" class="r-btn" data-v="3">3</button>
+        <button type="button" class="r-btn" data-v="4">4</button>
+        <button type="button" class="r-btn" data-v="5">5</button>
+      </div>
+      <div class="r-labels"><span>Felt abstract</span><span>Landed clearly</span></div>
+      <input type="hidden" name="brave_framing_rating" id="brave-val">
+      <textarea name="brave_framing_notes" placeholder="What would've made it click faster?"></textarea>
+    </div>
+
+    <div class="form-group">
+      <div class="q-label"><span class="q-num">04</span><label>Was there a moment that made you actually reflect? What was it?</label></div>
+      <textarea name="reflection_moment" class="tall" placeholder="A question, phrase, or prompt that hit differently..."></textarea>
+    </div>
+
+    <div class="form-group">
+      <div class="q-label"><span class="q-num">05</span><label>Did anything feel broken, slow, or unfinished?</label></div>
+      <textarea name="bugs_or_friction" placeholder="Be specific — what happened, what you expected..."></textarea>
+    </div>
+
+    <div class="form-group">
+      <div class="q-label"><span class="q-num">06</span><label>Would you show this to a friend or student?</label></div>
+      <div class="rating-row" id="share-r">
+        <button type="button" class="r-btn" data-v="1">1</button>
+        <button type="button" class="r-btn" data-v="2">2</button>
+        <button type="button" class="r-btn" data-v="3">3</button>
+        <button type="button" class="r-btn" data-v="4">4</button>
+        <button type="button" class="r-btn" data-v="5">5</button>
+      </div>
+      <div class="r-labels"><span>Definitely not</span><span>100% yes</span></div>
+      <input type="hidden" name="would_share_rating" id="share-val">
+      <textarea name="would_share_why" placeholder="Why or why not?"></textarea>
+    </div>
+
+    <div class="form-group">
+      <div class="q-label"><span class="q-num">07</span><label>One thing to keep · one thing to cut · one thing to fix.</label></div>
+      <p class="hint">A word or phrase is fine.</p>
+      <textarea name="keep_cut_fix" class="tall" placeholder="Keep: &#10;Cut: &#10;Fix: "></textarea>
+    </div>
+
+    <hr class="divider">
+
+    <div class="form-group">
+      <div class="q-label">
+        <span class="q-num" style="color:#a0aac0">—</span>
+        <label style="font-weight:400; color:#4a5980">Name & email if you want a follow-up (optional)</label>
+      </div>
+      <div class="name-row">
+        <input type="text" name="name" placeholder="Name">
+        <input type="email" name="email" placeholder="Email">
+      </div>
+    </div>
+
+    <button type="submit" class="submit-btn" id="submitBtn">Submit →</button>
+    <div class="error-banner" id="errorBanner">Something went wrong. Please try again.</div>
+    <p class="note">Responses go to the Cove team only.</p>
+
+  </form>
+  </div>
+
+  <div class="success" id="success">
+    <div class="success-circle">✓</div>
+    <h2>Got it — thank you.</h2>
+    <p>This goes directly to the people building Cove.<br>It actually matters.</p>
+  </div>
+</div>
+
+<script>
+  // Rating button toggle
+  document.querySelectorAll('.rating-row').forEach(group => {
+    group.querySelectorAll('.r-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        group.querySelectorAll('.r-btn').forEach(b => b.classList.remove('on'));
+        btn.classList.add('on');
+      });
+    });
+  });
+
+  // Sync to hidden inputs
+  document.getElementById('brave-r').querySelectorAll('.r-btn').forEach(btn => {
+    btn.addEventListener('click', () => { document.getElementById('brave-val').value = btn.dataset.v; });
+  });
+  document.getElementById('share-r').querySelectorAll('.r-btn').forEach(btn => {
+    btn.addEventListener('click', () => { document.getElementById('share-val').value = btn.dataset.v; });
+  });
+
+  // AJAX submit to Formspree
+  document.getElementById('form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('submitBtn');
+    const err = document.getElementById('errorBanner');
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+    err.style.display = 'none';
+
+    try {
+      const res = await fetch('https://formspree.io/f/xdawdvwd', {
+        method: 'POST',
+        body: new FormData(this),
+        headers: { 'Accept': 'application/json' }
+      });
+      if (res.ok) {
+        document.getElementById('formWrap').classList.add('hide');
+        document.getElementById('success').classList.add('show');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        throw new Error();
+      }
+    } catch {
+      err.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Submit →';
+    }
+  });
+</script>
+
+</body>
+</html>
