@@ -253,9 +253,8 @@ function Onboard({ step, setStep, userData, update, finish }) {
     <StepPrivacy        key={1} next={() => go(2, "step_completed", { step_name: "privacy" })} />,
     <StepPhilosophy     key={2} next={() => go(3, "step_completed", { step_name: "philosophy" })} />,
     <StepName           key={3} next={(name) => { update({ name }); if (PH_KEY) posthog.identify(name); go(4, "step_completed", { step_name: "name" }); }} />,
-    <StepEmail          key={4} next={(email) => { update({ email }); go(5, "step_completed", { step_name: "email" }); }} />,
-    <StepMatrixIntro    key={5} name={userData.name} next={() => go(6, "step_completed", { step_name: "matrix_intro" })} />,
-    <StepSelfMatrix     key={6} name={userData.name} initialPosition={userData.selfPosition} next={(selfPosition) => {
+    <StepMatrixIntro    key={4} name={userData.name} next={() => go(5, "step_completed", { step_name: "matrix_intro" })} />,
+    <StepSelfMatrix     key={5} name={userData.name} initialPosition={userData.selfPosition} next={(selfPosition) => {
       update({ selfPosition });
       const q = getQuadrant(selfPosition.x, selfPosition.y);
       const quadrantLabel = QUADRANT_READS[q]?.title || q;
@@ -266,33 +265,34 @@ function Onboard({ step, setStep, userData, update, finish }) {
         ref: localStorage.getItem("cove_ref") || null,
       }).then(() => {});
       track("matrix_placed", { quadrant: quadrantLabel, x: selfPosition.x, y: selfPosition.y });
-      go(7, "step_completed", { step_name: "matrix" });
+      go(6, "step_completed", { step_name: "matrix" });
     }} />,
-    <StepQuadrantReveal key={7} selfPosition={userData.selfPosition} next={() => go(8, "step_completed", { step_name: "quadrant_reveal" })} />,
-    <StepQuadrantRead   key={8} selfPosition={userData.selfPosition} next={() => go(9, "step_completed", { step_name: "quadrant_read" })} />,
-    <StepMatrixPause    key={9} selfPosition={userData.selfPosition} next={() => go(10, "step_completed", { step_name: "matrix_pause" })} goBack={() => setStep(6)} />,
-    <StepAshStory       key={10} next={() => go(11, "step_completed", { step_name: "ash_story" })} />,
-    <StepBraveReflect   key={11} next={(braveReflection) => { update({ braveReflection }); go(12, "step_completed", { step_name: "brave_reflect" }); }} />,
-    <StepFearsReflect   key={12} next={(fearsReflection) => {
+    <StepQuadrantReveal key={6} selfPosition={userData.selfPosition} next={() => go(7, "step_completed", { step_name: "quadrant_reveal" })} />,
+    <StepQuadrantRead   key={7} selfPosition={userData.selfPosition} next={() => go(8, "step_completed", { step_name: "quadrant_read" })} />,
+    <StepMatrixPause    key={8} selfPosition={userData.selfPosition} next={() => go(9, "step_completed", { step_name: "matrix_pause" })} goBack={() => setStep(5)} />,
+    <StepAshStory       key={9} next={() => go(10, "step_completed", { step_name: "ash_story" })} />,
+    <StepBraveReflect   key={10} next={(braveReflection) => { update({ braveReflection }); go(11, "step_completed", { step_name: "brave_reflect" }); }} />,
+    <StepFearsReflect   key={11} next={(fearsReflection) => {
       update({ fearsReflection });
       postReflections({ ...userData, fearsReflection });
       track("reflection_submitted", { has_brave: !!userData.braveReflection, has_fears: !!fearsReflection });
-      go(13, "step_completed", { step_name: "fears_reflect" });
+      go(12, "step_completed", { step_name: "fears_reflect" });
     }} />,
-    <StepPause          key={13} next={() => go(14, "step_completed", { step_name: "pause" })} />,
-    <StepCareersOverCash key={14} next={() => go(15, "step_completed", { step_name: "careers_over_cash" })} />,
-    <StepListDialogue   key={15} name={userData.name} next={() => go(16, "step_completed", { step_name: "list_dialogue" })} />,
-    <StepWarmCold       key={16} next={() => go(17, "step_completed", { step_name: "warm_cold" })} />,
-    <StepListBuilder    key={17} contacts={userData.contacts} update={update} next={(contacts) => {
+    <StepPause          key={12} next={() => go(13, "step_completed", { step_name: "pause" })} />,
+    <StepCareersOverCash key={13} next={() => go(14, "step_completed", { step_name: "careers_over_cash" })} />,
+    <StepListDialogue   key={14} name={userData.name} next={() => go(15, "step_completed", { step_name: "list_dialogue" })} />,
+    <StepWarmCold       key={15} next={() => go(16, "step_completed", { step_name: "warm_cold" })} />,
+    <StepListBuilder    key={16} contacts={userData.contacts} update={update} next={(contacts) => {
       update({ contacts });
       track("list_built", { list_count: contacts.length });
       track("onboarding_completed");
-      finish();
+      go(17, "step_completed", { step_name: "list_built" });
     }} />,
+    <StepBetaForm       key={17} name={userData.name} finish={finish} />,
   ];
 
-  // Dots: philosophy(2), name(3), matrix intro(5), matrix(6), brave(11), fears(12), list(15-17)
-  const dotMap = { 2:1, 3:2, 5:3, 6:3, 11:4, 12:4, 15:5, 16:5, 17:5 };
+  // Dots: philosophy(2), name(3), matrix intro(4), matrix(5), brave(10), fears(11), list(14-16)
+  const dotMap = { 2:1, 3:2, 4:3, 5:3, 10:4, 11:4, 14:5, 15:5, 16:5, 17:5 };
   const showDots = step in dotMap;
   const dotStep = dotMap[step] || 0;
 
@@ -2312,6 +2312,97 @@ function StepFearsReflect({ next }) {
 
 // ── Step 6: Done ──────────────────────────────────────────────────────────────
 // eslint-disable-next-line no-unused-vars
+// ── Step Final: Beta Sign-Up ──────────────────────────────────────────────────
+function StepBetaForm({ name, finish }) {
+  const visible = useFadeIn([]);
+  const firstName = name?.split(" ")[0] || "";
+  const lastName = name?.split(" ").slice(1).join(" ") || "";
+  const [fields, setFields] = useState({ firstName, lastName, email: "", college: "", linkedin: "" });
+  const [status, setStatus] = useState("idle");
+
+  const inputStyle = {
+    width: "100%", background: C.surface, border: `1px solid ${C.border}`,
+    borderRadius: 12, padding: "14px 18px", fontSize: 15, color: C.text,
+    outline: "none", fontFamily: "Georgia, serif", boxSizing: "border-box",
+  };
+
+  const set = (k) => (e) => setFields((p) => ({ ...p, [k]: e.target.value }));
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setStatus("submitting");
+    try {
+      const res = await fetch("https://formspree.io/f/xdawdvwd", {
+        method: "POST",
+        headers: { "Accept": "application/json", "Content-Type": "application/json" },
+        body: JSON.stringify({
+          "First Name": fields.firstName,
+          "Last Name": fields.lastName,
+          "email": fields.email,
+          "College": fields.college || "—",
+          "LinkedIn": fields.linkedin || "—",
+        }),
+      });
+      setStatus(res.ok ? "success" : "error");
+    } catch {
+      setStatus("error");
+    }
+  };
+
+  if (status === "success") {
+    return (
+      <Shell depth={17}>
+        <div style={{ ...fadeStyle(visible), display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", minHeight: "100vh", padding: "48px 32px", textAlign: "center" }}>
+          <div style={{ fontSize: 48, marginBottom: 24 }}>💙</div>
+          <h2 style={{ fontSize: 28, fontWeight: 400, margin: "0 0 16px", color: C.pearl, lineHeight: 1.3 }}>
+            You're on the list, {fields.firstName}.
+          </h2>
+          <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.8, margin: "0 0 40px" }}>
+            We're building fast. We'll be in touch soon.
+          </p>
+          <Btn onClick={finish}>Open Cove →</Btn>
+        </div>
+      </Shell>
+    );
+  }
+
+  return (
+    <Shell depth={17}>
+      <div style={{ ...fadeStyle(visible), padding: "72px 28px 48px", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+        <div style={{ marginBottom: 32 }}>
+          <p style={{ fontSize: 11, letterSpacing: 3, color: C.ocean, textTransform: "uppercase", margin: "0 0 16px" }}>You made it</p>
+          <h2 style={{ fontSize: 26, fontWeight: 400, margin: "0 0 12px", color: C.pearl, lineHeight: 1.3 }}>
+            This is definitely a beta.
+          </h2>
+          <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.7, margin: 0 }}>
+            We're building fast. Drop your info and we promise to follow up.
+          </p>
+        </div>
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          <div style={{ display: "flex", gap: 10 }}>
+            <input style={{ ...inputStyle, flex: 1 }} placeholder="First name" value={fields.firstName} onChange={set("firstName")} required />
+            <input style={{ ...inputStyle, flex: 1 }} placeholder="Last name" value={fields.lastName} onChange={set("lastName")} required />
+          </div>
+          <input style={inputStyle} type="email" placeholder="Email" value={fields.email} onChange={set("email")} required />
+          <input style={inputStyle} placeholder="College / university (if applicable)" value={fields.college} onChange={set("college")} />
+          <input style={inputStyle} placeholder="LinkedIn URL (optional)" value={fields.linkedin} onChange={set("linkedin")} />
+          <div style={{ marginTop: 8 }}>
+            <Btn disabled={status === "submitting"}>
+              {status === "submitting" ? "Sending…" : "Get early access →"}
+            </Btn>
+          </div>
+          {status === "error" && (
+            <p style={{ fontSize: 13, color: "#ff6b6b", textAlign: "center", margin: 0 }}>Something went wrong. Try again.</p>
+          )}
+        </form>
+        <p style={{ fontSize: 11, color: C.dim, marginTop: 24, textAlign: "center", fontStyle: "italic" }}>
+          Responses go to the Cove team only.
+        </p>
+      </div>
+    </Shell>
+  );
+}
+
 function StepDone({ name, finish }) {
   const visible = useFadeIn([]);
   return (

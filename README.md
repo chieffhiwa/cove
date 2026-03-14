@@ -5,6 +5,9 @@ A mobile-first career coaching app. Not a job board. Not a resume builder. A sma
 
 **Live → [cove-main.vercel.app](https://cove-main.vercel.app)**
 
+**Beta signup form → [formspree.io/f/xdawdvwd](https://formspree.io/f/xdawdvwd)**
+**UX feedback → [cove-main.vercel.app/cove-ux-feedback.html](https://cove-main.vercel.app/cove-ux-feedback.html)**
+
 ---
 
 ## What it is
@@ -102,7 +105,7 @@ cove/
 
 ---
 
-## Onboarding flow (10 steps)
+## Onboarding flow
 
 1. **Welcome** — landing + tagline
 2. **Privacy** — data commitments
@@ -114,6 +117,7 @@ cove/
 8. **Brave Reflect** — what would a brave career decision look like?
 9. **Fears Reflect** — what's in the way?
 10. **Heart Pause** — terminal screen, reflections sent to Discord
+11. **Beta Signup** — name, email, college (optional), LinkedIn (optional) → posted to Formspree
 
 ---
 
@@ -126,7 +130,7 @@ cove/
 | M3 | Matrix UX improvements | ✅ Done |
 | M4 | Coach dashboard + analytics | 🔄 In progress |
 | M5 | End-to-end flow: sign up → matrix → dashboard | 🔜 |
-| M6 | Ship to real users — phone/email collection | 🔜 |
+| M6 | Ship to real users — beta signup form at end of flow | ✅ Done |
 | M7 | Multi-tenant white-label infrastructure | 🔜 |
 
 ---
