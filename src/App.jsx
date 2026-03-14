@@ -2560,25 +2560,25 @@ function StepBetaForm({ name, selfPosition, contacts, finish }) {
       <Shell depth={19}>
         <div style={{ ...fadeStyle(visible), minHeight: "100vh", display: "flex", flexDirection: "column" }}>
 
-          {/* Sunrise banner */}
-          <div style={{
-            height: 200, flexShrink: 0, position: "relative", overflow: "hidden",
-            background: "linear-gradient(180deg, #f5c842 0%, #f09a38 30%, #e06b50 60%, #7a4a8a 85%, #0f1520 100%)",
-          }}>
+          {/* Kid photo banner — full bleed */}
+          <div style={{ position: "relative", height: 220, flexShrink: 0, overflow: "hidden", background: C.raised }}>
+            <img
+              src="/fhiwa-kid.jpg"
+              alt=""
+              style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 20%" }}
+            />
             <div style={{
-              position: "absolute", bottom: 0, left: 0, right: 0, height: 80,
-              background: "linear-gradient(180deg, transparent, #0f1520)",
+              position: "absolute", inset: 0,
+              background: "linear-gradient(180deg, rgba(11,15,20,0.2) 0%, transparent 40%, #0f1520 100%)",
             }} />
             <div style={{
-              position: "absolute", top: "38%", left: "50%", transform: "translate(-50%, -50%)",
-              width: 60, height: 60, borderRadius: "50%",
-              background: "radial-gradient(circle, #fff8dc 0%, #f5c842 50%, #f09a3880 100%)",
-              boxShadow: "0 0 50px 24px #f5c84260, 0 0 90px 45px #f09a3830",
-            }} />
+              position: "absolute", bottom: 14, left: 20,
+              fontSize: 10, color: "rgba(255,255,255,0.55)", fontFamily: "monospace", letterSpacing: 1,
+            }}>me, probably plotting something</div>
           </div>
 
-          <div style={{ padding: "28px 28px 56px", display: "flex", flexDirection: "column", flex: 1 }}>
-            <p style={{ fontSize: 11, letterSpacing: 3, color: "#c4a040", textTransform: "uppercase", margin: "0 0 10px", fontFamily: "monospace" }}>
+          <div style={{ padding: "24px 28px 56px", display: "flex", flexDirection: "column", flex: 1 }}>
+            <p style={{ fontSize: 11, letterSpacing: 3, color: C.ocean, textTransform: "uppercase", margin: "0 0 10px", fontFamily: "monospace" }}>
               got it — thank you
             </p>
             <h2 style={{ fontSize: 26, fontWeight: 400, margin: "0 0 12px", color: C.pearl, lineHeight: 1.35 }}>
@@ -2609,50 +2609,51 @@ function StepBetaForm({ name, selfPosition, contacts, finish }) {
 
             {/* Builder card */}
             <div style={{
-              borderRadius: 14, marginBottom: 28, overflow: "hidden",
+              borderRadius: 14, marginBottom: 28,
               background: C.surface, border: `1px solid ${C.borderSoft}`,
+              padding: "16px 20px 20px",
             }}>
-              {/* Kid photo */}
-              <div style={{ position: "relative", height: 140, overflow: "hidden", background: C.raised }}>
-                <img
-                  src="/fhiwa-kid.jpg"
-                  alt="Fhiwa as a kid"
-                  style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top", opacity: 0.85 }}
-                  onError={e => { e.target.style.display = "none"; }}
-                />
+              {/* Name row with headshot bubble */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                <div>
+                  <p style={{ fontSize: 10, letterSpacing: 2, color: C.dim, textTransform: "uppercase", margin: "0 0 3px", fontFamily: "monospace" }}>built by</p>
+                  <p style={{ fontSize: 15, fontWeight: 500, color: C.pearl, margin: 0 }}>Fhiwa Ndou</p>
+                  <p style={{ fontSize: 11, color: C.muted, margin: "1px 0 0", fontFamily: "monospace" }}>@chieffhiwa</p>
+                </div>
+                {/* Headshot bubble — downlow */}
                 <div style={{
-                  position: "absolute", inset: 0,
-                  background: "linear-gradient(180deg, transparent 40%, #0f1520 100%)",
-                }} />
-                <div style={{
-                  position: "absolute", bottom: 10, left: 16,
-                  fontSize: 10, color: C.pearl, fontFamily: "monospace", letterSpacing: 1,
-                }}>me, probably plotting something</div>
+                  width: 48, height: 48, borderRadius: "50%", overflow: "hidden", flexShrink: 0,
+                  border: `1.5px solid ${C.border}`, background: C.raised,
+                }}>
+                  <img
+                    src="/fhiwa.jpg"
+                    alt="Fhiwa"
+                    style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }}
+                    onError={e => { e.target.style.display = "none"; }}
+                  />
+                </div>
               </div>
-              <div style={{ padding: "16px 20px 20px" }}>
-                <p style={{ fontSize: 10, letterSpacing: 2, color: C.dim, textTransform: "uppercase", margin: "0 0 4px", fontFamily: "monospace" }}>built by</p>
-                <p style={{ fontSize: 15, fontWeight: 500, color: C.pearl, margin: "0 0 8px" }}>Tshifhiwa (Fhiwa) Ndou</p>
-                <p style={{ fontSize: 12, color: C.muted, lineHeight: 1.75, margin: "0 0 14px" }}>
-                  I built Cove because I watched too many smart people take the wrong job for the wrong reasons. Career advice shouldn't cost $300/hr.
-                </p>
-                <a
-                  href="https://github.com/chieffhiwa/cove/issues/new?template=get-involved.md"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    display: "block", padding: "10px 16px", borderRadius: 10,
-                    background: C.ocean + "18", border: `1px solid ${C.ocean}40`,
-                    color: C.ocean, fontSize: 13, textDecoration: "none",
-                    textAlign: "center", marginBottom: 8,
-                  }}
-                >Open a GitHub issue to get involved →</a>
-                <a
-                  href="https://www.linkedin.com/in/fndou/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ fontSize: 12, color: C.muted, textDecoration: "none", display: "block", textAlign: "center" }}
-                >or find me on LinkedIn</a>
-              </div>
+              <p style={{ fontSize: 12, color: C.muted, lineHeight: 1.75, margin: "0 0 14px" }}>
+                I built Cove because I watched too many smart people take the wrong job for the wrong reasons. It shouldn't cost a ton of money just to get started.
+              </p>
+              <a
+                href="https://github.com/chieffhiwa/cove/issues/new?template=get-involved.md"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: "block", padding: "10px 16px", borderRadius: 10,
+                  background: C.ocean + "18", border: `1px solid ${C.ocean}40`,
+                  color: C.ocean, fontSize: 13, textDecoration: "none",
+                  textAlign: "center", marginBottom: 8,
+                  touchAction: "manipulation",
+                }}
+              >Open a GitHub issue to get involved →</a>
+              <a
+                href="https://www.linkedin.com/in/fndou/"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ fontSize: 12, color: C.muted, textDecoration: "none", display: "block", textAlign: "center" }}
+              >or find me on LinkedIn</a>
             </div>
 
             <Btn onClick={finish}>See my dashboard →</Btn>
@@ -4273,7 +4274,7 @@ function ProfileTab({ userData, onReset }) {
         </div>
         <div style={{ padding: "10px 18px 18px" }}>
           <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.75, margin: "0 0 14px" }}>
-            Cove is free and open-source. Career advice shouldn't cost $300/hr. We're looking for UX testers, designers, engineers, and funders.
+            Cove is free and open-source. It shouldn't cost a ton of money just to get started. You don't always need a reason to help somebody.
           </p>
           <a
             href="https://github.com/chieffhiwa/cove/issues/new"
