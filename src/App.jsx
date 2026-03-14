@@ -135,7 +135,7 @@ const DEPTH_STOPS = [
 ];
 
 function getDepthPalette(step) {
-  const TOTAL = 17;
+  const TOTAL = 19;
   const t = Math.min(step, TOTAL) / TOTAL;
   const stops = DEPTH_STOPS;
   const seg = (stops.length - 1) * t;
@@ -285,14 +285,15 @@ function Onboard({ step, setStep, userData, update, finish }) {
     <StepListBuilder    key={16} contacts={userData.contacts} update={update} next={(contacts) => {
       update({ contacts });
       track("list_built", { list_count: contacts.length });
-      track("onboarding_completed");
       go(17, "step_completed", { step_name: "list_built" });
     }} />,
-    <StepBetaForm       key={17} name={userData.name} selfPosition={userData.selfPosition} contacts={userData.contacts} finish={finish} />,
+    <StepListReveal     key={17} contacts={userData.contacts} name={userData.name} next={() => go(18, "step_completed", { step_name: "list_reveal" })} />,
+    <StepBreath         key={18} name={userData.name} contacts={userData.contacts} selfPosition={userData.selfPosition} next={() => go(19, "step_completed", { step_name: "breath" })} />,
+    <StepBetaForm       key={19} name={userData.name} selfPosition={userData.selfPosition} contacts={userData.contacts} finish={() => { track("onboarding_completed"); finish(); }} />,
   ];
 
-  // Dots: philosophy(2), name(3), matrix intro(4), matrix(5), brave(10), fears(11), list(14-16)
-  const dotMap = { 2:1, 3:2, 4:3, 5:3, 10:4, 11:4, 14:5, 15:5, 16:5, 17:5 };
+  // Dots: philosophy(2), name(3), matrix intro(4), matrix(5), brave(10), fears(11), list(14-19)
+  const dotMap = { 2:1, 3:2, 4:3, 5:3, 10:4, 11:4, 14:5, 15:5, 16:5, 17:5, 18:5, 19:5 };
   const showDots = step in dotMap;
   const dotStep = dotMap[step] || 0;
 
@@ -1201,6 +1202,176 @@ function StepListBuilder({ contacts = [], update, next }) {
           skip for now
         </button>
       )}
+    </div>
+  );
+}
+
+// ── Step 17: List Reveal ───────────────────────────────────────────────────────
+function StepListReveal({ contacts = [], name, next }) {
+  const visible = useFadeIn([]);
+  const list = contacts.filter(c => c.name || (c.firstName && c.firstName.trim()));
+
+  return (
+    <div style={{ ...fadeStyle(visible), padding: "72px 28px 48px", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+      <div style={{ flex: 1 }}>
+        <p style={{ fontSize: 11, letterSpacing: 2, color: C.ocean, fontFamily: "monospace", margin: "0 0 20px" }}>
+          YOUR STARTING LINEUP
+        </p>
+        <h2 style={{ fontSize: 28, fontWeight: 300, color: C.pearl, lineHeight: 1.4, margin: "0 0 8px" }}>
+          Look at that.
+        </h2>
+        <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.8, margin: "0 0 28px" }}>
+          {list.length > 0
+            ? `${list.length} ${list.length === 1 ? "person" : "people"} in your corner. That's how it starts.`
+            : "Your list lives in your dashboard. You can add people any time."}
+        </p>
+
+        {/* Contact list — Salesforce-style */}
+        {list.length > 0 && (
+          <div style={{
+            background: C.surface, borderRadius: 14,
+            border: `1px solid ${C.borderSoft}`, overflow: "hidden",
+            marginBottom: 20,
+          }}>
+            {/* Header row */}
+            <div style={{
+              display: "grid", gridTemplateColumns: "34px 1fr 56px",
+              gap: 10, padding: "9px 16px",
+              borderBottom: `1px solid ${C.borderSoft}`,
+            }}>
+              {["", "NAME", "LEAD"].map((h, i) => (
+                <span key={i} style={{ fontSize: 9, color: C.dim, fontFamily: "monospace", letterSpacing: 1 }}>{h}</span>
+              ))}
+            </div>
+
+            {/* Rows */}
+            {list.slice(0, 8).map((c, i) => {
+              const displayName = c.name || `${c.firstName || ""} ${c.lastName || ""}`.trim();
+              return (
+                <div key={i} style={{
+                  display: "grid", gridTemplateColumns: "34px 1fr 56px",
+                  gap: 10, padding: "10px 16px", alignItems: "center",
+                  borderBottom: i < Math.min(list.length, 8) - 1 ? `1px solid ${C.borderSoft}` : "none",
+                  background: i % 2 === 0 ? "transparent" : `${C.raised}70`,
+                }}>
+                  <Avatar name={displayName} size={26} />
+                  <span style={{ fontSize: 14, color: C.text }}>{displayName}</span>
+                  <span style={{
+                    fontSize: 9, fontFamily: "monospace", padding: "3px 7px", borderRadius: 20,
+                    background: `${C.ocean}15`, color: C.sky,
+                    border: `1px solid ${C.ocean}30`, textAlign: "center",
+                  }}>warm</span>
+                </div>
+              );
+            })}
+
+            {list.length > 8 && (
+              <div style={{
+                padding: "10px 16px", fontSize: 11, color: C.dim,
+                fontFamily: "monospace", textAlign: "center",
+                borderTop: `1px solid ${C.borderSoft}`,
+              }}>
+                +{list.length - 8} more in your dashboard
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Progress bar */}
+        {list.length > 0 && (
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+              <span style={{ fontSize: 11, color: C.muted, fontFamily: "monospace" }}>progress to 30</span>
+              <span style={{ fontSize: 11, color: C.ocean, fontFamily: "monospace" }}>{list.length}/30</span>
+            </div>
+            <div style={{ height: 3, background: C.borderSoft, borderRadius: 4, overflow: "hidden" }}>
+              <div style={{
+                height: "100%",
+                width: `${Math.min((list.length / 30) * 100, 100)}%`,
+                background: `linear-gradient(90deg, ${C.oceanDeep}, ${C.ocean})`,
+                borderRadius: 4,
+              }} />
+            </div>
+          </div>
+        )}
+
+        <div style={{
+          padding: "16px 18px", borderRadius: 10,
+          background: C.surface, border: `1px solid ${C.borderSoft}`,
+          borderLeft: `2px solid ${C.seafoam}`,
+        }}>
+          <p style={{ margin: 0, fontSize: 13, color: C.muted, lineHeight: 1.85, fontStyle: "italic" }}>
+            You can keep adding to this in your dashboard. The goal isn't to hit 30 today — it's to start somewhere real.
+          </p>
+        </div>
+      </div>
+
+      <Btn onClick={next} style={{ marginTop: 32 }}>looks good →</Btn>
+    </div>
+  );
+}
+
+// ── Step 18: Breath ────────────────────────────────────────────────────────────
+function StepBreath({ name, contacts = [], selfPosition, next }) {
+  const visible = useFadeIn([]);
+  const quadrant = selfPosition ? getQuadrant(selfPosition.x, selfPosition.y) : null;
+  const qr = quadrant ? QUADRANT_READS[quadrant] : null;
+  const listCount = contacts.filter(c => c.name || c.firstName).length;
+
+  const milestones = [
+    { text: "Placed yourself on the matrix" },
+    { text: "Wrote down what scares you" },
+    { text: "Thought about what excites you" },
+    listCount > 0 ? { text: `Named ${listCount} ${listCount === 1 ? "person" : "people"} in your corner` } : { text: "Thought about who can help" },
+  ];
+
+  return (
+    <div style={{
+      ...fadeStyle(visible),
+      display: "flex", flexDirection: "column",
+      justifyContent: "center", alignItems: "center",
+      minHeight: "100vh", padding: "48px 32px",
+      textAlign: "center",
+    }}>
+      <div style={{ fontSize: 44, marginBottom: 36, opacity: 0.55, letterSpacing: 8 }}>〰</div>
+
+      <div style={{ maxWidth: 320, marginBottom: 48 }}>
+        <h2 style={{ fontSize: 26, fontWeight: 300, color: C.pearl, lineHeight: 1.5, margin: "0 0 16px", letterSpacing: -0.5 }}>
+          You've done a lot.
+        </h2>
+        <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.9, margin: "0 0 32px" }}>
+          Seriously. Most people skip the hard parts. You didn't.
+        </p>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, textAlign: "left", marginBottom: 32 }}>
+          {milestones.map((m, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <span style={{ color: C.seafoam, fontSize: 14, flexShrink: 0 }}>✓</span>
+              <span style={{ fontSize: 13, color: C.muted, lineHeight: 1.6 }}>{m.text}</span>
+            </div>
+          ))}
+        </div>
+
+        {qr && (
+          <div style={{
+            padding: "14px 18px", borderRadius: 10,
+            background: C.surface, border: `1px solid ${C.borderSoft}`,
+            borderLeft: `3px solid ${qr.color}`,
+            textAlign: "left",
+          }}>
+            <div style={{ fontSize: 10, color: qr.color, fontFamily: "monospace", letterSpacing: 1, marginBottom: 4 }}>
+              YOU: {qr.title.toUpperCase()}
+            </div>
+            <p style={{ margin: 0, fontSize: 12, color: C.muted, lineHeight: 1.8 }}>{qr.short}</p>
+          </div>
+        )}
+      </div>
+
+      <div style={{ width: "100%", maxWidth: 320 }}>
+        <Btn onClick={next}>one more thing →</Btn>
+      </div>
+
+      <p style={{ fontSize: 11, color: C.dim, marginTop: 20, fontStyle: "italic" }}>almost done</p>
     </div>
   );
 }
@@ -2584,94 +2755,199 @@ function MainApp({ userData, update, tab, setTab, activeContact, setActiveContac
 }
 
 // ── Home Tab ──────────────────────────────────────────────────────────────────
+const HOME_QUOTES = [
+  { text: "The karma compounds quietly.", attr: null },
+  { text: "Do you always need a reason to help somebody?", attr: "— Ash Ketchum" },
+  { text: "Careers over cash. The right fit pays you back in ways money can't count.", attr: null },
+  { text: "Go-Giver first. Show up with something to offer.", attr: null },
+  { text: "Where you start is not where you have to stay.", attr: null },
+  { text: "The brave career decision is rarely the comfortable one.", attr: null },
+  { text: "Your energy is finite. Spend it on people who multiply it.", attr: null },
+  { text: "Generous enthusiasm is a superpower.", attr: null },
+];
+
 function HomeTab({ userData, setTab }) {
   const visible = useFadeIn(["home"]);
+  const firstName = userData.name?.split(" ")[0] || null;
   const quadrant = userData.selfPosition ? getQuadrant(userData.selfPosition.x, userData.selfPosition.y) : null;
   const qr = quadrant ? QUADRANT_READS[quadrant] : null;
+
+  // Load contacts from list100 or fall back to onboarding contacts
+  const listEntries = (() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("cove_list100") || "[]");
+      if (saved.length > 0) return saved;
+    } catch {}
+    return (userData.contacts || []).map(c => {
+      const parts = (c.name || "").trim().split(" ");
+      return { firstName: parts[0] || "", lastName: parts.slice(1).join(" ") || "", warm: "warm", attempt1: "", attempt2: "" };
+    });
+  })();
+
+  // Rotate quote by day
+  const quote = HOME_QUOTES[Math.floor(Date.now() / 86400000) % HOME_QUOTES.length];
 
   return (
     <div style={{ ...fadeStyle(visible), padding: "28px 22px" }}>
 
       {/* Greeting */}
-      <div style={{ marginBottom: 40 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 400, margin: "0 0 10px", color: C.pearl, letterSpacing: -0.3 }}>
-          Take a breath.
+      <div style={{ marginBottom: 32 }}>
+        <h1 style={{ fontSize: 22, fontWeight: 400, margin: "0 0 8px", color: C.pearl, letterSpacing: -0.3 }}>
+          {firstName ? `Hey, ${firstName}.` : "Welcome back."}
         </h1>
-        <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.85, margin: 0 }}>
-          You've done the hard part. You placed yourself on the map. Most people never do that. They just keep moving without knowing where they're starting from.
+        <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.85, margin: 0 }}>
+          Your career. Your current.
         </p>
       </div>
 
-      {/* Matrix read */}
-      {qr && (
-        <div style={{ marginBottom: 32 }}>
-          <SectionLabel>where you are right now</SectionLabel>
+      {/* Matrix position widget */}
+      {qr && userData.selfPosition && (
+        <div style={{ marginBottom: 28 }}>
+          <SectionLabel>where you are</SectionLabel>
           <div style={{
-            padding: "20px", borderRadius: 12,
+            padding: "16px", borderRadius: 12,
             background: C.surface, border: `1px solid ${C.borderSoft}`,
+            display: "flex", gap: 14, alignItems: "center",
           }}>
-            <div style={{ fontSize: 15, color: qr.color, fontWeight: 500, marginBottom: 8 }}>{qr.title}</div>
-            <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.8, margin: 0 }}>{qr.read}</p>
+            {/* Mini matrix */}
+            <div style={{
+              width: 60, height: 60, flexShrink: 0,
+              position: "relative",
+              background: C.raised, borderRadius: 8,
+              border: `1px solid ${C.border}`, overflow: "hidden",
+            }}>
+              <div style={{ position: "absolute", top: "50%", left: 0, right: 0, height: 1, background: C.border }} />
+              <div style={{ position: "absolute", left: "50%", top: 0, bottom: 0, width: 1, background: C.border }} />
+              {/* Self dot */}
+              <div style={{
+                position: "absolute",
+                left: `${userData.selfPosition.x}%`,
+                top: `${userData.selfPosition.y}%`,
+                transform: "translate(-50%,-50%)",
+              }}>
+                <div style={{
+                  width: 10, height: 10, borderRadius: "50%",
+                  background: qr.color,
+                  boxShadow: `0 0 6px ${qr.color}80`,
+                }} />
+              </div>
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 11, color: qr.color, fontFamily: "monospace", letterSpacing: 1, marginBottom: 4 }}>
+                {qr.title.toUpperCase()}
+              </div>
+              <p style={{ margin: 0, fontSize: 12, color: C.muted, lineHeight: 1.7 }}>{qr.short}</p>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Why the matrix matters */}
-      <div style={{ marginBottom: 32 }}>
-        <SectionLabel>why this matters</SectionLabel>
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          {[
-            { icon: "📍", title: "It's a starting point, not a verdict", body: "Where you place yourself today is just data. It changes. That's the whole point. Cove is here to help you move." },
-            { icon: "🔄", title: "Honesty is the strategy", body: "The people who get the furthest fastest are the ones who see themselves clearly. Not harshly. Clearly. The matrix is practice for that." },
-            { icon: "🌊", title: "What's coming", body: "We're building out the next layer: values exploration, connection mapping, the full picture. For now, sit with where you are. That's enough." },
-          ].map((item, i) => (
-            <div key={i} style={{
-              padding: "18px 20px", borderRadius: 12,
-              background: C.surface, border: `1px solid ${C.borderSoft}`,
-              display: "flex", gap: 14, alignItems: "flex-start",
-            }}>
-              <span style={{ fontSize: 20, lineHeight: 1, marginTop: 2 }}>{item.icon}</span>
-              <div>
-                <div style={{ fontSize: 13, color: C.pearl, fontWeight: 500, marginBottom: 5 }}>{item.title}</div>
-                <div style={{ fontSize: 13, color: C.muted, lineHeight: 1.75 }}>{item.body}</div>
-              </div>
-            </div>
-          ))}
+      {/* Running contact list */}
+      <div style={{ marginBottom: 28 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+          <div style={{ fontSize: 9, color: C.muted, letterSpacing: 1.5, fontFamily: "monospace", textTransform: "uppercase" }}>your people</div>
+          <span
+            onClick={() => setTab("list")}
+            style={{ fontSize: 11, color: C.ocean, fontFamily: "monospace", cursor: "pointer" }}
+          >
+            see all →
+          </span>
         </div>
-      </div>
 
-      {/* List of 100 feature card */}
-      <div style={{ marginBottom: 32 }}>
-        <div style={{
-          padding: "20px", borderRadius: 12,
-          background: C.surface, border: `1px solid ${C.border}`,
-          borderLeft: `3px solid ${C.seafoam}`,
-          cursor: "pointer",
-        }} onClick={() => setTab("list")}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-            <span style={{
-              fontSize: 9, fontWeight: 700, fontFamily: "monospace",
-              background: C.seafoam, color: C.bg,
-              padding: "2px 6px", borderRadius: 4, letterSpacing: 0.5,
-            }}>NEW</span>
-            <span style={{ fontSize: 13, color: C.seafoam, fontWeight: 500 }}>Your scratchpad is ready</span>
+        {listEntries.length === 0 ? (
+          <div
+            onClick={() => setTab("list")}
+            style={{
+              padding: "20px", borderRadius: 12, textAlign: "center",
+              background: C.surface, border: `1px dashed ${C.border}`,
+              cursor: "pointer",
+            }}
+          >
+            <div style={{ fontSize: 13, color: C.muted, marginBottom: 6 }}>Your list is empty</div>
+            <span style={{ fontSize: 12, color: C.ocean, fontFamily: "monospace" }}>+ add your first contact →</span>
           </div>
-          <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.75, margin: "0 0 10px" }}>
-            One job at a time. The <strong style={{ color: C.pearl }}>List of 100</strong> tab is your quick-capture tool — paste a link, add a name, done. Excel is still your source of truth. This is your scratchpad.
-          </p>
-          <span style={{ fontSize: 12, color: C.seafoam, fontFamily: "monospace" }}>open list →</span>
-        </div>
+        ) : (
+          <div style={{
+            background: C.surface, borderRadius: 12,
+            border: `1px solid ${C.borderSoft}`, overflow: "hidden",
+          }}>
+            {listEntries.slice(0, 5).map((e, i) => {
+              const fullName = `${e.firstName || ""} ${e.lastName || ""}`.trim() || e.name || "—";
+              const a1Color = { sent: C.ocean, replied: "#6dbb8a", call: "#c4a040" }[e.attempt1] || C.dim;
+              return (
+                <div
+                  key={i}
+                  onClick={() => setTab("list")}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 12,
+                    padding: "11px 14px",
+                    borderBottom: i < Math.min(listEntries.length, 5) - 1 ? `1px solid ${C.borderSoft}` : "none",
+                    cursor: "pointer",
+                  }}
+                >
+                  <Avatar name={fullName} size={30} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, color: C.text, marginBottom: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{fullName}</div>
+                    {e.company && <div style={{ fontSize: 11, color: C.dim, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.company}</div>}
+                  </div>
+                  {e.attempt1 && e.attempt1 !== "—" ? (
+                    <span style={{
+                      fontSize: 9, fontFamily: "monospace", padding: "2px 7px", borderRadius: 20, flexShrink: 0,
+                      background: `${a1Color}15`, color: a1Color, border: `1px solid ${a1Color}40`,
+                    }}>{e.attempt1}</span>
+                  ) : (
+                    <span style={{
+                      fontSize: 9, fontFamily: "monospace", padding: "2px 7px", borderRadius: 20, flexShrink: 0,
+                      background: e.warm === "warm" ? "#c4702012" : `${C.ocean}10`,
+                      color: e.warm === "warm" ? "#c47020" : C.muted,
+                      border: `1px solid ${e.warm === "warm" ? "#c4702030" : C.border}`,
+                    }}>{e.warm === "warm" ? "warm" : "cold"}</span>
+                  )}
+                </div>
+              );
+            })}
+            {listEntries.length > 5 && (
+              <div
+                onClick={() => setTab("list")}
+                style={{
+                  padding: "10px 14px", fontSize: 11, color: C.ocean,
+                  fontFamily: "monospace", textAlign: "center",
+                  borderTop: `1px solid ${C.borderSoft}`, cursor: "pointer",
+                }}
+              >
+                +{listEntries.length - 5} more → open list
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* Quote */}
+      {/* Matrix deep read */}
+      {qr && (
+        <div style={{ marginBottom: 28 }}>
+          <SectionLabel>the read on you</SectionLabel>
+          <div style={{
+            padding: "18px 20px", borderRadius: 12,
+            background: C.surface, border: `1px solid ${C.borderSoft}`,
+            borderLeft: `3px solid ${qr.color}40`,
+          }}>
+            <p style={{ margin: 0, fontSize: 13, color: C.muted, lineHeight: 1.85 }}>{qr.read}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Daily quote */}
       <blockquote style={{
         margin: 0, padding: "18px 20px", borderRadius: 12,
         background: C.surface, border: `1px solid ${C.borderSoft}`,
         borderLeft: `2px solid ${C.oceanDeep}`,
       }}>
-        <p style={{ margin: 0, fontSize: 13, color: C.muted, fontStyle: "italic", lineHeight: 1.9 }}>
-          "The karma compounds quietly."
+        <p style={{ margin: "0 0 6px", fontSize: 13, color: C.muted, fontStyle: "italic", lineHeight: 1.9 }}>
+          "{quote.text}"
         </p>
+        {quote.attr && (
+          <p style={{ margin: 0, fontSize: 11, color: C.dim, fontFamily: "monospace" }}>{quote.attr}</p>
+        )}
       </blockquote>
 
     </div>
