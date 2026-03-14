@@ -2565,7 +2565,7 @@ function StepBetaForm({ name, selfPosition, contacts, finish }) {
             <img
               src="/fhiwa-kid.jpg"
               alt=""
-              style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 20%" }}
+              style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 5%" }}
             />
             <div style={{
               position: "absolute", inset: 0,
@@ -2591,11 +2591,9 @@ function StepBetaForm({ name, selfPosition, contacts, finish }) {
             {/* Who we're looking for */}
             <div style={{ marginBottom: 28 }}>
               {[
-                { role: "UX Testers", desc: "Tell us what's broken or confusing" },
-                { role: "Designers", desc: "Make it more beautiful and clear" },
-                { role: "Engineers & Builders", desc: "Help us ship new features" },
-                { role: "Eng Managers", desc: "Advise on direction and systems" },
-                { role: "Funders", desc: "Help us keep this free for everyone" },
+                { role: "UX/UI Designers", desc: "mobile apps, social apps, network apps" },
+                { role: "Career Coaches & Advisors", desc: "private practice or institutional" },
+                { role: "College & High School Counselors", desc: "career centers, advising offices" },
               ].map(({ role, desc }) => (
                 <div key={role} style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 10 }}>
                   <div style={{ width: 6, height: 6, borderRadius: "50%", background: C.ocean, marginTop: 5, flexShrink: 0 }} />
@@ -2633,9 +2631,18 @@ function StepBetaForm({ name, selfPosition, contacts, finish }) {
                   />
                 </div>
               </div>
-              <p style={{ fontSize: 12, color: C.muted, lineHeight: 1.75, margin: "0 0 14px" }}>
-                I built Cove because I watched too many smart people take the wrong job for the wrong reasons. It shouldn't cost a ton of money just to get started.
-              </p>
+              <div style={{ margin: "0 0 14px" }}>
+                <p style={{ fontSize: 13, color: C.pearl, lineHeight: 1.5, margin: "0 0 6px", fontWeight: 400 }}>
+                  Building Cove.
+                </p>
+                <p style={{ fontSize: 12, color: C.muted, lineHeight: 1.7, margin: "0 0 4px" }}>
+                  Advising grads + underrepresented job seekers at{" "}
+                  <a href="https://postgraduateproject.org" target="_blank" rel="noopener noreferrer" style={{ color: C.ocean, textDecoration: "none" }}>PostGradProject.org</a>.
+                </p>
+                <p style={{ fontSize: 12, color: C.muted, lineHeight: 1.7, margin: 0 }}>
+                  Writing on agency, idiosyncrasy & Blackness.
+                </p>
+              </div>
               <a
                 href="https://github.com/chieffhiwa/cove/issues/new?template=get-involved.md"
                 target="_blank"
