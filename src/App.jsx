@@ -2127,10 +2127,12 @@ function StepMatrixPause({ selfPosition, next, goBack }) {
 function StepQuadrantReveal({ selfPosition, next }) {
   const [visible, setVisible] = useState(false);
   const [imgLoaded, setImgLoaded] = useState(false);
+  const [gwVisible, setGwVisible] = useState(false);
 
   useEffect(() => {
-    const t = setTimeout(() => setVisible(true), 80);
-    return () => clearTimeout(t);
+    const t1 = setTimeout(() => setVisible(true), 80);
+    const t2 = setTimeout(() => setGwVisible(true), 1200);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
   }, []);
 
   const quadrant = selfPosition ? getQuadrant(selfPosition.x, selfPosition.y) : "brave-curious";
@@ -2204,9 +2206,32 @@ function StepQuadrantReveal({ selfPosition, next }) {
             {qr.title}
           </h1>
 
-          <p style={{ fontSize: 17, color: C.mist, lineHeight: 1.75, margin: "0 0 48px", fontStyle: "italic" }}>
+          <p style={{ fontSize: 17, color: C.mist, lineHeight: 1.75, margin: "0 0 36px", fontStyle: "italic" }}>
             {qr.short}
           </p>
+
+          {/* GW ok */}
+          <div style={{
+            opacity: gwVisible ? 1 : 0,
+            transform: gwVisible ? "translateY(0) scale(1)" : "translateY(16px) scale(0.95)",
+            transition: "opacity 0.7s ease, transform 0.7s ease",
+            marginBottom: 36,
+          }}>
+            <img
+              src="/gw-ok.png"
+              alt=""
+              style={{
+                width: 130, height: "auto",
+                filter: "saturate(0.25) brightness(1.1) contrast(0.9)",
+                opacity: 0.55,
+                mixBlendMode: "screen",
+                borderRadius: 12,
+              }}
+            />
+            <div style={{ fontSize: 10, color: C.dim, fontFamily: "monospace", letterSpacing: 2, marginTop: 6 }}>
+              nice.
+            </div>
+          </div>
 
           <Btn onClick={next}>What does this mean for you? →</Btn>
         </div>
