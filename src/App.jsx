@@ -3407,13 +3407,30 @@ function VibesTab() {
   ];
 
   return (
-    <div style={{ ...fadeStyle(visible), padding: "28px 22px" }}>
-      <div style={{ marginBottom: 28 }}>
-        <h2 style={{ fontSize: 22, fontWeight: 400, margin: "0 0 8px", color: C.pearl }}>Vibes</h2>
-        <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.7, margin: 0 }}>
-          The job search is a long game. Keep something here that reminds you why you're even playing.
-        </p>
+    <div style={{ ...fadeStyle(visible) }}>
+
+      {/* Water image header */}
+      <div style={{ position: "relative", height: 200, overflow: "hidden" }}>
+        <img
+          src="/water.jpg"
+          alt=""
+          style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }}
+        />
+        <div style={{
+          position: "absolute", inset: 0,
+          background: "linear-gradient(180deg, transparent 30%, #0b0f14 100%)",
+        }} />
+        <div style={{
+          position: "absolute", bottom: 16, left: 22,
+        }}>
+          <h2 style={{ fontSize: 22, fontWeight: 400, margin: 0, color: C.pearl }}>Vibes</h2>
+        </div>
       </div>
+
+      <div style={{ padding: "16px 22px 28px" }}>
+      <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.7, margin: "0 0 24px" }}>
+        The job search is a long game. Keep something here that reminds you why you're even playing.
+      </p>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 20 }}>
         {cards.map((card, i) => (
@@ -3445,6 +3462,7 @@ function VibesTab() {
         <p style={{ margin: 0, fontSize: 13, color: C.muted, fontStyle: "italic", lineHeight: 1.9 }}>
           You're not desperate. You're selective. Show up like someone who's been places and is genuinely excited about where they're going next. That energy is not fake it's what gets you in the room.
         </p>
+      </div>
       </div>
     </div>
   );
