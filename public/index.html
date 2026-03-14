@@ -13,6 +13,11 @@
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
         overscroll-behavior: none;
+        touch-action: manipulation; /* kill 300ms tap delay globally */
+      }
+      a, button, [role="button"] {
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
       }
       @keyframes pulse {
         0%, 100% { opacity: 1; transform: scale(1); }

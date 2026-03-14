@@ -153,9 +153,11 @@ function useFadeIn(deps = []) {
   const [visible, setVisible] = useState(false);
   useEffect(() => {
     setVisible(false);
-    const t = setTimeout(() => setVisible(true), 40);
-    return () => clearTimeout(t);
-  }, deps);
+    // double-rAF: one frame to render invisible, next frame to fade in (~16-32ms vs 40ms)
+    let id1, id2;
+    id1 = requestAnimationFrame(() => { id2 = requestAnimationFrame(() => setVisible(true)); });
+    return () => { cancelAnimationFrame(id1); cancelAnimationFrame(id2); };
+  }, deps); // eslint-disable-line react-hooks/exhaustive-deps
   return visible;
 }
 
@@ -2843,7 +2845,8 @@ function MainApp({ userData, update, tab, setTab, activeContact, setActiveContac
                 display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
                 padding: "6px 12px", borderRadius: 10, cursor: "pointer",
                 color: tab === t.id ? C.ocean : C.muted,
-                transition: "color 0.15s", position: "relative",
+                transition: "color 0.15s, transform 0.1s", position: "relative",
+                touchAction: "manipulation", WebkitTapHighlightColor: "transparent",
               }}
             >
               <span style={{ fontSize: 18, lineHeight: 1 }}>{t.icon}</span>
@@ -4125,24 +4128,34 @@ function Avatar({ name, size = 36, glow = false }) {
 }
 
 function Btn({ children, onClick, disabled, style }) {
-  const [hovered, setHovered] = useState(false);
+  const [pressed, setPressed] = useState(false);
+  const handleClick = (e) => {
+    if (disabled) return;
+    if (navigator.vibrate) navigator.vibrate(10);
+    onClick?.(e);
+  };
   return (
     <div
-      onClick={!disabled ? onClick : undefined}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onClick={handleClick}
+      onMouseDown={() => !disabled && setPressed(true)}
+      onMouseUp={() => setPressed(false)}
+      onMouseLeave={() => setPressed(false)}
+      onTouchStart={() => !disabled && setPressed(true)}
+      onTouchEnd={() => { setPressed(false); }}
       style={{
         width: "100%", padding: "17px", borderRadius: 14,
         background: disabled ? C.faint : `linear-gradient(135deg, ${C.tide}, ${C.ocean})`,
         color: disabled ? C.muted : "#f0f8ff",
         fontSize: 15, textAlign: "center", cursor: disabled ? "default" : "pointer",
-        transition: "opacity 0.2s, transform 0.15s, box-shadow 0.2s",
-        opacity: disabled ? 0.5 : hovered ? 0.92 : 1,
-        transform: hovered && !disabled ? "translateY(-1px)" : "none",
-        boxShadow: hovered && !disabled ? `0 8px 28px ${C.ocean}30` : `0 2px 12px ${C.ocean}18`,
+        transition: "opacity 0.15s, transform 0.1s, box-shadow 0.15s",
+        opacity: disabled ? 0.5 : pressed ? 0.85 : 1,
+        transform: pressed && !disabled ? "scale(0.97)" : "scale(1)",
+        boxShadow: pressed ? `0 1px 6px ${C.ocean}18` : `0 4px 20px ${C.ocean}28`,
         fontFamily: "Georgia, serif",
         letterSpacing: 0.3,
         userSelect: "none",
+        WebkitTapHighlightColor: "transparent",
+        touchAction: "manipulation",
         boxSizing: "border-box",
         border: `1px solid ${C.ocean}30`,
         ...style,
@@ -4244,19 +4257,23 @@ function ProfileTab({ userData, onReset }) {
         borderRadius: 14, marginBottom: 20, overflow: "hidden",
         background: C.surface, border: `1px solid ${C.borderSoft}`,
       }}>
-        <div style={{ position: "relative", height: 110, overflow: "hidden", background: C.raised }}>
-          <img
-            src="/fhiwa-kid.jpg"
-            alt=""
-            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 30%", opacity: 0.75 }}
-            onError={e => { e.target.style.display = "none"; }}
-          />
-          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, transparent 30%, #0f1520 100%)" }} />
+        <div style={{ padding: "18px 18px 6px", display: "flex", gap: 14, alignItems: "center" }}>
+          <div style={{ width: 52, height: 52, borderRadius: "50%", overflow: "hidden", flexShrink: 0, background: C.raised, border: `1.5px solid ${C.border}` }}>
+            <img
+              src="/fhiwa.jpg"
+              alt="Fhiwa"
+              style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }}
+              onError={e => { e.target.style.display = "none"; }}
+            />
+          </div>
+          <div>
+            <p style={{ fontSize: 9, letterSpacing: 2, color: C.dim, textTransform: "uppercase", margin: "0 0 3px", fontFamily: "monospace" }}>built by</p>
+            <p style={{ fontSize: 14, color: C.pearl, margin: 0, fontWeight: 400 }}>Fhiwa Ndou</p>
+          </div>
         </div>
-        <div style={{ padding: "14px 18px 18px" }}>
-          <p style={{ fontSize: 9, letterSpacing: 2, color: C.dim, textTransform: "uppercase", margin: "0 0 6px", fontFamily: "monospace" }}>open source project</p>
+        <div style={{ padding: "10px 18px 18px" }}>
           <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.75, margin: "0 0 14px" }}>
-            Cove is free and open-source. We need UX testers, designers, engineers, and people who believe career advice should be accessible to everyone.
+            Cove is free and open-source. Career advice shouldn't cost $300/hr. We're looking for UX testers, designers, engineers, and funders.
           </p>
           <a
             href="https://github.com/chieffhiwa/cove/issues/new"
@@ -4266,6 +4283,7 @@ function ProfileTab({ userData, onReset }) {
               display: "block", padding: "10px 14px", borderRadius: 10, textAlign: "center",
               background: C.ocean + "18", border: `1px solid ${C.ocean}40`,
               color: C.ocean, fontSize: 12, textDecoration: "none",
+              touchAction: "manipulation",
             }}
           >Get involved on GitHub →</a>
         </div>
@@ -4297,7 +4315,8 @@ function ProfileTab({ userData, onReset }) {
 function fadeStyle(visible) {
   return {
     opacity: visible ? 1 : 0,
-    transform: visible ? "translateY(0)" : "translateY(10px)",
-    transition: "opacity 0.35s ease, transform 0.35s ease",
+    transform: visible ? "translateY(0)" : "translateY(8px)",
+    transition: "opacity 0.18s ease, transform 0.18s ease",
+    willChange: "opacity, transform",
   };
 }
