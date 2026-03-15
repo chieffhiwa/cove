@@ -2560,67 +2560,68 @@ function StepBetaForm({ name, selfPosition, contacts, finish }) {
       <Shell depth={19}>
         <div style={{ ...fadeStyle(visible), minHeight: "100vh", display: "flex", flexDirection: "column" }}>
 
-          {/* Kid photo banner — full bleed */}
-          <div style={{ position: "relative", height: 220, flexShrink: 0, overflow: "hidden", background: C.raised }}>
+          {/* Hero photo — tall, face bright, headline overlaid at bottom */}
+          <div style={{ position: "relative", height: 290, flexShrink: 0, overflow: "hidden", background: "#08090c" }}>
             <img
               src="/fhiwa-kid.jpg"
               alt=""
-              style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 5%" }}
+              style={{
+                width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 10%",
+                filter: "brightness(1.5) contrast(1.08)",
+              }}
             />
+            {/* dark top for dots, clear middle for face, dark bottom for text */}
             <div style={{
               position: "absolute", inset: 0,
-              background: "linear-gradient(180deg, rgba(11,15,20,0.2) 0%, transparent 40%, #0f1520 100%)",
+              background: "linear-gradient(180deg, rgba(8,9,12,0.7) 0%, transparent 25%, transparent 52%, rgba(8,9,12,0.88) 80%, #0b0f14 100%)",
             }} />
-            <div style={{
-              position: "absolute", bottom: 14, left: 20,
-              fontSize: 10, color: "rgba(255,255,255,0.55)", fontFamily: "monospace", letterSpacing: 1,
-            }}>me, probably plotting something</div>
+            {/* caption */}
+            <div style={{ position: "absolute", top: 14, right: 16, fontSize: 9, color: "rgba(255,255,255,0.35)", fontFamily: "monospace", letterSpacing: 1 }}>
+              me, probably plotting
+            </div>
+            {/* Overlaid headline */}
+            <div style={{ position: "absolute", bottom: 22, left: 22, right: 22 }}>
+              <p style={{ fontSize: 10, letterSpacing: 3, color: C.ocean, textTransform: "uppercase", margin: "0 0 6px", fontFamily: "monospace" }}>
+                got it ✓
+              </p>
+              <h2 style={{ fontSize: 25, fontWeight: 400, color: "#fff", lineHeight: 1.3, margin: 0, textShadow: "0 2px 12px rgba(0,0,0,0.7)" }}>
+                We hope that helped,<br />{fields.firstName}.
+              </h2>
+            </div>
           </div>
 
-          <div style={{ padding: "24px 28px 56px", display: "flex", flexDirection: "column", flex: 1 }}>
-            <p style={{ fontSize: 11, letterSpacing: 3, color: C.ocean, textTransform: "uppercase", margin: "0 0 10px", fontFamily: "monospace" }}>
-              got it — thank you
-            </p>
-            <h2 style={{ fontSize: 26, fontWeight: 400, margin: "0 0 12px", color: C.pearl, lineHeight: 1.35 }}>
-              We hope that helped, {fields.firstName}.
-            </h2>
-            <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.85, margin: "0 0 28px" }}>
-              Cove is open-source and free — built by real career advisors for real people. We're looking for folks who want to keep building it.
+          <div style={{ padding: "22px 22px 52px", display: "flex", flexDirection: "column", flex: 1 }}>
+            <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.8, margin: "0 0 22px" }}>
+              Cove is open-source and free. We're looking for folks who want to keep building it.
             </p>
 
-            {/* Who we're looking for */}
-            <div style={{ marginBottom: 28 }}>
+            {/* Who we're looking for — pill cards */}
+            <div style={{ marginBottom: 22, display: "flex", flexDirection: "column", gap: 7 }}>
               {[
-                { role: "UX/UI Designers", desc: "mobile apps, social apps, network apps" },
+                { role: "UX/UI Designers", desc: "mobile, social, network apps" },
                 { role: "Career Coaches & Advisors", desc: "private practice or institutional" },
                 { role: "College & High School Counselors", desc: "career centers, advising offices" },
               ].map(({ role, desc }) => (
-                <div key={role} style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 10 }}>
-                  <div style={{ width: 6, height: 6, borderRadius: "50%", background: C.ocean, marginTop: 5, flexShrink: 0 }} />
-                  <div>
-                    <span style={{ fontSize: 13, color: C.pearl }}>{role}</span>
-                    <span style={{ fontSize: 12, color: C.muted }}> — {desc}</span>
-                  </div>
+                <div key={role} style={{
+                  padding: "10px 15px", borderRadius: 10,
+                  background: C.raised, border: `1px solid ${C.borderSoft}`,
+                  display: "flex", flexDirection: "column", gap: 2,
+                }}>
+                  <span style={{ fontSize: 13, color: C.pearl, fontWeight: 500 }}>{role}</span>
+                  <span style={{ fontSize: 11, color: C.muted }}>{desc}</span>
                 </div>
               ))}
             </div>
 
             {/* Builder card */}
             <div style={{
-              borderRadius: 14, marginBottom: 28,
+              borderRadius: 14, marginBottom: 22,
               background: C.surface, border: `1px solid ${C.borderSoft}`,
-              padding: "16px 20px 20px",
+              padding: "15px 16px 16px",
             }}>
-              {/* Name row with headshot bubble */}
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-                <div>
-                  <p style={{ fontSize: 10, letterSpacing: 2, color: C.dim, textTransform: "uppercase", margin: "0 0 3px", fontFamily: "monospace" }}>built by</p>
-                  <p style={{ fontSize: 15, fontWeight: 500, color: C.pearl, margin: 0 }}>Fhiwa Ndou</p>
-                  <p style={{ fontSize: 11, color: C.muted, margin: "1px 0 0", fontFamily: "monospace" }}>@chieffhiwa</p>
-                </div>
-                {/* Headshot bubble — downlow */}
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 11 }}>
                 <div style={{
-                  width: 48, height: 48, borderRadius: "50%", overflow: "hidden", flexShrink: 0,
+                  width: 44, height: 44, borderRadius: "50%", overflow: "hidden", flexShrink: 0,
                   border: `1.5px solid ${C.border}`, background: C.raised,
                 }}>
                   <img
@@ -2630,19 +2631,17 @@ function StepBetaForm({ name, selfPosition, contacts, finish }) {
                     onError={e => { e.target.style.display = "none"; }}
                   />
                 </div>
+                <div>
+                  <p style={{ fontSize: 9, letterSpacing: 2, color: C.dim, textTransform: "uppercase", margin: "0 0 2px", fontFamily: "monospace" }}>built by</p>
+                  <p style={{ fontSize: 15, fontWeight: 500, color: C.pearl, margin: 0 }}>Fhiwa Ndou</p>
+                  <p style={{ fontSize: 11, color: C.muted, margin: "1px 0 0", fontFamily: "monospace" }}>@chieffhiwa</p>
+                </div>
               </div>
-              <div style={{ margin: "0 0 14px" }}>
-                <p style={{ fontSize: 13, color: C.pearl, lineHeight: 1.5, margin: "0 0 6px", fontWeight: 400 }}>
-                  Building Cove.
-                </p>
-                <p style={{ fontSize: 12, color: C.muted, lineHeight: 1.7, margin: "0 0 4px" }}>
-                  Advising grads + underrepresented job seekers at{" "}
-                  <a href="https://postgraduateproject.org" target="_blank" rel="noopener noreferrer" style={{ color: C.ocean, textDecoration: "none" }}>PostGradProject.org</a>.
-                </p>
-                <p style={{ fontSize: 12, color: C.muted, lineHeight: 1.7, margin: 0 }}>
-                  Writing on agency, idiosyncrasy & Blackness.
-                </p>
-              </div>
+              <p style={{ fontSize: 12, color: C.muted, lineHeight: 1.75, margin: "0 0 13px" }}>
+                Advising grads + underrepresented job seekers at{" "}
+                <a href="https://postgraduateproject.org" target="_blank" rel="noopener noreferrer" style={{ color: C.ocean, textDecoration: "none" }}>PostGradProject.org</a>.{" "}
+                Writing on agency, idiosyncrasy & Blackness.
+              </p>
               <a
                 href="https://github.com/chieffhiwa/cove/issues/new?template=get-involved.md"
                 target="_blank"
@@ -2659,7 +2658,7 @@ function StepBetaForm({ name, selfPosition, contacts, finish }) {
                 href="https://www.linkedin.com/in/fndou/"
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{ fontSize: 12, color: C.muted, textDecoration: "none", display: "block", textAlign: "center" }}
+                style={{ fontSize: 12, color: C.dim, textDecoration: "none", display: "block", textAlign: "center" }}
               >or find me on LinkedIn</a>
             </div>
 
@@ -2675,35 +2674,18 @@ function StepBetaForm({ name, selfPosition, contacts, finish }) {
     <Shell depth={19}>
       <div style={{ ...fadeStyle(visible), minHeight: "100vh", display: "flex", flexDirection: "column" }}>
 
-        {/* Sunlight banner */}
-        <div style={{
-          height: 140, flexShrink: 0, position: "relative", overflow: "hidden",
-          background: "linear-gradient(180deg, #e8b84b 0%, #d97c3a 45%, #9a4f7a 80%, #0f1520 100%)",
-        }}>
-          <div style={{
-            position: "absolute", bottom: 0, left: 0, right: 0, height: 50,
-            background: "linear-gradient(180deg, transparent, #0f1520)",
-          }} />
-          <div style={{
-            position: "absolute", top: "38%", left: "50%", transform: "translate(-50%, -50%)",
-            width: 44, height: 44, borderRadius: "50%",
-            background: "radial-gradient(circle, #fff8dc 0%, #e8b84b 55%, #d97c3a60 100%)",
-            boxShadow: "0 0 32px 16px #e8b84b50, 0 0 60px 30px #d97c3a28",
-          }} />
-        </div>
-
-        <div style={{ padding: "32px 28px 56px", display: "flex", flexDirection: "column", flex: 1 }}>
+        <div style={{ padding: "52px 28px 32px", display: "flex", flexDirection: "column", flex: 1 }}>
 
           {/* Header */}
           <div style={{ marginBottom: 32 }}>
-            <p style={{ fontSize: 11, letterSpacing: 3, color: "#c4a040", textTransform: "uppercase", margin: "0 0 12px", fontFamily: "monospace" }}>
+            <p style={{ fontSize: 11, letterSpacing: 3, color: C.ocean, textTransform: "uppercase", margin: "0 0 10px", fontFamily: "monospace" }}>
               almost done
             </p>
-            <h2 style={{ fontSize: 26, fontWeight: 400, margin: "0 0 14px", color: C.pearl, lineHeight: 1.35 }}>
-              Cove is a labor of love.
+            <h2 style={{ fontSize: 26, fontWeight: 400, margin: "0 0 12px", color: C.pearl, lineHeight: 1.35 }}>
+              Stay in the loop.
             </h2>
-            <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.85, margin: 0 }}>
-              Built by real career advisors for real people — open-source, free, and still growing. We'd love to keep you updated as we do. Drop your info below and we'll be in touch.
+            <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.8, margin: 0 }}>
+              Cove is free and open-source. Drop your info and we'll keep you close as we build.
             </p>
           </div>
 
