@@ -1916,7 +1916,7 @@ function StepCareersOverCash({ next }) {
       </h2>
 
       <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.85, margin: "0 0 20px" }}>
-        John Mulaney made this case better than we ever could. In <em style={{ color: C.pearl }}>Kid Gorgeous</em>, his 2018 Netflix special, he does a bit about paying $120,000 to Georgetown for an English degree — "a language," he says, "I already spoke. Fluently. For free. Since I was three." Four years later, $120k gone, the university called asking for a donation.
+        In <em style={{ color: C.pearl }}>Kid Gorgeous</em>, his 2018 Netflix special, John Mulaney does a bit about paying $120,000 to Georgetown for an English degree — "a language," he says, "I already spoke. Fluently. For free. Since I was three." Four years later, $120k gone, the university called asking for a donation.
       </p>
 
       <div style={{ margin: "0 0 24px", borderRadius: 12, overflow: "hidden", lineHeight: 0 }}>
