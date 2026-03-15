@@ -368,10 +368,10 @@ function StepWelcome({ next }) {
 function StepPrivacy({ next }) {
   const visible = useFadeIn([]);
   const commitments = [
-    { icon: "🔒", title: "Your data stays yours", body: "Your reflections stay with you. We don't sell, share, or use them for anything other than making Cove work." },
-    { icon: "👁️", title: "No surveillance", body: "We're not building an ad business. We're building a career tool." },
-    { icon: "💙", title: "A personal commitment", body: "This works for you, or it doesn't work at all. Tell us if we break that trust." },
-    { icon: "⚖️", title: "We build against bias", body: "The matrix is designed to surface your strengths — not sort you into a box. If something feels off, say so." },
+    { icon: "🔒", title: "Your data stays yours", body: "Your reflections stay with you. We don't sell them, share them, or use them for anything else." },
+    { icon: "👁️", title: "No surveillance", body: "We're not an ad business. We're a career tool." },
+    { icon: "💙", title: "A personal commitment", body: "This works for you, or it doesn't work. Tell us if we break that trust." },
+    { icon: "⚖️", title: "We build against bias", body: "Built to surface your strengths — not sort you into a box. Something feels off? Say so." },
   ];
 
   return (
