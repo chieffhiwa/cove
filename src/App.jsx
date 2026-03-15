@@ -80,7 +80,7 @@ const C = {
   text:       "#d4e4f0",
   muted:      "#8aabbf",
   faint:      "#1e2d40",
-  dim:        "#4a6880",
+  dim:        "#6a8fa8",
   ocean:      "#4a9eca",
   oceanDeep:  "#2a6a9a",
   seafoam:    "#5ec4b0",
@@ -639,7 +639,7 @@ function StepMatrixIntro({ name, next }) {
           Where are you sitting right now{name ? `, ${name}` : ""}?
         </h2>
         <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.8, margin: "0 0 32px" }}>
-          Not who you are. Not who you want to be. Just where you actually are today — in your career headspace.
+          Not who you want to be — where you actually are today. You'll place a dot on a two-axis grid. Takes about ten seconds.
         </p>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 32 }}>
