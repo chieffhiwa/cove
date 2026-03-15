@@ -544,7 +544,7 @@ function StepName({ next }) {
           First though, who are you?
         </h2>
         <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.7, margin: "0 0 36px" }}>
-          First name only. This whole thing is for you.
+          This stays with you. It's not shared, not stored anywhere public — just used to make this feel like yours.
         </p>
         <input
           autoFocus
