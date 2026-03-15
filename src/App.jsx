@@ -2536,8 +2536,12 @@ function StepBetaForm({ name, selfPosition, finish }) {
 
         {/* Bottom CTAs */}
         <div style={{ padding: "24px 24px 48px", display: "flex", flexDirection: "column", gap: 12, background: "#0b0f14" }}>
-          <p style={{ fontSize: 13, color: C.muted, margin: 0, textAlign: "center", lineHeight: 1.6 }}>
-            send this to someone who needs to figure out where they sit.
+          <p style={{ fontSize: 14, color: C.pearl, margin: 0, textAlign: "center", lineHeight: 1.65 }}>
+            brave + curious is the factory setting.<br />
+            <span style={{ color: C.muted }}>life just gets in the way.</span>
+          </p>
+          <p style={{ fontSize: 12, color: C.dim, margin: "-4px 0 0", textAlign: "center" }}>
+            send this to someone who needs the reminder.
           </p>
           <Btn onClick={handleShare}>
             {copied ? "link copied ✓" : "share cove →"}
