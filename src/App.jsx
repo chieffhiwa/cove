@@ -2590,36 +2590,15 @@ function StepBetaForm({ name, selfPosition, contacts, finish }) {
             </div>
           </div>
 
-          <div style={{ padding: "22px 22px 52px", display: "flex", flexDirection: "column", flex: 1 }}>
-            <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.8, margin: "0 0 22px" }}>
-              Cove is open-source and free. We're looking for folks who want to keep building it.
-            </p>
-
-            {/* Who we're looking for — pill cards */}
-            <div style={{ marginBottom: 22, display: "flex", flexDirection: "column", gap: 7 }}>
-              {[
-                { role: "UX/UI Designers", desc: "mobile, social, network apps" },
-                { role: "Career Coaches & Advisors", desc: "private practice or institutional" },
-                { role: "College & High School Counselors", desc: "career centers, advising offices" },
-              ].map(({ role, desc }) => (
-                <div key={role} style={{
-                  padding: "10px 15px", borderRadius: 10,
-                  background: C.raised, border: `1px solid ${C.borderSoft}`,
-                  display: "flex", flexDirection: "column", gap: 2,
-                }}>
-                  <span style={{ fontSize: 13, color: C.pearl, fontWeight: 500 }}>{role}</span>
-                  <span style={{ fontSize: 11, color: C.muted }}>{desc}</span>
-                </div>
-              ))}
-            </div>
+          <div style={{ padding: "28px 24px 52px", display: "flex", flexDirection: "column", gap: 24 }}>
 
             {/* Builder card */}
             <div style={{
-              borderRadius: 14, marginBottom: 22,
+              borderRadius: 14,
               background: C.surface, border: `1px solid ${C.borderSoft}`,
-              padding: "15px 16px 16px",
+              padding: "16px 18px 18px",
             }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 11 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
                 <div style={{
                   width: 44, height: 44, borderRadius: "50%", overflow: "hidden", flexShrink: 0,
                   border: `1.5px solid ${C.border}`, background: C.raised,
@@ -2637,10 +2616,8 @@ function StepBetaForm({ name, selfPosition, contacts, finish }) {
                   <p style={{ fontSize: 11, color: C.muted, margin: "1px 0 0", fontFamily: "monospace" }}>@chieffhiwa</p>
                 </div>
               </div>
-              <p style={{ fontSize: 12, color: C.muted, lineHeight: 1.75, margin: "0 0 13px" }}>
-                Advising grads + underrepresented job seekers at{" "}
-                <a href="https://postgraduateproject.org" target="_blank" rel="noopener noreferrer" style={{ color: C.ocean, textDecoration: "none" }}>PostGradProject.org</a>.{" "}
-                Writing on agency, idiosyncrasy & Blackness.
+              <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.7, margin: "0 0 14px" }}>
+                Cove is free and open-source. If you want to help build it — design, advising, engineering — open an issue.
               </p>
               <a
                 href="https://github.com/chieffhiwa/cove/issues/new?template=get-involved.md"
@@ -2650,16 +2627,9 @@ function StepBetaForm({ name, selfPosition, contacts, finish }) {
                   display: "block", padding: "10px 16px", borderRadius: 10,
                   background: C.ocean + "18", border: `1px solid ${C.ocean}40`,
                   color: C.ocean, fontSize: 13, textDecoration: "none",
-                  textAlign: "center", marginBottom: 8,
-                  touchAction: "manipulation",
+                  textAlign: "center", touchAction: "manipulation",
                 }}
-              >Open a GitHub issue to get involved →</a>
-              <a
-                href="https://www.linkedin.com/in/fndou/"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ fontSize: 12, color: C.dim, textDecoration: "none", display: "block", textAlign: "center" }}
-              >or find me on LinkedIn</a>
+              >Get involved on GitHub →</a>
             </div>
 
             <Btn onClick={finish}>See my dashboard →</Btn>
