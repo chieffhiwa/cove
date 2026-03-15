@@ -63,12 +63,19 @@ function postReflections({ name, email, selfPosition, braveReflection, fearsRefl
           { name: "🌊 What's in the way", value: fearsReflection || "_(no response)_" },
           { name: "✨ What they want", value: wantsSummary },
         ],
-        footer: { text: "cove · your career, your current." },
+        footer: { text: `cove · ${TAGLINE}` },
         timestamp: new Date().toISOString(),
       }],
     }),
   }).catch(() => {}); // fire and forget — don't block the user
 }
+
+// ─── TAGLINE A/B ─────────────────────────────────────────────────────────────
+// "A" = original  |  "B" = matrix hook  ← change one letter to switch
+const TAGLINE_VERSION = "A";
+const TAGLINE = TAGLINE_VERSION === "A"
+  ? "your career. your current."
+  : "where do you land on the matrix?";
 
 // ─── PALETTE ────────────────────────────────────────────────────────────────
 const C = {
@@ -291,11 +298,12 @@ function Onboard({ step, setStep, userData, update, finish }) {
     }} />,
     <StepListReveal     key={17} contacts={userData.contacts} name={userData.name} next={() => go(18, "step_completed", { step_name: "list_reveal" })} />,
     <StepBreath         key={18} name={userData.name} contacts={userData.contacts} selfPosition={userData.selfPosition} next={() => go(19, "step_completed", { step_name: "breath" })} />,
-    <StepBetaForm       key={19} name={userData.name} selfPosition={userData.selfPosition} contacts={userData.contacts} finish={() => { track("onboarding_completed"); finish(); }} />,
+    <StepFounderNote    key={19} next={() => go(20, "step_completed", { step_name: "founder_note" })} />,
+    <StepBetaForm       key={20} name={userData.name} selfPosition={userData.selfPosition} contacts={userData.contacts} finish={() => { track("onboarding_completed"); finish(); }} />,
   ];
 
   // Dots: philosophy(2), name(3), matrix intro(4), matrix(5), brave(10), fears(11), list(14-19)
-  const dotMap = { 2:1, 3:2, 4:3, 5:3, 10:4, 11:4, 14:5, 15:5, 16:5, 17:5, 18:5, 19:5 };
+  const dotMap = { 2:1, 3:2, 4:3, 5:3, 10:4, 11:4, 14:5, 15:5, 16:5, 17:5, 18:5, 19:5, 20:5 };
   const showDots = step in dotMap;
   const dotStep = dotMap[step] || 0;
 
@@ -349,7 +357,7 @@ function StepWelcome({ next }) {
           Not a job board. Not a resume builder.<br />A simple, proven system to build the career you actually want.
         </p>
         <p style={{ fontSize: 12, letterSpacing: 4, color: C.ocean, fontFamily: "monospace", margin: "0 0 10px", textTransform: "lowercase", opacity: 0.85 }}>
-          your career. your current.
+          {TAGLINE}
         </p>
       </div>
 
@@ -662,13 +670,24 @@ function StepMatrixIntro({ name, next }) {
         </p>
 
         {/* Stuart attribution */}
-        <div style={{ padding: "14px 18px", borderRadius: 12, background: C.surface, border: `1px solid ${C.borderSoft}` }}>
-          <p style={{ fontSize: 12, color: C.muted, lineHeight: 1.7, margin: "0 0 4px" }}>
-            Framework by{" "}
-            <a href="https://www.linkedin.com/in/stuarthillston/" target="_blank" rel="noopener noreferrer" style={{ color: C.ocean, textDecoration: "none" }}>Stuart Hillston</a>
-            {" "}— best coach I know.
-          </p>
-          <p style={{ fontSize: 10, color: C.dim, margin: 0, fontStyle: "italic" }}>40 years · five continents</p>
+        <div style={{ padding: "14px 18px", borderRadius: 12, background: C.surface, border: `1px solid ${C.borderSoft}`, display: "flex", alignItems: "center", gap: 14 }}>
+          <img
+            src="/stuart.jpg"
+            alt="Stuart Hillston"
+            style={{ width: 44, height: 44, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }}
+          />
+          <div>
+            <p style={{ fontSize: 12, color: C.muted, lineHeight: 1.6, margin: "0 0 3px" }}>
+              Framework by{" "}
+              <a href="https://www.linkedin.com/in/stuarthillston/" target="_blank" rel="noopener noreferrer" style={{ color: C.ocean, textDecoration: "none" }}>Stuart Hillston</a>
+            </p>
+            <p style={{ fontSize: 11, color: C.dim, margin: "0 0 4px", fontStyle: "italic", lineHeight: 1.5 }}>
+              "Psychotherapeutic Coach to Managers and Leaders in Startups and Scaleups."
+            </p>
+            <p style={{ fontSize: 11, color: C.muted, margin: 0, lineHeight: 1.5 }}>
+              Spectacular coach, and an even better friend.
+            </p>
+          </div>
         </div>
       </div>
 
@@ -1731,7 +1750,7 @@ function StepPause({ next }) {
       {/* Center content */}
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0 }}>
         <p style={{ fontSize: 11, letterSpacing: 3, color: C.dim, fontFamily: "monospace", margin: "0 0 52px" }}>
-          your career. your current.
+          {TAGLINE}
         </p>
 
         {/* Wave — scaled up for presence */}
@@ -2325,11 +2344,11 @@ function StepAshStory({ next }) {
         <p style={{ fontSize: 11, letterSpacing: 2, color: C.muted, fontFamily: "monospace", margin: "0 0 36px" }}>GENEROUS ENTHUSIASM</p>
 
         <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.85, margin: "0 0 20px" }}>
-          There's a moment in <em style={{ color: C.pearl }}>Pokémon: Mewtwo Returns</em> that I keep coming back to.
+          I always come back to this one moment in <em style={{ color: C.pearl }}>Pokémon: Mewtwo Returns</em>.
         </p>
 
         <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.85, margin: "0 0 20px" }}>
-          Mewtwo has spent the whole movie trying to destroy everything. Built in a lab. Hunted. Betrayed. He doesn't trust anyone. He's been actively trying to kill Ash's friends.
+          Mewtwo was built in a lab, hunted, and betrayed. He trusts no one, and he's been actively trying to kill Ash's friends for the entirety of the movie. And then... when Mewtwo is moments away from death... Ash just... helps him.
         </p>
 
         {/* Mewtwo GIF */}
@@ -2343,7 +2362,7 @@ function StepAshStory({ next }) {
         </div>
 
         <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.85, margin: "0 0 20px" }}>
-          And then Ash just... helps him. No calculation. No angle. Steps in like it's the most obvious thing in the world.
+          No calculation. No angle. Steps in like it's the most obvious thing in the world.
         </p>
 
         <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.85, margin: "0 0 20px" }}>
@@ -2369,14 +2388,14 @@ function StepAshStory({ next }) {
 
         {p("Then he keeps going.")}
 
-        {/* Ash + Pikachu high five GIF */}
+        {/* Ash + Pikachu GIF */}
         <div style={{ margin: "0 0 24px", borderRadius: 12, overflow: "hidden", lineHeight: 0 }}>
           <img
-            src="https://media.giphy.com/media/Oq3QAI2mzTZJmjhenC/giphy.gif"
-            alt="Ash and Pikachu high five"
+            src="https://media1.tenor.com/m/cMy8rXqdR_kAAAAC/anipoke-pokemon.gif"
+            alt="Ash and Pikachu"
             style={{ width: "100%", borderRadius: 12, display: "block" }}
           />
-          <p style={{ fontSize: 9, color: C.dim, margin: "6px 0 0", letterSpacing: 1, textTransform: "uppercase" }}>via GIPHY · Pokémon</p>
+          <p style={{ fontSize: 9, color: C.dim, margin: "6px 0 0", letterSpacing: 1, textTransform: "uppercase" }}>via Tenor · Pokémon</p>
         </div>
 
         <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.85, margin: "0 0 12px" }}>
@@ -2487,6 +2506,68 @@ function StepFearsReflect({ next }) {
 }
 
 
+// ── Step 19: Founder note ──────────────────────────────────────────────────────
+function StepFounderNote({ next }) {
+  const visible = useFadeIn([]);
+
+  return (
+    <div style={{
+      ...fadeStyle(visible),
+      display: "flex", flexDirection: "column",
+      justifyContent: "center", alignItems: "center",
+      minHeight: "100vh", padding: "64px 32px",
+      textAlign: "center",
+    }}>
+      <div style={{ maxWidth: 320 }}>
+        <p style={{ fontSize: 11, letterSpacing: 2, color: C.dim, fontFamily: "monospace", margin: "0 0 32px", textTransform: "uppercase" }}>
+          from the builder
+        </p>
+
+        <a
+          href="https://www.linkedin.com/in/fndou/"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ display: "block", margin: "0 auto 24px", borderRadius: "50%", overflow: "hidden", width: 100, height: 100, border: `2px solid ${C.ocean}` }}
+        >
+          <img
+            src="/fhiwa.jpg"
+            alt="Fhiwa Ndou"
+            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+          />
+        </a>
+
+        <p style={{ fontSize: 22, fontWeight: 300, color: C.pearl, lineHeight: 1.5, margin: "0 0 28px", letterSpacing: -0.3 }}>
+          it's just me.
+        </p>
+
+        <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.9, margin: "0 0 20px" }}>
+          Job searching sucks. So much of it is outside your control, and it quietly messes with your head until you've forgotten what it felt like to just be excited about work.
+        </p>
+
+        <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.9, margin: "0 0 20px" }}>
+          I still think about how excited I was to get hired at Toys R Us, 18 years ago. I had no idea what I was in for, good or bad, but I didn't care. I was curious.
+        </p>
+
+        <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.9, margin: "0 0 40px" }}>
+          I built this to get that feeling back. Turns out a lot of people need it.
+        </p>
+
+        <p style={{ fontSize: 12, color: C.dim, fontStyle: "italic", margin: "0 0 8px" }}>— Fhiwa Ndou</p>
+        <a
+          href="https://www.linkedin.com/in/fndou/"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ fontSize: 12, color: C.ocean, textDecoration: "none", display: "block", marginBottom: 40 }}
+        >
+          catch me on LinkedIn →
+        </a>
+      </div>
+
+      <Btn onClick={next}>let's go →</Btn>
+    </div>
+  );
+}
+
 // ── Step Final: Share screen ───────────────────────────────────────────────────
 function StepBetaForm({ name, selfPosition, finish }) {
   const visible = useFadeIn([]);
@@ -2496,15 +2577,15 @@ function StepBetaForm({ name, selfPosition, finish }) {
     ? `${selfPosition.y < 50 ? "Brave" : "Fearful"} + ${selfPosition.x > 50 ? "Curious" : "Judgmental"}`
     : null;
   const shareText = qLabel
-    ? `just found out I'm ${qLabel} on Cove's career matrix. where do you sit?`
-    : "just used Cove to figure out where I actually sit. try it.";
+    ? `Hey! Check out this new career + network app called Cove. I just found out I'm ${qLabel} on the matrix — I wanna see where you land :)`
+    : `Hey! Check out this new career + network app called Cove. I wanna see where you land on the matrix :)`;
   const shareUrl = "https://cove-main.vercel.app";
 
   const handleShare = async () => {
     if (navigator.share) {
       try { await navigator.share({ text: shareText, url: shareUrl }); } catch {}
     } else {
-      await navigator.clipboard?.writeText(`${shareText} ${shareUrl}`);
+      await navigator.clipboard?.writeText(`${shareText}\n${shareUrl}`);
       setCopied(true);
       setTimeout(() => setCopied(false), 2200);
     }
@@ -2543,7 +2624,7 @@ function StepBetaForm({ name, selfPosition, finish }) {
           <p style={{ fontSize: 12, color: C.dim, margin: "-4px 0 0", textAlign: "center" }}>
             send this to someone who needs the reminder.
           </p>
-          <Btn onClick={handleShare}>
+          <Btn onClick={handleShare} style={{ fontSize: 17, padding: "18px 32px", letterSpacing: 0.5 }}>
             {copied ? "link copied ✓" : "share cove →"}
           </Btn>
           <div
@@ -2744,7 +2825,7 @@ function HomeTab({ userData, setTab }) {
           {firstName ? `Hey, ${firstName}.` : "Welcome back."}
         </h1>
         <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.85, margin: 0 }}>
-          Your career. Your current.
+          {TAGLINE}
         </p>
       </div>
 
