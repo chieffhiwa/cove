@@ -368,10 +368,10 @@ function StepWelcome({ next }) {
 function StepPrivacy({ next }) {
   const visible = useFadeIn([]);
   const commitments = [
-    { icon: "🔒", title: "Your data stays yours", body: "Everything you share in Cove (your reflections, your matrix position, your thoughts) belongs to you. We don't sell it, share it, or use it for anything other than making your experience better." },
-    { icon: "👁️", title: "No surveillance, no profiling", body: "We're not building an ad business. We're building a career tool. We have zero interest in tracking you across the web or building a profile to sell to anyone." },
-    { icon: "💙", title: "A personal commitment", body: "This community works for you, or it doesn't work at all. If you ever feel like we've broken that trust, tell us. We mean it." },
-    { icon: "⚖️", title: "We build against bias", body: "The matrix framework and career guidance in Cove are designed to surface your strengths — not sort you into a box. We actively work to ensure our recommendations don't reflect or reinforce systemic bias. If something feels off, tell us." },
+    { icon: "🔒", title: "Your data stays yours", body: "Your reflections stay with you. We don't sell, share, or use them for anything other than making Cove work." },
+    { icon: "👁️", title: "No surveillance", body: "We're not building an ad business. We're building a career tool." },
+    { icon: "💙", title: "A personal commitment", body: "This works for you, or it doesn't work at all. Tell us if we break that trust." },
+    { icon: "⚖️", title: "We build against bias", body: "The matrix is designed to surface your strengths — not sort you into a box. If something feels off, say so." },
   ];
 
   return (
@@ -496,9 +496,9 @@ function StepPricing({ next }) {
 function StepPhilosophy({ next }) {
   const visible = useFadeIn([]);
   const principles = [
-    { icon: "💙", title: "\u201cGo-Giver\u201d first", body: "Give before you ask for anything. Show up with something to offer, not something to get. That's the whole playbook.", cite: "The Go-Giver — Bob Burg & John David Mann" },
-    { icon: "〰️", title: "Careers over cash", body: "We all know someone who took the higher offer and immediately regretted it. That opportunity you keep coming back to? The one that just feels like it matters? That's the one worth chasing.", cite: "Cal Newport, So Good They Can't Ignore You" },
-    { icon: "🐸", title: "Generous enthusiasm", body: "When you're clear on what you have to offer, the energy shifts. You stop performing and start actually connecting. That kind of enthusiasm is rare. People remember it.", cite: "Ash Ketchum, Pokémon: Mewtwo Returns — \"Do you always need a reason to help somebody?\"" },
+    { icon: "💙", title: "\u201cGo-Giver\u201d first", body: "Give before you ask. Show up with something to offer.", cite: "The Go-Giver — Bob Burg & John David Mann" },
+    { icon: "〰️", title: "Careers over cash", body: "That opportunity you keep coming back to? The one that feels like it matters? That's the one.", cite: "Cal Newport, So Good They Can't Ignore You" },
+    { icon: "🐸", title: "Generous enthusiasm", body: "When you know what you have to offer, the energy shifts. You stop performing and start connecting.", cite: "Ash Ketchum — \"Do you always need a reason to help somebody?\"" },
   ];
 
   return (
@@ -541,10 +541,10 @@ function StepName({ next }) {
       <div style={{ flex: 1 }}>
         <p style={{ fontSize: 11, letterSpacing: 2, color: C.muted, fontFamily: "monospace", marginBottom: 20 }}>FIRST THINGS</p>
         <h2 style={{ fontSize: 26, fontWeight: 400, margin: "0 0 10px", color: C.pearl, lineHeight: 1.35 }}>
-          First though, who are you?
+          What do people call you?
         </h2>
         <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.7, margin: "0 0 36px" }}>
-          This stays with you. It's not shared, not stored anywhere public — just used to make this feel like yours.
+          Private. Just makes this feel like yours.
         </p>
         <input
           autoFocus
@@ -643,45 +643,32 @@ function StepMatrixIntro({ name, next }) {
         </p>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 32 }}>
-          <div style={{ padding: "18px 20px", borderRadius: 12, background: C.surface, border: `1px solid ${C.borderSoft}` }}>
-            <div style={{ fontSize: 13, color: C.seafoam, fontFamily: "monospace", letterSpacing: 1, marginBottom: 8 }}>BRAVE ↕ FEARFUL</div>
-            <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.7, margin: 0 }}>
-              Are you making career moves right now — or holding back? Research on psychological safety shows that people operating from fear optimise to avoid loss, not to find fit. They take the safe offer, not the right one.
+          <div style={{ padding: "14px 18px", borderRadius: 12, background: C.surface, border: `1px solid ${C.borderSoft}` }}>
+            <div style={{ fontSize: 12, color: C.seafoam, fontFamily: "monospace", letterSpacing: 1, marginBottom: 6 }}>BRAVE ↕ FEARFUL</div>
+            <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.6, margin: 0 }}>
+              Are you making moves right now — or holding back?
             </p>
           </div>
-          <div style={{ padding: "18px 20px", borderRadius: 12, background: C.surface, border: `1px solid ${C.borderSoft}` }}>
-            <div style={{ fontSize: 13, color: C.ocean, fontFamily: "monospace", letterSpacing: 1, marginBottom: 8 }}>CURIOUS ↔ JUDGMENTAL</div>
-            <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.7, margin: 0 }}>
-              Are you still exploring — or have you already decided what's possible? Carol Dweck's research on mindset shows that staying open to new information is the single biggest predictor of good long-term decisions.
+          <div style={{ padding: "14px 18px", borderRadius: 12, background: C.surface, border: `1px solid ${C.borderSoft}` }}>
+            <div style={{ fontSize: 12, color: C.ocean, fontFamily: "monospace", letterSpacing: 1, marginBottom: 6 }}>CURIOUS ↔ JUDGMENTAL</div>
+            <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.6, margin: 0 }}>
+              Still exploring options — or already decided what's possible?
             </p>
           </div>
         </div>
 
-        <p style={{ fontSize: 13, color: C.pearl, lineHeight: 1.75, margin: "0 0 8px", fontStyle: "italic" }}>
-          This isn't a personality type. It's a snapshot of right now.
-        </p>
-        <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.75, margin: "0 0 28px" }}>
-          Where you land tells us something about what kind of support will actually move you forward.
+        <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.7, margin: "0 0 16px", fontStyle: "italic" }}>
+          Not a personality type. A snapshot of right now.
         </p>
 
         {/* Stuart attribution */}
-        <div style={{
-          padding: "16px 20px", borderRadius: 12,
-          background: C.surface, border: `1px solid ${C.borderSoft}`,
-        }}>
-          <p style={{ fontSize: 12, color: C.muted, lineHeight: 1.75, margin: "0 0 6px" }}>
-            This framework was created by{" "}
-            <a
-              href="https://www.linkedin.com/in/stuarthillston/"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: C.ocean, textDecoration: "none" }}
-            >Stuart Hillston</a>
-            {" "}— one of the most impactful people I've ever met, and undoubtedly the best coach I know.
+        <div style={{ padding: "14px 18px", borderRadius: 12, background: C.surface, border: `1px solid ${C.borderSoft}` }}>
+          <p style={{ fontSize: 12, color: C.muted, lineHeight: 1.7, margin: "0 0 4px" }}>
+            Framework by{" "}
+            <a href="https://www.linkedin.com/in/stuarthillston/" target="_blank" rel="noopener noreferrer" style={{ color: C.ocean, textDecoration: "none" }}>Stuart Hillston</a>
+            {" "}— best coach I know.
           </p>
-          <p style={{ fontSize: 10, color: C.dim, margin: 0, fontStyle: "italic" }}>
-            Psychotherapeutic coach · 40 years · five continents
-          </p>
+          <p style={{ fontSize: 10, color: C.dim, margin: 0, fontStyle: "italic" }}>40 years · five continents</p>
         </div>
       </div>
 
@@ -2500,180 +2487,76 @@ function StepFearsReflect({ next }) {
 }
 
 
-// ── Step 6: Done ──────────────────────────────────────────────────────────────
-// eslint-disable-next-line no-unused-vars
-// ── Step Final: Beta Sign-Up ──────────────────────────────────────────────────
-function StepBetaForm({ name, selfPosition, contacts, finish }) {
+// ── Step Final: Share screen ───────────────────────────────────────────────────
+function StepBetaForm({ name, selfPosition, finish }) {
   const visible = useFadeIn([]);
-  const firstName = name?.split(" ")[0] || "you";
-  const lastName = name?.split(" ").slice(1).join(" ") || "";
-  const [fields, setFields] = useState({ firstName, lastName, email: "", college: "", linkedin: "" });
-  const [status, setStatus] = useState("idle");
-  const quadrant = selfPosition ? getQuadrant(selfPosition.x, selfPosition.y) : null;
-  const listCount = contacts?.length || 0;
+  const [copied, setCopied] = useState(false);
 
-  const quadrantLabel = {
-    "brave-curious":   "Brave & Curious",
-    "brave-judging":   "Brave & Discerning",
-    "fearful-curious": "Curious & Growing",
-    "fearful-judging": "Reflective & Careful",
-  }[quadrant] || null;
+  const qLabel = selfPosition
+    ? `${selfPosition.y < 50 ? "Brave" : "Fearful"} + ${selfPosition.x > 50 ? "Curious" : "Judgmental"}`
+    : null;
+  const shareText = qLabel
+    ? `just found out I'm ${qLabel} on Cove's career matrix. where do you sit?`
+    : "just used Cove to figure out where I actually sit. try it.";
+  const shareUrl = "https://cove-main.vercel.app";
 
-  const inputStyle = {
-    width: "100%", background: "rgba(255,255,255,0.04)", border: `1px solid ${C.borderSoft}`,
-    borderRadius: 10, padding: "16px 18px", fontSize: 15, color: C.text,
-    outline: "none", fontFamily: "inherit", boxSizing: "border-box",
-    transition: "border-color 0.15s",
-  };
-
-  const set = (k) => (e) => setFields((p) => ({ ...p, [k]: e.target.value }));
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setStatus("submitting");
-    const payload = {
-      "First Name": fields.firstName,
-      "Last Name": fields.lastName,
-      "email": fields.email,
-      "College": fields.college || "—",
-      "LinkedIn": fields.linkedin || "—",
-      "Quadrant": quadrantLabel || "—",
-      "List Count": listCount,
-    };
-    try {
-      const res = await fetch("https://formspree.io/f/xdawdvwd", {
-        method: "POST",
-        headers: { "Accept": "application/json", "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const sheetsUrl = process.env.REACT_APP_SHEETS_URL;
-      if (sheetsUrl) fetch(sheetsUrl, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }).catch(() => {});
-      setStatus(res.ok ? "success" : "error");
-    } catch {
-      setStatus("error");
+  const handleShare = async () => {
+    if (navigator.share) {
+      try { await navigator.share({ text: shareText, url: shareUrl }); } catch {}
+    } else {
+      await navigator.clipboard?.writeText(`${shareText} ${shareUrl}`);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2200);
     }
   };
 
-  // ── Success / thank you screen ───────────────────────────────────────────────
-  if (status === "success") {
-    return (
-      <Shell depth={19}>
-        <div style={{ ...fadeStyle(visible), minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-
-          {/* Hero photo — tall, face bright, headline overlaid at bottom */}
-          <div style={{ position: "relative", height: 290, flexShrink: 0, overflow: "hidden", background: "#08090c" }}>
-            <img
-              src="/fhiwa-kid.jpg"
-              alt=""
-              style={{
-                width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 10%",
-                filter: "brightness(1.5) contrast(1.08)",
-              }}
-            />
-            {/* dark top for dots, clear middle for face, dark bottom for text */}
-            <div style={{
-              position: "absolute", inset: 0,
-              background: "linear-gradient(180deg, rgba(8,9,12,0.7) 0%, transparent 25%, transparent 52%, rgba(8,9,12,0.88) 80%, #0b0f14 100%)",
-            }} />
-            {/* caption */}
-            <div style={{ position: "absolute", top: 14, right: 16, fontSize: 9, color: "rgba(255,255,255,0.35)", fontFamily: "monospace", letterSpacing: 1 }}>
-              me, probably plotting
-            </div>
-            {/* Overlaid headline */}
-            <div style={{ position: "absolute", bottom: 22, left: 22, right: 22 }}>
-              <p style={{ fontSize: 10, letterSpacing: 3, color: C.ocean, textTransform: "uppercase", margin: "0 0 6px", fontFamily: "monospace" }}>
-                got it ✓
-              </p>
-              <h2 style={{ fontSize: 25, fontWeight: 400, color: "#fff", lineHeight: 1.3, margin: 0, textShadow: "0 2px 12px rgba(0,0,0,0.7)" }}>
-                We hope that helped,<br />{fields.firstName}.
-              </h2>
-            </div>
-          </div>
-
-          <div style={{ padding: "32px 24px 52px", display: "flex", flexDirection: "column", flex: 1 }}>
-
-            {/* Builder — no box, just flat on dark */}
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-              <div style={{ width: 40, height: 40, borderRadius: "50%", overflow: "hidden", flexShrink: 0 }}>
-                <img
-                  src="/fhiwa.jpg"
-                  alt="Fhiwa"
-                  style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }}
-                  onError={e => { e.target.style.display = "none"; }}
-                />
-              </div>
-              <div>
-                <p style={{ fontSize: 14, fontWeight: 500, color: C.pearl, margin: 0 }}>Fhiwa Ndou</p>
-                <p style={{ fontSize: 11, color: C.muted, margin: "1px 0 0", fontFamily: "monospace" }}>@chieffhiwa</p>
-              </div>
-            </div>
-
-            <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.8, margin: "0 0 6px" }}>
-              Cove is free and open-source. If you want to help build it —{" "}
-              <a
-                href="https://github.com/chieffhiwa/cove/issues/new?template=get-involved.md"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ color: C.ocean, textDecoration: "none" }}
-              >open an issue on GitHub</a>.
-            </p>
-
-            <div style={{ flex: 1 }} />
-
-            <Btn onClick={finish}>See my dashboard →</Btn>
-          </div>
-        </div>
-      </Shell>
-    );
-  }
-
-  // ── Form ─────────────────────────────────────────────────────────────────────
   return (
     <Shell depth={19}>
-      <div style={{ ...fadeStyle(visible), minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+      <div style={{ ...fadeStyle(visible), height: "100vh", display: "flex", flexDirection: "column" }}>
 
-        <div style={{ padding: "52px 28px 32px", display: "flex", flexDirection: "column", flex: 1 }}>
-
-          {/* Header */}
-          <div style={{ marginBottom: 32 }}>
-            <p style={{ fontSize: 11, letterSpacing: 3, color: C.ocean, textTransform: "uppercase", margin: "0 0 10px", fontFamily: "monospace" }}>
-              almost done
+        {/* Full-bleed kid photo */}
+        <div style={{ position: "relative", flex: 1, overflow: "hidden", background: "#08090c" }}>
+          <img
+            src="/fhiwa-kid.jpg"
+            alt=""
+            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 12%", filter: "brightness(1.5) contrast(1.08)" }}
+          />
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(8,9,12,0.5) 0%, transparent 25%, transparent 55%, rgba(8,9,12,0.97) 90%)" }} />
+          <div style={{ position: "absolute", bottom: 28, left: 24 }}>
+            <p style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", fontFamily: "monospace", letterSpacing: 1, margin: "0 0 4px", fontStyle: "italic" }}>
+              me, probably plotting something.
             </p>
-            <h2 style={{ fontSize: 26, fontWeight: 400, margin: "0 0 12px", color: C.pearl, lineHeight: 1.35 }}>
-              Stay in the loop.
-            </h2>
-            <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.8, margin: 0 }}>
-              Cove is free and open-source. Drop your info and we'll keep you close as we build.
-            </p>
-          </div>
-
-          {/* Form fields */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 12, flex: 1 }}>
-            <div style={{ display: "flex", gap: 10 }}>
-              <input style={{ ...inputStyle, flex: 1 }} placeholder="First name" value={fields.firstName} onChange={set("firstName")} />
-              <input style={{ ...inputStyle, flex: 1 }} placeholder="Last name" value={fields.lastName} onChange={set("lastName")} />
-            </div>
-            <input style={inputStyle} type="email" placeholder="Email address" value={fields.email} onChange={set("email")} />
-            <input style={inputStyle} placeholder="College or university (optional)" value={fields.college} onChange={set("college")} />
-            <input style={inputStyle} placeholder="LinkedIn URL (optional)" value={fields.linkedin} onChange={set("linkedin")} />
-
-            <div style={{ marginTop: 16 }}>
-              <Btn onClick={handleSubmit} disabled={status === "submitting"}>
-                {status === "submitting" ? "Sending…" : "Submit"}
-              </Btn>
-            </div>
-            {status === "error" && (
-              <p style={{ fontSize: 13, color: "#ff6b6b", textAlign: "center", margin: "4px 0 0" }}>Something went wrong. Try again.</p>
+            {qLabel && (
+              <p style={{ fontSize: 13, color: C.ocean, fontFamily: "monospace", letterSpacing: 1, margin: 0 }}>
+                {qLabel.toLowerCase()}
+              </p>
             )}
           </div>
-
-          <p style={{ fontSize: 11, color: C.dim, marginTop: 20, textAlign: "center" }}>
-            Responses go to the Cove team only. No spam.
-          </p>
         </div>
+
+        {/* Bottom CTAs */}
+        <div style={{ padding: "24px 24px 48px", display: "flex", flexDirection: "column", gap: 12, background: "#0b0f14" }}>
+          <p style={{ fontSize: 13, color: C.muted, margin: 0, textAlign: "center", lineHeight: 1.6 }}>
+            send this to someone who needs to figure out where they sit.
+          </p>
+          <Btn onClick={handleShare}>
+            {copied ? "link copied ✓" : "share cove →"}
+          </Btn>
+          <div
+            onClick={finish}
+            style={{ textAlign: "center", padding: "10px", cursor: "pointer", color: C.dim, fontSize: 13, touchAction: "manipulation" }}
+          >
+            see my dashboard
+          </div>
+        </div>
+
       </div>
     </Shell>
   );
+}
+
+// eslint-disable-next-line no-unused-vars
+function _StepBetaFormOld_unused({ name, selfPosition, contacts, finish }) {
 }
 
 function StepDone({ name, finish }) {
