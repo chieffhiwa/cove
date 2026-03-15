@@ -2590,47 +2590,35 @@ function StepBetaForm({ name, selfPosition, contacts, finish }) {
             </div>
           </div>
 
-          <div style={{ padding: "28px 24px 52px", display: "flex", flexDirection: "column", gap: 24 }}>
+          <div style={{ padding: "32px 24px 52px", display: "flex", flexDirection: "column", flex: 1 }}>
 
-            {/* Builder card */}
-            <div style={{
-              borderRadius: 14,
-              background: C.surface, border: `1px solid ${C.borderSoft}`,
-              padding: "16px 18px 18px",
-            }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
-                <div style={{
-                  width: 44, height: 44, borderRadius: "50%", overflow: "hidden", flexShrink: 0,
-                  border: `1.5px solid ${C.border}`, background: C.raised,
-                }}>
-                  <img
-                    src="/fhiwa.jpg"
-                    alt="Fhiwa"
-                    style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }}
-                    onError={e => { e.target.style.display = "none"; }}
-                  />
-                </div>
-                <div>
-                  <p style={{ fontSize: 9, letterSpacing: 2, color: C.dim, textTransform: "uppercase", margin: "0 0 2px", fontFamily: "monospace" }}>built by</p>
-                  <p style={{ fontSize: 15, fontWeight: 500, color: C.pearl, margin: 0 }}>Fhiwa Ndou</p>
-                  <p style={{ fontSize: 11, color: C.muted, margin: "1px 0 0", fontFamily: "monospace" }}>@chieffhiwa</p>
-                </div>
+            {/* Builder — no box, just flat on dark */}
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+              <div style={{ width: 40, height: 40, borderRadius: "50%", overflow: "hidden", flexShrink: 0 }}>
+                <img
+                  src="/fhiwa.jpg"
+                  alt="Fhiwa"
+                  style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }}
+                  onError={e => { e.target.style.display = "none"; }}
+                />
               </div>
-              <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.7, margin: "0 0 14px" }}>
-                Cove is free and open-source. If you want to help build it — design, advising, engineering — open an issue.
-              </p>
+              <div>
+                <p style={{ fontSize: 14, fontWeight: 500, color: C.pearl, margin: 0 }}>Fhiwa Ndou</p>
+                <p style={{ fontSize: 11, color: C.muted, margin: "1px 0 0", fontFamily: "monospace" }}>@chieffhiwa</p>
+              </div>
+            </div>
+
+            <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.8, margin: "0 0 6px" }}>
+              Cove is free and open-source. If you want to help build it —{" "}
               <a
                 href="https://github.com/chieffhiwa/cove/issues/new?template=get-involved.md"
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{
-                  display: "block", padding: "10px 16px", borderRadius: 10,
-                  background: C.ocean + "18", border: `1px solid ${C.ocean}40`,
-                  color: C.ocean, fontSize: 13, textDecoration: "none",
-                  textAlign: "center", touchAction: "manipulation",
-                }}
-              >Get involved on GitHub →</a>
-            </div>
+                style={{ color: C.ocean, textDecoration: "none" }}
+              >open an issue on GitHub</a>.
+            </p>
+
+            <div style={{ flex: 1 }} />
 
             <Btn onClick={finish}>See my dashboard →</Btn>
           </div>
