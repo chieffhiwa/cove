@@ -84,10 +84,10 @@ const C = {
   raised:     "#131c28",
   border:     "#1a2535",
   borderSoft: "#141e2c",
-  text:       "#d4e4f0",
-  muted:      "#8aabbf",
+  text:       "#ddeef8",
+  muted:      "#a8c4d4",
   faint:      "#1e2d40",
-  dim:        "#6a8fa8",
+  dim:        "#8aafc4",
   ocean:      "#4a9eca",
   oceanDeep:  "#2a6a9a",
   seafoam:    "#5ec4b0",
@@ -135,10 +135,10 @@ function lerpHex(c1, c2, t) {
 }
 
 const DEPTH_STOPS = [
-  { bg: "#06080c", text: "#5a7a98", accent: "#1e4a6a" },   // 0  — abyss
-  { bg: "#080c14", text: "#7090aa", accent: "#2a5c80" },   // 6  — deep
-  { bg: "#0c1620", text: "#90b0c8", accent: "#3a7aaa" },   // 11 — mid
-  { bg: "#0f1e30", text: "#c8e0f0", accent: "#6ab8e8" },   // 17 — surface
+  { bg: "#06080c", text: "#8aaabf", accent: "#1e4a6a" },   // 0  — abyss
+  { bg: "#080c14", text: "#96b4c8", accent: "#2a5c80" },   // 6  — deep
+  { bg: "#0c1620", text: "#a8c8dc", accent: "#3a7aaa" },   // 11 — mid
+  { bg: "#0f1e30", text: "#d4ecf8", accent: "#6ab8e8" },   // 17 — surface
 ];
 
 function getDepthPalette(step) {
@@ -2576,10 +2576,8 @@ function StepBetaForm({ name, selfPosition, finish }) {
   const qLabel = selfPosition
     ? `${selfPosition.y < 50 ? "Brave" : "Fearful"} + ${selfPosition.x > 50 ? "Curious" : "Judgmental"}`
     : null;
-  const shareText = qLabel
-    ? `Hey! Check out this new career + network app called Cove. I just found out I'm ${qLabel} on the matrix — I wanna see where you land :)`
-    : `Hey! Check out this new career + network app called Cove. I wanna see where you land on the matrix :)`;
   const shareUrl = "https://cove-main.vercel.app";
+  const shareText = `Hey! Check out this new career app called Cove. I wanna see where you land on the matrix :) ${shareUrl}`;
 
   const handleShare = async () => {
     if (navigator.share) {
@@ -2593,45 +2591,57 @@ function StepBetaForm({ name, selfPosition, finish }) {
 
   return (
     <Shell depth={19}>
-      <div style={{ ...fadeStyle(visible), height: "100vh", display: "flex", flexDirection: "column" }}>
+      <div style={{ ...fadeStyle(visible), minHeight: "100vh", display: "flex", flexDirection: "column" }}>
 
-        {/* Full-bleed kid photo */}
-        <div style={{ position: "relative", flex: 1, overflow: "hidden", background: "#08090c" }}>
+        {/* Kid photo */}
+        <div style={{ position: "relative", height: 320, overflow: "hidden", background: "#08090c", flexShrink: 0 }}>
           <img
             src="/fhiwa-kid.jpg"
             alt=""
-            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 12%", filter: "brightness(1.5) contrast(1.08)" }}
+            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 50%", filter: "brightness(1.2) contrast(1.08)" }}
           />
-          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(8,9,12,0.5) 0%, transparent 25%, transparent 55%, rgba(8,9,12,0.97) 90%)" }} />
-          <div style={{ position: "absolute", bottom: 28, left: 24 }}>
-            <p style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", fontFamily: "monospace", letterSpacing: 1, margin: "0 0 4px", fontStyle: "italic" }}>
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(8,9,12,0.15) 0%, transparent 30%, transparent 60%, rgba(8,9,12,0.95) 100%)" }} />
+          <div style={{ position: "absolute", bottom: 20, left: 24 }}>
+            <p style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", fontFamily: "monospace", letterSpacing: 1, margin: "0 0 4px", fontStyle: "italic" }}>
               me, probably plotting something.
             </p>
-            {qLabel && (
-              <p style={{ fontSize: 13, color: C.ocean, fontFamily: "monospace", letterSpacing: 1, margin: 0 }}>
-                {qLabel.toLowerCase()}
-              </p>
-            )}
+            <p style={{ fontSize: 13, color: C.ocean, fontFamily: "monospace", letterSpacing: 1, margin: 0 }}>
+              brave + curious
+            </p>
           </div>
         </div>
 
         {/* Bottom CTAs */}
-        <div style={{ padding: "24px 24px 48px", display: "flex", flexDirection: "column", gap: 12, background: "#0b0f14" }}>
-          <p style={{ fontSize: 14, color: C.pearl, margin: 0, textAlign: "center", lineHeight: 1.65 }}>
-            brave + curious is the factory setting.<br />
-            <span style={{ color: C.muted }}>life just gets in the way.</span>
+        <div style={{ flex: 1, padding: "28px 24px 52px", display: "flex", flexDirection: "column", justifyContent: "center", gap: 14, background: "#0b0f14" }}>
+          <p style={{ fontSize: 15, color: C.pearl, margin: "0 0 4px", textAlign: "center", lineHeight: 1.75 }}>
+            Not sure what's next? In 30 minutes we can get clear on where you are, what you actually want, and what's in the way.
           </p>
-          <p style={{ fontSize: 12, color: C.dim, margin: "-4px 0 0", textAlign: "center" }}>
-            send this to someone who needs the reminder.
-          </p>
-          <Btn onClick={handleShare} style={{ fontSize: 17, padding: "18px 32px", letterSpacing: 0.5 }}>
-            {copied ? "link copied ✓" : "share cove →"}
-          </Btn>
+          <a
+            href="https://calendly.com/fhiwa"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: "block", width: "100%", boxSizing: "border-box",
+              padding: "22px 24px", borderRadius: 14,
+              background: `linear-gradient(135deg, ${C.tide}, ${C.ocean})`,
+              color: "#f0f8ff", fontSize: 18, textAlign: "center",
+              textDecoration: "none", letterSpacing: 0.4,
+              fontFamily: "Georgia, serif",
+              boxShadow: `0 4px 24px ${C.ocean}50`,
+            }}
+          >
+            book a clarity call →
+          </a>
           <div
             onClick={finish}
-            style={{ textAlign: "center", padding: "10px", cursor: "pointer", color: C.dim, fontSize: 13, touchAction: "manipulation" }}
+            style={{
+              textAlign: "center", padding: "18px 24px", cursor: "pointer",
+              background: "#f0f8ff", color: "#0b1a28",
+              fontSize: 16, borderRadius: 14, fontFamily: "Georgia, serif",
+              letterSpacing: 0.3, touchAction: "manipulation",
+            }}
           >
-            see my dashboard
+            check out your dashboard!
           </div>
         </div>
 
@@ -4022,6 +4032,7 @@ function Shell({ children, depth }) {
       minHeight: "100vh",
       color: d ? d.text : C.text,
       fontFamily: "'Georgia', 'Times New Roman', serif",
+      fontSize: "16px",
       maxWidth: 480, margin: "0 auto",
       position: "relative",
       transition: "background 0.8s ease, color 0.8s ease",
