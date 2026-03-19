@@ -259,11 +259,13 @@ function Onboard({ step, setStep, userData, update, finish }) {
 
   const steps = [
     <StepWelcome        key={0} next={() => { track("onboarding_started"); go(1, "step_completed", { step_name: "welcome" }); }} />,
-    <StepPrivacy        key={1} next={() => go(2, "step_completed", { step_name: "privacy" })} />,
-    <StepPhilosophy     key={2} next={() => go(3, "step_completed", { step_name: "philosophy" })} />,
-    <StepName           key={3} next={(name) => { update({ name }); if (PH_KEY) posthog.identify(name); go(4, "step_completed", { step_name: "name" }); }} />,
-    <StepMatrixIntro    key={4} name={userData.name} next={() => go(5, "step_completed", { step_name: "matrix_intro" })} />,
-    <StepSelfMatrix     key={5} name={userData.name} initialPosition={userData.selfPosition} next={(selfPosition) => {
+    <StepWhyCove        key={1} next={() => go(2, "step_completed", { step_name: "why_cove" })} />,
+    <StepSlowDown       key={2} next={() => go(3, "step_completed", { step_name: "slow_down" })} />,
+    <StepPrivacy        key={3} next={() => go(4, "step_completed", { step_name: "privacy" })} />,
+    <StepPhilosophy     key={4} next={() => go(5, "step_completed", { step_name: "philosophy" })} />,
+    <StepName           key={5} next={(name) => { update({ name }); if (PH_KEY) posthog.identify(name); go(6, "step_completed", { step_name: "name" }); }} />,
+    <StepMatrixIntro    key={6} name={userData.name} next={() => go(7, "step_completed", { step_name: "matrix_intro" })} />,
+    <StepSelfMatrix     key={7} name={userData.name} initialPosition={userData.selfPosition} next={(selfPosition) => {
       update({ selfPosition });
       const q = getQuadrant(selfPosition.x, selfPosition.y);
       const quadrantLabel = QUADRANT_READS[q]?.title || q;
@@ -274,36 +276,36 @@ function Onboard({ step, setStep, userData, update, finish }) {
         ref: localStorage.getItem("cove_ref") || null,
       }).then(() => {});
       track("matrix_placed", { quadrant: quadrantLabel, x: selfPosition.x, y: selfPosition.y });
-      go(6, "step_completed", { step_name: "matrix" });
+      go(8, "step_completed", { step_name: "matrix" });
     }} />,
-    <StepQuadrantReveal key={6} selfPosition={userData.selfPosition} next={() => go(7, "step_completed", { step_name: "quadrant_reveal" })} />,
-    <StepQuadrantRead   key={7} selfPosition={userData.selfPosition} next={() => go(8, "step_completed", { step_name: "quadrant_read" })} />,
-    <StepMatrixPause    key={8} selfPosition={userData.selfPosition} next={() => go(9, "step_completed", { step_name: "matrix_pause" })} goBack={() => setStep(5)} />,
-    <StepAshStory       key={9} next={() => go(10, "step_completed", { step_name: "ash_story" })} />,
-    <StepBraveReflect   key={10} next={(braveReflection) => { update({ braveReflection }); go(11, "step_completed", { step_name: "brave_reflect" }); }} />,
-    <StepFearsReflect   key={11} next={(fearsReflection) => {
+    <StepQuadrantReveal key={8} selfPosition={userData.selfPosition} next={() => go(9, "step_completed", { step_name: "quadrant_reveal" })} />,
+    <StepQuadrantRead   key={9} selfPosition={userData.selfPosition} next={() => go(10, "step_completed", { step_name: "quadrant_read" })} />,
+    <StepMatrixPause    key={10} selfPosition={userData.selfPosition} next={() => go(11, "step_completed", { step_name: "matrix_pause" })} goBack={() => setStep(7)} />,
+    <StepAshStory       key={11} next={() => go(12, "step_completed", { step_name: "ash_story" })} />,
+    <StepBraveReflect   key={12} next={(braveReflection) => { update({ braveReflection }); go(13, "step_completed", { step_name: "brave_reflect" }); }} />,
+    <StepFearsReflect   key={13} next={(fearsReflection) => {
       update({ fearsReflection });
       postReflections({ ...userData, fearsReflection });
       track("reflection_submitted", { has_brave: !!userData.braveReflection, has_fears: !!fearsReflection });
-      go(12, "step_completed", { step_name: "fears_reflect" });
+      go(14, "step_completed", { step_name: "fears_reflect" });
     }} />,
-    <StepPause          key={12} next={() => go(13, "step_completed", { step_name: "pause" })} />,
-    <StepCareersOverCash key={13} next={() => go(14, "step_completed", { step_name: "careers_over_cash" })} />,
-    <StepListDialogue   key={14} name={userData.name} next={() => go(15, "step_completed", { step_name: "list_dialogue" })} />,
-    <StepWarmCold       key={15} next={() => go(16, "step_completed", { step_name: "warm_cold" })} />,
-    <StepListBuilder    key={16} contacts={userData.contacts} update={update} next={(contacts) => {
+    <StepPause          key={14} next={() => go(15, "step_completed", { step_name: "pause" })} />,
+    <StepCareersOverCash key={15} next={() => go(16, "step_completed", { step_name: "careers_over_cash" })} />,
+    <StepListDialogue   key={16} name={userData.name} next={() => go(17, "step_completed", { step_name: "list_dialogue" })} />,
+    <StepWarmCold       key={17} next={() => go(18, "step_completed", { step_name: "warm_cold" })} />,
+    <StepListBuilder    key={18} contacts={userData.contacts} update={update} next={(contacts) => {
       update({ contacts });
       track("list_built", { list_count: contacts.length });
-      go(17, "step_completed", { step_name: "list_built" });
+      go(19, "step_completed", { step_name: "list_built" });
     }} />,
-    <StepListReveal     key={17} contacts={userData.contacts} name={userData.name} next={() => go(18, "step_completed", { step_name: "list_reveal" })} />,
-    <StepBreath         key={18} name={userData.name} contacts={userData.contacts} selfPosition={userData.selfPosition} next={() => go(19, "step_completed", { step_name: "breath" })} />,
-    <StepFounderNote    key={19} next={() => go(20, "step_completed", { step_name: "founder_note" })} />,
-    <StepBetaForm       key={20} name={userData.name} selfPosition={userData.selfPosition} contacts={userData.contacts} finish={() => { track("onboarding_completed"); finish(); }} />,
+    <StepListReveal     key={19} contacts={userData.contacts} name={userData.name} next={() => go(20, "step_completed", { step_name: "list_reveal" })} />,
+    <StepBreath         key={20} name={userData.name} contacts={userData.contacts} selfPosition={userData.selfPosition} next={() => go(21, "step_completed", { step_name: "breath" })} />,
+    <StepFounderNote    key={21} next={() => go(22, "step_completed", { step_name: "founder_note" })} />,
+    <StepBetaForm       key={22} name={userData.name} selfPosition={userData.selfPosition} contacts={userData.contacts} finish={() => { track("onboarding_completed"); finish(); }} />,
   ];
 
-  // Dots: philosophy(2), name(3), matrix intro(4), matrix(5), brave(10), fears(11), list(14-19)
-  const dotMap = { 2:1, 3:2, 4:3, 5:3, 10:4, 11:4, 14:5, 15:5, 16:5, 17:5, 18:5, 19:5, 20:5 };
+  // Dots: philosophy(4), name(5), matrix intro(6), matrix(7), brave(12), fears(13), list(16-22)
+  const dotMap = { 4:1, 5:2, 6:3, 7:3, 12:4, 13:4, 16:5, 17:5, 18:5, 19:5, 20:5, 21:5, 22:5 };
   const showDots = step in dotMap;
   const dotStep = dotMap[step] || 0;
 
@@ -372,7 +374,100 @@ function StepWelcome({ next }) {
   );
 }
 
-// ── Step 1: Privacy ───────────────────────────────────────────────────────────
+// ── Step 1: Why Cove ──────────────────────────────────────────────────────────
+function StepWhyCove({ next }) {
+  const visible = useFadeIn([]);
+  return (
+    <div style={{ ...fadeStyle(visible), padding: "64px 28px 48px", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+      <div style={{ flex: 1 }}>
+        <p style={{ fontSize: 10, letterSpacing: 3, color: C.sky, fontFamily: "monospace", margin: "0 0 20px", opacity: 0.7 }}>WHY THIS EXISTS</p>
+
+        <h2 style={{ fontSize: 28, fontWeight: 400, margin: "0 0 14px", color: "#e8f2fa", lineHeight: 1.3 }}>
+          The job search is broken.
+        </h2>
+        <p style={{ fontSize: 15, color: C.mist, lineHeight: 1.85, margin: "0 0 28px" }}>
+          Cold applications. Ghosted inboxes. Nobody telling you the truth. Cove is built to change that.
+        </p>
+
+        {/* Stats */}
+        <div style={{ display: "flex", gap: 12, marginBottom: 28 }}>
+          {[
+            { stat: "40×", label: "warm vs. cold outreach" },
+            { stat: "85%", label: "jobs filled via network" },
+          ].map(({ stat, label }) => (
+            <div key={stat} style={{ flex: 1, padding: "18px 16px", borderRadius: 14, background: C.surface, border: `1px solid ${C.borderSoft}`, textAlign: "center" }}>
+              <div style={{ fontSize: 26, fontWeight: 300, color: C.ocean, letterSpacing: -1, marginBottom: 6 }}>{stat}</div>
+              <div style={{ fontSize: 11, color: C.muted, lineHeight: 1.5, letterSpacing: 0.3 }}>{label}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Three moves */}
+        <p style={{ fontSize: 11, letterSpacing: 3, color: C.muted, fontFamily: "monospace", margin: "0 0 14px" }}>HOW IT WORKS</p>
+        {[
+          { n: "01", title: "Know yourself", body: "The Bravery / Curiosity Matrix — a simple framework to see where you actually are, not where you wish you were." },
+          { n: "02", title: "Build the list", body: "Your List of 100. The people already in your corner who can open real doors." },
+          { n: "03", title: "Talk it out", body: "Get honest about what's in the way. That's the whole move." },
+        ].map(({ n, title, body }) => (
+          <div key={n} style={{ display: "flex", gap: 14, marginBottom: 16, padding: "16px 18px", borderRadius: 14, background: C.surface, border: `1px solid ${C.borderSoft}` }}>
+            <div style={{ fontSize: 11, color: C.ocean, fontFamily: "monospace", fontWeight: 600, paddingTop: 2, flexShrink: 0 }}>{n}</div>
+            <div>
+              <div style={{ fontSize: 14, color: C.pearl, marginBottom: 5, fontWeight: 500 }}>{title}</div>
+              <div style={{ fontSize: 13, color: C.muted, lineHeight: 1.7 }}>{body}</div>
+            </div>
+          </div>
+        ))}
+
+        {/* Open source */}
+        <div style={{ marginTop: 24, padding: "18px 20px", borderRadius: 14, background: C.faint, border: `1px solid ${C.border}` }}>
+          <p style={{ fontSize: 13, color: C.muted, margin: "0 0 10px", lineHeight: 1.7 }}>
+            Cove is open-source. No company. No profit motive. Built by someone who went through it and wanted something better.
+          </p>
+          <a
+            href="https://github.com/chieffhiwa/cove"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ fontSize: 12, color: C.ocean, textDecoration: "none", fontFamily: "monospace", letterSpacing: 0.5, display: "inline-flex", alignItems: "center", gap: 6 }}
+          >
+            ↗ github.com/chieffhiwa/cove
+          </a>
+        </div>
+      </div>
+
+      <Btn onClick={next} style={{ marginTop: 32 }}>got it. let's go.</Btn>
+    </div>
+  );
+}
+
+// ── Step 2: Slow Down ─────────────────────────────────────────────────────────
+function StepSlowDown({ next }) {
+  const visible = useFadeIn([]);
+  return (
+    <div style={{ ...fadeStyle(visible), display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", minHeight: "100vh", padding: "48px 32px", textAlign: "center" }}>
+      <div style={{ marginBottom: 48, maxWidth: 300 }}>
+        <div style={{ fontSize: 36, marginBottom: 28 }}>🌊</div>
+        <h2 style={{ fontSize: 30, fontWeight: 400, margin: "0 0 20px", color: "#e8f2fa", lineHeight: 1.3, letterSpacing: -0.5 }}>
+          This takes a couple minutes.
+        </h2>
+        <p style={{ fontSize: 16, color: C.mist, lineHeight: 1.9, margin: "0 0 20px" }}>
+          Not a survey. Not a quiz.<br />
+          A moment to actually slow down.
+        </p>
+        <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.85, margin: 0 }}>
+          If you're in a rush, close the tab and come back when you have a few minutes to yourself. It's worth it.
+        </p>
+      </div>
+      <div style={{ width: "100%", maxWidth: 320 }}>
+        <Btn onClick={next}>I'm ready</Btn>
+      </div>
+      <p style={{ fontSize: 12, color: C.dim, marginTop: 20, fontStyle: "italic" }}>
+        the whole thing is about slowing down
+      </p>
+    </div>
+  );
+}
+
+// ── Step 3: Privacy ───────────────────────────────────────────────────────────
 function StepPrivacy({ next }) {
   const visible = useFadeIn([]);
   const commitments = [
