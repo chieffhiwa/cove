@@ -423,14 +423,24 @@ function StepWhyCove({ next }) {
           <p style={{ fontSize: 13, color: C.muted, margin: "0 0 10px", lineHeight: 1.7 }}>
             Cove is open-source. No company. No profit motive. Built by someone who went through it and wanted something better.
           </p>
-          <a
-            href="https://github.com/chieffhiwa/cove"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ fontSize: 12, color: C.ocean, textDecoration: "none", fontFamily: "monospace", letterSpacing: 0.5, display: "inline-flex", alignItems: "center", gap: 6 }}
-          >
-            ↗ github.com/chieffhiwa/cove
-          </a>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <a
+              href="https://github.com/chieffhiwa/cove"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ fontSize: 12, color: C.ocean, textDecoration: "none", fontFamily: "monospace", letterSpacing: 0.5, display: "inline-flex", alignItems: "center", gap: 5, padding: "8px 14px", borderRadius: 8, background: C.ocean + "18", border: `1px solid ${C.ocean}40` }}
+            >
+              ↗ view on github
+            </a>
+            <a
+              href="https://github.com/sponsors/chieffhiwa"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ fontSize: 12, color: "#e85d7a", textDecoration: "none", fontFamily: "monospace", letterSpacing: 0.5, display: "inline-flex", alignItems: "center", gap: 5, padding: "8px 14px", borderRadius: 8, background: "#e85d7a18", border: "1px solid #e85d7a40" }}
+            >
+              ♥ sponsor
+            </a>
+          </div>
         </div>
       </div>
 
