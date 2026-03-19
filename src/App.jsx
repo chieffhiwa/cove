@@ -2611,33 +2611,14 @@ function StepBetaForm({ name, selfPosition, finish }) {
           </div>
         </div>
 
-        {/* Bottom CTAs */}
+        {/* Bottom CTA */}
         <div style={{ flex: 1, padding: "28px 24px 52px", display: "flex", flexDirection: "column", justifyContent: "center", gap: 14, background: "#0b0f14" }}>
-          <p style={{ fontSize: 15, color: C.pearl, margin: "0 0 4px", textAlign: "center", lineHeight: 1.75 }}>
-            Not sure what's next? In 30 minutes we can get clear on where you are, what you actually want, and what's in the way.
-          </p>
-          <a
-            href="https://calendly.com/fhiwa"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              display: "block", width: "100%", boxSizing: "border-box",
-              padding: "22px 24px", borderRadius: 14,
-              background: `linear-gradient(135deg, ${C.tide}, ${C.ocean})`,
-              color: "#f0f8ff", fontSize: 18, textAlign: "center",
-              textDecoration: "none", letterSpacing: 0.4,
-              fontFamily: "Georgia, serif",
-              boxShadow: `0 4px 24px ${C.ocean}50`,
-            }}
-          >
-            book a clarity call →
-          </a>
           <div
             onClick={finish}
             style={{
-              textAlign: "center", padding: "18px 24px", cursor: "pointer",
+              textAlign: "center", padding: "22px 24px", cursor: "pointer",
               background: "#f0f8ff", color: "#0b1a28",
-              fontSize: 16, borderRadius: 14, fontFamily: "Georgia, serif",
+              fontSize: 18, borderRadius: 14, fontFamily: "Georgia, serif",
               letterSpacing: 0.3, touchAction: "manipulation",
             }}
           >
