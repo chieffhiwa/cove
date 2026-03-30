@@ -79,22 +79,22 @@ const TAGLINE = TAGLINE_VERSION === "A"
 
 // ─── PALETTE ────────────────────────────────────────────────────────────────
 const C = {
-  bg:         "#0b0f14",
-  surface:    "#0f1520",
-  raised:     "#131c28",
-  border:     "#1a2535",
-  borderSoft: "#141e2c",
-  text:       "#ddeef8",
-  muted:      "#a8c4d4",
-  faint:      "#1e2d40",
-  dim:        "#8aafc4",
-  ocean:      "#4a9eca",
-  oceanDeep:  "#2a6a9a",
-  seafoam:    "#5ec4b0",
-  sky:        "#7ab8d8",
-  mist:       "#9cb8cc",
-  tide:       "#3d7fa8",
-  pearl:      "#ccdde8",
+  bg:         "#f0f4f8",   // warm blue-gray, easier than pure white
+  surface:    "#fafcfe",   // near-white cards
+  raised:     "#e8f0f8",   // slightly lifted
+  border:     "#ccd8e4",
+  borderSoft: "#dde6f0",
+  text:        "#1e2d3d",   // dark navy — readable
+  muted:      "#526070",   // visible mid-tone
+  faint:      "#dce8f4",
+  dim:        "#708898",
+  ocean:      "#1e6fa8",   // strong enough on light bg
+  oceanDeep:  "#145280",
+  seafoam:    "#178a72",
+  sky:        "#2e78a8",
+  mist:       "#4e7088",
+  tide:       "#1e6080",
+  pearl:      "#0a1828",   // near-black for headings
 };
 
 // ─── FEELING DEFINITIONS ─────────────────────────────────────────────────────
@@ -135,10 +135,10 @@ function lerpHex(c1, c2, t) {
 }
 
 const DEPTH_STOPS = [
-  { bg: "#06080c", text: "#8aaabf", accent: "#1e4a6a" },   // 0  — abyss
-  { bg: "#080c14", text: "#96b4c8", accent: "#2a5c80" },   // 6  — deep
-  { bg: "#0c1620", text: "#a8c8dc", accent: "#3a7aaa" },   // 11 — mid
-  { bg: "#0f1e30", text: "#d4ecf8", accent: "#6ab8e8" },   // 17 — surface
+  { bg: "#f0f4f8", text: "#1e2d3d", accent: "#1e6fa8" },   // 0
+  { bg: "#eaf1f8", text: "#1a2838", accent: "#1a60a0" },   // 6
+  { bg: "#e4ecf6", text: "#152030", accent: "#145280" },   // 11
+  { bg: "#dce8f4", text: "#0a1828", accent: "#104070" },   // 17
 ];
 
 function getDepthPalette(step) {
@@ -352,11 +352,11 @@ function StepWelcome({ next }) {
         <div style={{ fontSize: 11, letterSpacing: 8, color: C.sky, fontFamily: "monospace", marginBottom: 32, opacity: 0.7 }}>
           C O V E
         </div>
-        <h1 style={{ fontSize: 38, fontWeight: 400, margin: "0 0 22px", color: "#e8f2fa", lineHeight: 1.25, letterSpacing: -1 }}>
+        <h1 style={{ fontSize: 38, fontWeight: 400, margin: "0 0 22px", color: C.pearl, lineHeight: 1.25, letterSpacing: -1 }}>
           Find work that<br />actually fits.
         </h1>
         <p style={{ fontSize: 15, color: C.mist, lineHeight: 1.9, margin: "0 0 28px", maxWidth: 300 }}>
-          Not a job board. Not a resume builder.<br />A simple, proven system to build the career you actually want.
+          A simple, proven system to build the career you actually want.
         </p>
         <p style={{ fontSize: 12, letterSpacing: 4, color: C.ocean, fontFamily: "monospace", margin: "0 0 10px", textTransform: "lowercase", opacity: 0.85 }}>
           {TAGLINE}
@@ -382,7 +382,7 @@ function StepWhyCove({ next }) {
       <div style={{ flex: 1 }}>
         <p style={{ fontSize: 10, letterSpacing: 3, color: C.sky, fontFamily: "monospace", margin: "0 0 20px", opacity: 0.7 }}>WHY THIS EXISTS</p>
 
-        <h2 style={{ fontSize: 28, fontWeight: 400, margin: "0 0 14px", color: "#e8f2fa", lineHeight: 1.3 }}>
+        <h2 style={{ fontSize: 28, fontWeight: 400, margin: "0 0 14px", color: C.pearl, lineHeight: 1.3 }}>
           The job search is broken.
         </h2>
         <p style={{ fontSize: 15, color: C.mist, lineHeight: 1.85, margin: "0 0 28px" }}>
@@ -456,11 +456,10 @@ function StepSlowDown({ next }) {
     <div style={{ ...fadeStyle(visible), display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", minHeight: "100vh", padding: "48px 32px", textAlign: "center" }}>
       <div style={{ marginBottom: 48, maxWidth: 300 }}>
         <div style={{ fontSize: 36, marginBottom: 28 }}>🌊</div>
-        <h2 style={{ fontSize: 30, fontWeight: 400, margin: "0 0 20px", color: "#e8f2fa", lineHeight: 1.3, letterSpacing: -0.5 }}>
+        <h2 style={{ fontSize: 30, fontWeight: 400, margin: "0 0 20px", color: C.pearl, lineHeight: 1.3, letterSpacing: -0.5 }}>
           This takes a couple minutes.
         </h2>
         <p style={{ fontSize: 16, color: C.mist, lineHeight: 1.9, margin: "0 0 20px" }}>
-          Not a survey. Not a quiz.<br />
           A moment to actually slow down.
         </p>
         <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.85, margin: 0 }}>
@@ -482,19 +481,19 @@ function StepPrivacy({ next }) {
   const visible = useFadeIn([]);
   const commitments = [
     { icon: "🔒", title: "Your data stays yours", body: "Your reflections stay with you. We don't sell them, share them, or use them for anything else." },
-    { icon: "👁️", title: "No surveillance", body: "We're not an ad business. We're a career tool." },
+    { icon: "👁️", title: "No surveillance", body: "A career tool. Full stop." },
     { icon: "💙", title: "A personal commitment", body: "This works for you, or it doesn't work. Tell us if we break that trust." },
-    { icon: "⚖️", title: "We build against bias", body: "Built to surface your strengths — not sort you into a box. Something feels off? Say so." },
+    { icon: "⚖️", title: "We build against bias", body: "Built to surface your strengths. Something feels off? Say so." },
   ];
 
   return (
     <div style={{ ...fadeStyle(visible), padding: "72px 28px 48px", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <div style={{ flex: 1 }}>
         <p style={{ fontSize: 10, letterSpacing: 3, color: C.sky, fontFamily: "monospace", margin: "0 0 18px", opacity: 0.7 }}>BEFORE WE START</p>
-        <h2 style={{ fontSize: 28, fontWeight: 400, margin: "0 0 12px", color: "#e8f2fa", lineHeight: 1.3 }}>
+        <h2 style={{ fontSize: 28, fontWeight: 400, margin: "0 0 12px", color: C.pearl, lineHeight: 1.3 }}>
           We don't touch your data.
         </h2>
-        <p style={{ fontSize: 14, color: C.mist, lineHeight: 1.85, margin: "0 0 28px" }}>
+        <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.85, margin: "0 0 28px" }}>
           Your reflections are personal. We treat them that way.
         </p>
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -506,8 +505,8 @@ function StepPrivacy({ next }) {
             }}>
               <span style={{ fontSize: 20, lineHeight: 1, marginTop: 2 }}>{c.icon}</span>
               <div>
-                <div style={{ fontSize: 13, color: "#d8ecf8", fontWeight: 500, marginBottom: 6 }}>{c.title}</div>
-                <div style={{ fontSize: 13, color: C.mist, lineHeight: 1.8 }}>{c.body}</div>
+                <div style={{ fontSize: 13, color: C.text, fontWeight: 600, marginBottom: 6 }}>{c.title}</div>
+                <div style={{ fontSize: 13, color: C.muted, lineHeight: 1.8 }}>{c.body}</div>
               </div>
             </div>
           ))}
@@ -771,7 +770,7 @@ function StepMatrixIntro({ name, next }) {
         </div>
 
         <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.7, margin: "0 0 16px", fontStyle: "italic" }}>
-          Not a personality type. A snapshot of right now.
+          A snapshot of right now. Honest, not aspirational.
         </p>
 
         {/* Stuart attribution */}
@@ -862,7 +861,7 @@ const QUADRANT_READS = {
     title: "In a cautious place right now.",
     color: "#9cb8cc",
     short: "That's okay. Most people are.",
-    read: "Something's made you careful. That's not a character flaw it's data. Before you optimize for the right role, find one person: a mentor, a sponsor, someone who's seen you at your best and will say so. The right environment will follow. Cove is a good place to map who that person might be.",
+    read: "Something's made you careful. That's data worth reading. Before you optimize for the right role, find one person: a mentor, a sponsor, someone who's seen you at your best and will say so. The right environment will follow. Cove is a good place to map who that person might be.",
     jobs: ["Find a mentor first", "Low-stakes experiments", "Internal moves"],
   },
 };
@@ -903,10 +902,10 @@ function StepSelfMatrix({ name, initialPosition, next }) {
         {isReturn ? (
           <>
             <h2 style={{ fontSize: 24, fontWeight: 400, margin: "0 0 8px", color: C.pearl, lineHeight: 1.35 }}>
-              Not feeling it?
+              Want to move your dot?
             </h2>
             <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.7, margin: "0 0 22px" }}>
-              Move your dot. This is about how you actually see yourself right now. Not how you want to be seen, not who you're becoming. Just honest. Where are you today?
+              Move your dot. This is about how you actually see yourself right now — honest, present. Where are you today?
             </p>
           </>
         ) : (
@@ -915,7 +914,7 @@ function StepSelfMatrix({ name, initialPosition, next }) {
               Be real with yourself, {name}.
             </h2>
             <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.7, margin: "0 0 22px" }}>
-              Brave or fearful? Curious or judgmental? Be honest, not aspirational. Where you actually are, not where you want to be.
+              Brave or fearful? Curious or judgmental? Be honest. Where you actually are today.
             </p>
           </>
         )}
@@ -968,11 +967,11 @@ function StepSelfMatrix({ name, initialPosition, next }) {
           }}>
             <div style={{
               width: 44, height: 44, borderRadius: "50%",
-              background: `linear-gradient(150deg, ${C.oceanDeep}, ${read?.color || C.tide})`,
+              background: `linear-gradient(135deg, #5bb8f5, #2e8fd4)`,
               display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 15, fontWeight: 600, color: "#e0eef8",
-              boxShadow: `0 0 24px ${C.ocean}60`,
-              border: `2px solid ${C.sky}`,
+              fontSize: 15, fontWeight: 700, color: "#fff",
+              boxShadow: `0 2px 12px rgba(46,143,212,0.4)`,
+              border: `2px solid rgba(255,255,255,0.6)`,
             }}>
               {name ? name[0].toUpperCase() : "?"}
             </div>
@@ -2367,7 +2366,7 @@ const QUADRANT_STORIES = {
   },
   "brave-judgmental": {
     label: "THE STANDARD HOLDER",
-    headline: "You know what good looks like. That's not common.",
+    headline: "You know what good looks like. Sit with that.",
     body: [
       "There's a version of \"high standards\" that's just fear of being wrong. But there's another version — the one you have — where you've actually seen enough to know the difference. You've built a model of quality, and you hold it.",
       "The research on conscientiousness shows it's one of the strongest predictors of long-term career success. Not charisma. Not raw intelligence. The willingness to do the thing right, even when no one's checking.",
@@ -2377,11 +2376,11 @@ const QUADRANT_STORIES = {
   },
   "fearful-curious": {
     label: "THE DEEP THINKER",
-    headline: "You process differently. That's not a flaw.",
+    headline: "You process differently. That's the whole thing.",
     body: [
       "Here's what looks like hesitation from the outside: you reading the room before you move. Noticing the thing no one else noticed. Asking the question quietly, to yourself first, before you know whether the room is safe enough for it.",
       "Amy Edmondson's research on psychological safety changed how we think about high-performing teams. Her finding: teams don't perform well because they never fail. They perform well because they're safe enough to try — and safe enough to say when something's not working.",
-      "You do your best thinking in environments with that kind of safety. Not the absence of challenge — the presence of trust. You don't need easy. You need a room that rewards depth over speed.",
+      "You do your best thinking in environments with that kind of safety — the presence of trust. You need a room that rewards depth over speed.",
       "The move for you right now isn't bravery for its own sake. It's finding one environment — one mentor, one team, one role — where you can be fully visible. The output that comes after that tends to surprise people. Including you.",
     ],
   },
@@ -2618,13 +2617,11 @@ function StepFounderNote({ next }) {
   return (
     <div style={{
       ...fadeStyle(visible),
+      minHeight: "100vh", padding: "48px 28px 40px",
       display: "flex", flexDirection: "column",
-      justifyContent: "center", alignItems: "center",
-      minHeight: "100vh", padding: "64px 32px",
-      textAlign: "center",
     }}>
-      <div style={{ maxWidth: 320 }}>
-        <p style={{ fontSize: 11, letterSpacing: 2, color: C.dim, fontFamily: "monospace", margin: "0 0 32px", textTransform: "uppercase" }}>
+      <div style={{ maxWidth: 340, margin: "0 auto", width: "100%", textAlign: "center", flex: 1 }}>
+        <p style={{ fontSize: 10, letterSpacing: 3, color: C.dim, fontFamily: "monospace", margin: "0 0 20px", textTransform: "uppercase" }}>
           from the builder
         </p>
 
@@ -2632,37 +2629,43 @@ function StepFounderNote({ next }) {
           href="https://www.linkedin.com/in/fndou/"
           target="_blank"
           rel="noopener noreferrer"
-          style={{ display: "block", margin: "0 auto 24px", borderRadius: "50%", overflow: "hidden", width: 100, height: 100, border: `2px solid ${C.ocean}` }}
+          style={{ display: "block", margin: "0 auto 16px", borderRadius: "50%", overflow: "hidden", width: 88, height: 88, border: `2px solid ${C.ocean}` }}
         >
           <img
             src="/fhiwa.jpg"
             alt="Fhiwa Ndou"
-            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 15%", display: "block" }}
           />
         </a>
 
-        <p style={{ fontSize: 22, fontWeight: 300, color: C.pearl, lineHeight: 1.5, margin: "0 0 28px", letterSpacing: -0.3 }}>
+        <p style={{ fontSize: 20, fontWeight: 300, color: C.pearl, lineHeight: 1.4, margin: "0 0 20px", letterSpacing: -0.3 }}>
           it's just me.
         </p>
 
-        <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.9, margin: "0 0 20px" }}>
+        <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.85, margin: "0 0 14px" }}>
           Job searching sucks. So much of it is outside your control, and it quietly messes with your head until you've forgotten what it felt like to just be excited about work.
         </p>
 
-        <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.9, margin: "0 0 20px" }}>
+        <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.85, margin: "0 0 14px" }}>
           I still think about how excited I was to get hired at Toys R Us, 18 years ago. I had no idea what I was in for, good or bad, but I didn't care. I was curious.
         </p>
 
-        <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.9, margin: "0 0 40px" }}>
+        <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.85, margin: "0 0 24px" }}>
           I built this to get that feeling back. Turns out a lot of people need it.
         </p>
 
-        <p style={{ fontSize: 12, color: C.dim, fontStyle: "italic", margin: "0 0 8px" }}>— Fhiwa Ndou</p>
+        <p style={{ fontSize: 12, color: C.dim, fontStyle: "italic", margin: "0 0 10px" }}>— Fhiwa Ndou</p>
         <a
           href="https://www.linkedin.com/in/fndou/"
           target="_blank"
           rel="noopener noreferrer"
-          style={{ fontSize: 12, color: C.ocean, textDecoration: "none", display: "block", marginBottom: 40 }}
+          style={{
+            fontSize: 12, textDecoration: "none", display: "inline-block", marginBottom: 28,
+            padding: "10px 20px", borderRadius: 24,
+            background: C.ocean, color: "#fff",
+            fontFamily: "monospace", letterSpacing: 1,
+            boxShadow: `0 3px 12px rgba(30,111,168,0.3)`,
+          }}
         >
           catch me on LinkedIn →
         </a>
@@ -2695,44 +2698,75 @@ function StepBetaForm({ name, selfPosition, finish }) {
   };
 
   return (
-    <Shell depth={19}>
-      <div style={{ ...fadeStyle(visible), minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+    <div style={{ ...fadeStyle(visible), minHeight: "100vh", display: "flex", flexDirection: "column", background: C.bg }}>
 
-        {/* Kid photo */}
-        <div style={{ position: "relative", height: 320, overflow: "hidden", background: "#08090c", flexShrink: 0 }}>
-          <img
-            src="/fhiwa-kid.jpg"
-            alt=""
-            style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 50%", filter: "brightness(1.2) contrast(1.08)" }}
-          />
-          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(8,9,12,0.15) 0%, transparent 30%, transparent 60%, rgba(8,9,12,0.95) 100%)" }} />
-          <div style={{ position: "absolute", bottom: 20, left: 24 }}>
-            <p style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", fontFamily: "monospace", letterSpacing: 1, margin: "0 0 4px", fontStyle: "italic" }}>
-              me, probably plotting something.
-            </p>
-            <p style={{ fontSize: 13, color: C.ocean, fontFamily: "monospace", letterSpacing: 1, margin: 0 }}>
-              brave + curious
-            </p>
+      {/* Photo — light treatment */}
+      <div style={{ position: "relative", height: 280, overflow: "hidden", flexShrink: 0, background: C.raised }}>
+        <img
+          src="/fhiwa-kid.jpg"
+          alt=""
+          style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 50%", filter: "brightness(1.05) saturate(0.9)" }}
+        />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, transparent 50%, rgba(240,244,248,0.92) 100%)" }} />
+      </div>
+
+      {/* Main content */}
+      <div style={{ flex: 1, padding: "32px 24px 56px", display: "flex", flexDirection: "column", gap: 20 }}>
+
+        {/* Caption */}
+        <p style={{ fontSize: 11, color: C.dim, fontFamily: "monospace", letterSpacing: 1, margin: 0, fontStyle: "italic" }}>
+          me, probably plotting something. — brave + curious
+        </p>
+
+        {/* Heading */}
+        <div>
+          <h2 style={{ fontSize: 26, fontWeight: 400, color: C.text, fontFamily: "Georgia, serif", lineHeight: 1.35, margin: "0 0 10px" }}>
+            {name ? `You're in, ${name.split(" ")[0]}.` : "You're in."}
+          </h2>
+          <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.75, margin: 0 }}>
+            {qLabel
+              ? `You placed yourself as ${qLabel}. That's the starting point — not the ceiling.`
+              : "You've done something most people skip. Now let's put it to work."}
+          </p>
+        </div>
+
+        {/* Share nudge */}
+        <div
+          onClick={handleShare}
+          style={{
+            padding: "14px 18px", borderRadius: 10, border: `1px solid ${C.border}`,
+            background: C.surface, cursor: "pointer", display: "flex", alignItems: "center",
+            gap: 12, touchAction: "manipulation",
+          }}
+        >
+          <span style={{ fontSize: 20 }}>🔗</span>
+          <div>
+            <div style={{ fontSize: 13, color: C.text, fontWeight: 600, marginBottom: 2 }}>
+              {copied ? "Copied! Send it." : "Invite someone to try it"}
+            </div>
+            <div style={{ fontSize: 11, color: C.muted }}>who else needs to find their matrix?</div>
           </div>
         </div>
 
-        {/* Bottom CTA */}
-        <div style={{ flex: 1, padding: "28px 24px 52px", display: "flex", flexDirection: "column", justifyContent: "center", gap: 14, background: "#0b0f14" }}>
-          <div
-            onClick={finish}
-            style={{
-              textAlign: "center", padding: "22px 24px", cursor: "pointer",
-              background: "#f0f8ff", color: "#0b1a28",
-              fontSize: 18, borderRadius: 14, fontFamily: "Georgia, serif",
-              letterSpacing: 0.3, touchAction: "manipulation",
-            }}
-          >
-            check out your dashboard!
-          </div>
+        {/* Spacer */}
+        <div style={{ flex: 1 }} />
+
+        {/* CTA */}
+        <div
+          onClick={finish}
+          style={{
+            textAlign: "center", padding: "20px 24px", cursor: "pointer",
+            background: C.ocean, color: "#fff",
+            fontSize: 17, borderRadius: 12, fontFamily: "Georgia, serif",
+            letterSpacing: 0.3, touchAction: "manipulation",
+            boxShadow: `0 4px 16px rgba(30,111,168,0.25)`,
+          }}
+        >
+          go to your dashboard →
         </div>
 
       </div>
-    </Shell>
+    </div>
   );
 }
 
@@ -2832,7 +2866,7 @@ function MainApp({ userData, update, tab, setTab, activeContact, setActiveContac
           {tab === "matrix"    && <MatrixTab    contacts={userData.contacts} openContact={openContact} selfPosition={userData.selfPosition} name={userData.name} />}
           {tab === "vibes"     && <VibesTab />}
           {tab === "list"      && <List100Tab userData={userData} />}
-          {tab === "you"       && <ProfileTab   userData={userData} onReset={onReset} />}
+          {tab === "you"       && <ProfileTab   userData={userData} update={update} onReset={onReset} />}
         </div>
 
         {/* Bottom nav */}
@@ -3214,11 +3248,11 @@ function ValuesTab({ wants = [] }) {
 
   const reflections = {
     Freedom:   "Freedom keeps coming up because you've felt what it's like when it's gone. You're not trying to escape. You're trying to work like a whole person. Don't negotiate this one away cheaply.",
-    Legacy:    "You want to matter beyond the role. That's not ego, that's integrity. The work that earns Legacy is work where you can say 'I built that' and mean it in a way that has nothing to do with your title.",
+    Legacy:    "You want to matter beyond the role. That's integrity. The work that earns Legacy is work where you can say 'I built that' and mean it in a way that runs deeper than your title.",
     Curiosity: "You need a problem worth losing yourself in. If you can't see yourself still curious about the work in year two, that's a signal. It never gets more interesting only more familiar.",
     Stability: "This isn't playing it safe. It's building a floor solid enough that you can take the risks that actually count. Know your number. Don't go below it.",
-    Joy:       "You've tried the joyless version. It doesn't work. Joy isn't a nice-to-have. It's the difference between your best self showing up and a functional version of you showing up. Not the same thing.",
-    Access:    "You've earned the right to want a real seat. Not a courtesy invite. Actual influence. The rooms where decisions happen are the rooms you belong in. Hold out for that.",
+    Joy:       "You've tried the joyless version. It doesn't work. Joy is the difference between your best self showing up and a functional version of you showing up. Hold that line.",
+    Access:    "You've earned the right to want a real seat — actual influence. The rooms where decisions happen are the rooms you belong in. Hold out for that.",
   };
 
   if (wants.length === 0) {
@@ -3377,7 +3411,7 @@ function MatrixTab({ contacts = [], openContact, selfPosition, name }) {
               width: 42, height: 42, borderRadius: "50%",
               background: `linear-gradient(150deg, ${C.oceanDeep}, ${selfQuadrant?.color || C.tide})`,
               display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 14, fontWeight: 700, color: "#e0eef8",
+              fontSize: 14, fontWeight: 700, color: C.pearl,
               boxShadow: `0 0 0 4px ${C.bg}, 0 0 0 6px ${selfQuadrant?.color || C.ocean}60`,
               border: `2px solid ${C.sky}`,
             }}>{name ? name[0].toUpperCase() : "Y"}</div>
@@ -3437,72 +3471,152 @@ function MatrixTab({ contacts = [], openContact, selfPosition, name }) {
 // ── Vibes Tab ─────────────────────────────────────────────────────────────────
 function VibesTab() {
   const visible = useFadeIn(["vibes"]);
-  const cards = [
-    { emoji: "🐸", text: "it's time to try defying gravity" },
-    { emoji: "🦥", text: "slow rider. still riding." },
-    { emoji: "💙", text: "what a privilege it is to see progress, even if no one else does" },
-    { emoji: "🐺", text: "good morning stackmates" },
-    { emoji: "〰️", text: "no problem.........." },
-    { emoji: "🌊", text: "a real person makes their own luck" },
+
+  // left column, right column — alternating creates masonry chaos
+  const left = [
+    {
+      type: "img", src: "/water.jpg",
+      caption: "your current.", rotate: -1.5,
+      height: 140,
+    },
+    {
+      type: "quote",
+      text: "it's time to try\ndefying gravity.",
+      bg: "#f5d66e", color: "#1a1000",
+      font: "Georgia, serif", size: 20, weight: 700,
+      rotate: 2, pad: "22px 18px", minH: 120,
+    },
+    {
+      type: "quote",
+      text: '"no problem.........."',
+      bg: "#fff", color: "#333",
+      font: "Georgia, serif", size: 15, weight: 400,
+      rotate: -2.5, pad: "18px 16px", minH: 90,
+      border: "1.5px solid #ddd",
+    },
+    {
+      type: "quote",
+      text: "what a privilege it is to see progress,\neven if no one else does.",
+      bg: "#e8f5e8", color: "#1a3a1a",
+      font: "Georgia, serif", size: 13, weight: 400,
+      rotate: 1, pad: "20px 16px", minH: 110,
+      italic: true,
+    },
+    {
+      type: "quote",
+      text: "you're not desperate.\nyou're selective.",
+      bg: C.ocean, color: "#fff",
+      font: "Georgia, serif", size: 16, weight: 600,
+      rotate: -1.5, pad: "22px 18px", minH: 100,
+    },
   ];
 
-  return (
-    <div style={{ ...fadeStyle(visible) }}>
+  const right = [
+    {
+      type: "quote",
+      text: "Flip it\naround",
+      bg: "#111", color: "#fff",
+      font: "Georgia, serif", size: 28, weight: 700,
+      rotate: 3, pad: "28px 20px", minH: 130,
+    },
+    {
+      type: "quote",
+      text: "slow rider.\nstill riding. 🦥",
+      bg: "#a8d8f0", color: "#0a2030",
+      font: "Georgia, serif", size: 17, weight: 600,
+      rotate: -2, pad: "20px 16px", minH: 100,
+    },
+    {
+      type: "quote",
+      text: "good morning\npackmates 🐺",
+      bg: "#1a1a2e", color: "#e0d0ff",
+      font: "Georgia, serif", size: 15, weight: 400,
+      rotate: 2.5, pad: "18px 16px", minH: 90,
+    },
+    {
+      type: "quote",
+      text: "a real person\nmakes their\nown luck.",
+      bg: "#222", color: "#f0f0f0",
+      font: "monospace", size: 14, weight: 700,
+      rotate: -1, pad: "20px 16px", minH: 110,
+      letterSpacing: 1,
+    },
+    {
+      type: "add",
+      rotate: 1.5, minH: 80,
+    },
+  ];
 
-      {/* Water image header */}
-      <div style={{ position: "relative", height: 200, overflow: "hidden" }}>
-        <img
-          src="/water.jpg"
-          alt=""
-          style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }}
-        />
-        <div style={{
-          position: "absolute", inset: 0,
-          background: "linear-gradient(180deg, transparent 30%, #0b0f14 100%)",
-        }} />
-        <div style={{
-          position: "absolute", bottom: 16, left: 22,
-        }}>
-          <h2 style={{ fontSize: 22, fontWeight: 400, margin: 0, color: C.pearl }}>Vibes</h2>
-        </div>
+  const renderCard = (card, i) => {
+    const base = {
+      borderRadius: 12,
+      transform: `rotate(${card.rotate}deg)`,
+      marginBottom: 10,
+      boxShadow: "0 3px 14px rgba(0,0,0,0.10)",
+      overflow: "hidden",
+      display: "block",
+    };
+
+    if (card.type === "img") return (
+      <div key={i} style={{ ...base, height: card.height, position: "relative" }}>
+        <img src={card.src} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        {card.caption && (
+          <div style={{
+            position: "absolute", bottom: 8, left: 10,
+            fontSize: 10, fontFamily: "monospace", letterSpacing: 2,
+            color: "#fff", textShadow: "0 1px 4px rgba(0,0,0,0.6)",
+          }}>{card.caption}</div>
+        )}
       </div>
+    );
 
-      <div style={{ padding: "16px 22px 28px" }}>
-      <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.7, margin: "0 0 24px" }}>
-        The job search is a long game. Keep something here that reminds you why you're even playing.
-      </p>
+    if (card.type === "add") return (
+      <div key={i} style={{
+        ...base,
+        minHeight: card.minH,
+        background: "#fff",
+        border: "2px dashed #ccc",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        color: "#aaa", fontSize: 13, cursor: "pointer",
+        fontFamily: "monospace",
+      }}>+ add yours</div>
+    );
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 20 }}>
-        {cards.map((card, i) => (
-          <div key={i} style={{
-            padding: "20px 16px", borderRadius: 12,
-            background: C.surface, border: `1px solid ${C.borderSoft}`,
-            display: "flex", flexDirection: "column",
-            alignItems: "center", textAlign: "center", gap: 10,
-            minHeight: 100,
-          }}>
-            <div style={{ fontSize: 26 }}>{card.emoji}</div>
-            <div style={{ fontSize: 11, color: C.muted, fontStyle: "italic", lineHeight: 1.6 }}>{card.text}</div>
-          </div>
-        ))}
-        <div style={{
-          padding: "20px 16px", borderRadius: 12, minHeight: 100,
-          border: `1px dashed ${C.border}`,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          color: C.dim, fontSize: 12, cursor: "pointer",
-        }}>+ add yours</div>
-      </div>
-
-      <div style={{
-        padding: "18px 20px", borderRadius: 12,
-        background: C.surface, border: `1px solid ${C.borderSoft}`,
-        borderLeft: `2px solid ${C.oceanDeep}`,
+    return (
+      <div key={i} style={{
+        ...base,
+        background: card.bg,
+        border: card.border || "none",
+        minHeight: card.minH,
+        padding: card.pad,
       }}>
-        <SectionLabel>the move</SectionLabel>
-        <p style={{ margin: 0, fontSize: 13, color: C.muted, fontStyle: "italic", lineHeight: 1.9 }}>
-          You're not desperate. You're selective. Show up like someone who's been places and is genuinely excited about where they're going next. That energy is not fake it's what gets you in the room.
-        </p>
+        <div style={{
+          fontFamily: card.font,
+          fontSize: card.size,
+          fontWeight: card.weight,
+          fontStyle: card.italic ? "italic" : "normal",
+          color: card.color,
+          lineHeight: 1.4,
+          letterSpacing: card.letterSpacing || 0,
+          whiteSpace: "pre-line",
+        }}>{card.text}</div>
       </div>
+    );
+  };
+
+  return (
+    <div style={{ ...fadeStyle(visible), background: C.bg, minHeight: "100vh" }}>
+
+      {/* Header */}
+      <div style={{ padding: "20px 18px 10px", display: "flex", alignItems: "baseline", gap: 10 }}>
+        <h2 style={{ fontSize: 22, fontWeight: 700, margin: 0, color: C.pearl, fontFamily: "Georgia, serif" }}>Vibes</h2>
+        <span style={{ fontSize: 11, color: C.muted, fontFamily: "monospace", letterSpacing: 2 }}>board</span>
+      </div>
+
+      {/* Masonry board — 2 columns */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 10px", padding: "8px 12px 40px", alignItems: "start" }}>
+        <div>{left.map(renderCard)}</div>
+        <div style={{ marginTop: 24 }}>{right.map(renderCard)}</div>
       </div>
     </div>
   );
@@ -3920,6 +4034,10 @@ function CoachDashboard() {
   const [pwError, setPwError] = useState(false);
   const [reflections, setReflections] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [selected, setSelected] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+  const [filterQ, setFilterQ] = useState("all");
 
   const handleLogin = () => {
     if (pw === COACH_PASSWORD) {
@@ -3928,7 +4046,7 @@ function CoachDashboard() {
       setLoading(true);
       supabase
         .from("reflections")
-        .select("id, name, quadrant, brave_reflection, fears_reflection, created_at")
+        .select("id, name, phone, quadrant, brave_reflection, fears_reflection, ref, created_at")
         .order("created_at", { ascending: false })
         .then(({ data, error }) => {
           if (!error && data) setReflections(data);
@@ -3945,8 +4063,20 @@ function CoachDashboard() {
     window.location.href = url.toString();
   };
 
+  const handleDelete = async (id) => {
+    setDeleting(true);
+    const { error } = await supabase.from("reflections").delete().eq("id", id);
+    if (!error) {
+      setReflections(prev => prev.filter(r => r.id !== id));
+      if (selected?.id === id) setSelected(null);
+      setDeleteTarget(null);
+    }
+    setDeleting(false);
+  };
+
   const mono = { fontFamily: "monospace" };
 
+  // ── Auth screen ──────────────────────────────────────────────────────────────
   if (!authed) {
     return (
       <div style={{
@@ -3988,8 +4118,9 @@ function CoachDashboard() {
     );
   }
 
-  // Compute stats once data is loaded
+  // ── Compute stats ────────────────────────────────────────────────────────────
   const total = reflections ? reflections.length : 0;
+
   const quadrantCounts = {};
   if (reflections) {
     reflections.forEach(r => {
@@ -4004,84 +4135,217 @@ function CoachDashboard() {
     })
     .sort((a, b) => b.count - a.count);
 
+  // Weekly buckets — last 12 weeks
+  const now = new Date();
+  const weekBuckets = Array.from({ length: 12 }, (_, i) => {
+    const end = new Date(now);
+    end.setDate(now.getDate() - (11 - i) * 7);
+    const start = new Date(end);
+    start.setDate(end.getDate() - 7);
+    const label = end.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    return { start, end, count: 0, label };
+  });
+  if (reflections) {
+    reflections.forEach(r => {
+      if (!r.created_at) return;
+      const d = new Date(r.created_at);
+      for (const b of weekBuckets) {
+        if (d >= b.start && d < b.end) { b.count++; break; }
+      }
+    });
+  }
+  const lastWeek = weekBuckets[weekBuckets.length - 1].count;
+  const prevWeek = weekBuckets[weekBuckets.length - 2].count;
+  const growthRate = prevWeek === 0
+    ? (lastWeek > 0 ? "+∞" : "—")
+    : `${lastWeek >= prevWeek ? "+" : ""}${Math.round(((lastWeek - prevWeek) / prevWeek) * 100)}%`;
+  const growthColor = lastWeek >= prevWeek ? C.seafoam : "#e07868";
+
+  // Monthly buckets — last 6 months
+  const monthBuckets = Array.from({ length: 6 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
+    return { label: d.toLocaleDateString("en-US", { month: "short" }), year: d.getFullYear(), month: d.getMonth(), count: 0 };
+  });
+  if (reflections) {
+    reflections.forEach(r => {
+      if (!r.created_at) return;
+      const d = new Date(r.created_at);
+      const b = monthBuckets.find(m => m.year === d.getFullYear() && m.month === d.getMonth());
+      if (b) b.count++;
+    });
+  }
+
+  // Filtered list
+  const filtered = (reflections || []).filter(r => filterQ === "all" || r.quadrant === filterQ);
+
+  // ── SVG weekly line chart ────────────────────────────────────────────────────
+  const CW = 600, CH = 100, pL = 26, pR = 12, pT = 10, pB = 22;
+  const wMax = Math.max(...weekBuckets.map(b => b.count), 1);
+  const wPts = weekBuckets.map((b, i) => ({
+    x: pL + (i / (weekBuckets.length - 1)) * (CW - pL - pR),
+    y: pT + (1 - b.count / wMax) * (CH - pT - pB),
+    ...b,
+  }));
+  const wLine = wPts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
+  const wArea = `${wLine} L${wPts[wPts.length - 1].x.toFixed(1)},${(CH - pB).toFixed(1)} L${wPts[0].x.toFixed(1)},${(CH - pB).toFixed(1)}Z`;
+
+  // ── SVG monthly bar chart ────────────────────────────────────────────────────
+  const BW = 600, BH = 80, bpT = 8, bpB = 20, bpL = 24, bpR = 12;
+  const mMax = Math.max(...monthBuckets.map(b => b.count), 1);
+  const slot = (BW - bpL - bpR) / monthBuckets.length;
+  const bw = slot * 0.55;
+
   return (
     <div style={{
       background: C.bg, minHeight: "100vh", color: C.text,
       fontFamily: "Georgia, serif", padding: "40px 28px 80px",
-      maxWidth: 680, margin: "0 auto",
+      maxWidth: 720, margin: "0 auto", position: "relative",
     }}>
-      {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 40 }}>
+
+      {/* ── Header ── */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 36 }}>
         <div>
           <div style={{ ...mono, fontSize: 11, color: C.muted, letterSpacing: 3, marginBottom: 8 }}>COVE / COACH VIEW</div>
           <h1 style={{ fontSize: 24, fontWeight: 400, color: C.pearl, margin: 0 }}>Dashboard</h1>
         </div>
-        <button
-          onClick={goBack}
-          style={{ background: "none", border: "none", color: C.muted, fontSize: 12, cursor: "pointer", ...mono, padding: 0, paddingTop: 4 }}
-        >
-          back to app
+        <button onClick={goBack} style={{ background: "none", border: "none", color: C.muted, fontSize: 12, cursor: "pointer", ...mono, padding: 0, paddingTop: 4 }}>
+          ← back
         </button>
       </div>
 
-      {loading && (
-        <div style={{ ...mono, fontSize: 12, color: C.dim, letterSpacing: 1 }}>loading...</div>
-      )}
+      {loading && <div style={{ ...mono, fontSize: 12, color: C.dim, letterSpacing: 1 }}>loading...</div>}
 
       {!loading && reflections && (
         <>
-          {/* Summary cards */}
-          <div style={{ display: "flex", gap: 12, marginBottom: 32, flexWrap: "wrap" }}>
-            <div style={{
-              flex: "1 1 140px", background: C.surface, border: `1px solid ${C.border}`,
-              borderRadius: 12, padding: "20px 22px",
-            }}>
-              <div style={{ ...mono, fontSize: 10, color: C.muted, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>total users</div>
-              <div style={{ fontSize: 32, color: C.pearl, fontWeight: 400 }}>{total}</div>
-            </div>
-            {quadrantRows.map(qr => (
-              <div key={qr.title} style={{
-                flex: "1 1 140px", background: C.surface, border: `1px solid ${C.border}`,
-                borderRadius: 12, padding: "20px 22px",
-                borderLeft: `3px solid ${qr.color}`,
-              }}>
-                <div style={{ ...mono, fontSize: 10, color: qr.color, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8 }}>
-                  {qr.title}
-                </div>
-                <div style={{ fontSize: 28, color: C.pearl, fontWeight: 400 }}>{qr.count}</div>
-                <div style={{ ...mono, fontSize: 11, color: C.muted, marginTop: 4 }}>{qr.pct}% of total</div>
-              </div>
-            ))}
+          {/* ── Stat cards ── */}
+          <div style={{ display: "flex", gap: 10, marginBottom: 24, flexWrap: "wrap" }}>
+            <CoachStatCard label="total users"   value={total}      mono={mono} />
+            <CoachStatCard label="this week"     value={lastWeek}   mono={mono} />
+            <CoachStatCard label="wk/wk growth"  value={growthRate} mono={mono} valueColor={growthColor} />
+            {quadrantRows[0] && (
+              <CoachStatCard label="top quadrant" value={quadrantRows[0].title} mono={mono} valueColor={quadrantRows[0].color} small />
+            )}
           </div>
 
-          {/* Recent entries */}
-          <div>
-            <div style={{ ...mono, fontSize: 9, color: C.muted, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 16 }}>
-              recent entries ({total})
+          {/* ── Weekly line chart ── */}
+          <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 12, padding: "18px 20px 10px", marginBottom: 16 }}>
+            <div style={{ ...mono, fontSize: 9, color: C.muted, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 12 }}>weekly signups — last 12 weeks</div>
+            <svg viewBox={`0 0 ${CW} ${CH}`} style={{ width: "100%", height: CH, display: "block", overflow: "visible" }}>
+              {[0, 0.5, 1].map((t, i) => {
+                const y = pT + (1 - t) * (CH - pT - pB);
+                return <line key={i} x1={pL} x2={CW - pR} y1={y} y2={y} stroke={C.border} strokeWidth={0.5} />;
+              })}
+              {[0, Math.ceil(wMax / 2), wMax].map((v, i) => {
+                const y = pT + (1 - v / wMax) * (CH - pT - pB);
+                return <text key={i} x={pL - 4} y={y + 3} textAnchor="end" fontSize={7} fill={C.muted} fontFamily="monospace">{v}</text>;
+              })}
+              <path d={wArea} fill={`${C.ocean}12`} />
+              <path d={wLine} fill="none" stroke={C.ocean} strokeWidth={1.5} strokeLinejoin="round" />
+              {wPts.map((p, i) => <circle key={i} cx={p.x} cy={p.y} r={2.5} fill={p.count > 0 ? C.ocean : C.border} />)}
+              {wPts.filter((_, i) => i % 3 === 0 || i === wPts.length - 1).map((p, i) => (
+                <text key={i} x={p.x} y={CH - 5} textAnchor="middle" fontSize={7} fill={C.muted} fontFamily="monospace">{p.label}</text>
+              ))}
+            </svg>
+          </div>
+
+          {/* ── Monthly bar chart ── */}
+          <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 12, padding: "18px 20px 10px", marginBottom: 16 }}>
+            <div style={{ ...mono, fontSize: 9, color: C.muted, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 12 }}>monthly cohorts — last 6 months</div>
+            <svg viewBox={`0 0 ${BW} ${BH}`} style={{ width: "100%", height: BH, display: "block" }}>
+              {monthBuckets.map((b, i) => {
+                const bh = Math.max((b.count / mMax) * (BH - bpT - bpB), b.count > 0 ? 2 : 0);
+                const bx = bpL + i * slot + (slot - bw) / 2;
+                const by = BH - bpB - bh;
+                return (
+                  <g key={i}>
+                    <rect x={bx} y={by} width={bw} height={bh} rx={3} fill={C.ocean} opacity={0.65} />
+                    <text x={bx + bw / 2} y={BH - 6} textAnchor="middle" fontSize={8} fill={C.muted} fontFamily="monospace">{b.label}</text>
+                    {b.count > 0 && <text x={bx + bw / 2} y={by - 3} textAnchor="middle" fontSize={8} fill={C.ocean} fontFamily="monospace">{b.count}</text>}
+                  </g>
+                );
+              })}
+            </svg>
+          </div>
+
+          {/* ── Quadrant distribution bars ── */}
+          <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderRadius: 12, padding: "18px 22px", marginBottom: 28 }}>
+            <div style={{ ...mono, fontSize: 9, color: C.muted, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 14 }}>quadrant distribution</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {quadrantRows.map(qr => (
+                <div key={qr.title}>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
+                    <span style={{ ...mono, fontSize: 10, color: qr.color }}>{qr.title}</span>
+                    <span style={{ ...mono, fontSize: 10, color: C.muted }}>{qr.count} · {qr.pct}%</span>
+                  </div>
+                  <div style={{ height: 4, background: C.faint, borderRadius: 2 }}>
+                    <div style={{ height: 4, width: `${qr.pct}%`, background: qr.color, borderRadius: 2, transition: "width 0.6s ease" }} />
+                  </div>
+                </div>
+              ))}
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {reflections.map(r => {
+          </div>
+
+          {/* ── Entries list ── */}
+          <div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, flexWrap: "wrap", gap: 10 }}>
+              <div style={{ ...mono, fontSize: 9, color: C.muted, letterSpacing: 1.5, textTransform: "uppercase" }}>
+                entries ({filtered.length}{filterQ !== "all" ? " filtered" : ""})
+              </div>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                {[{ value: "all", label: "All", color: C.ocean }, ...Object.values(QUADRANT_READS).map(q => ({ value: q.title, label: q.title.split(" ")[0], color: q.color }))].map(opt => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setFilterQ(opt.value)}
+                    style={{
+                      background: filterQ === opt.value ? `${opt.color}20` : "none",
+                      border: `1px solid ${filterQ === opt.value ? opt.color : C.border}`,
+                      borderRadius: 20, padding: "3px 10px",
+                      color: filterQ === opt.value ? opt.color : C.muted,
+                      fontSize: 10, cursor: "pointer", ...mono, transition: "all 0.15s",
+                    }}
+                  >{opt.label}</button>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {filtered.map(r => {
                 const key = Object.keys(QUADRANT_READS).find(k => QUADRANT_READS[k].title === r.quadrant);
                 const color = key ? QUADRANT_READS[key].color : C.muted;
                 const date = r.created_at ? new Date(r.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";
                 return (
-                  <div key={r.id} style={{
-                    background: C.surface, border: `1px solid ${C.border}`,
-                    borderLeft: `3px solid ${color}`,
-                    borderRadius: 10, padding: "16px 18px",
-                  }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8, gap: 12, flexWrap: "wrap" }}>
+                  <div
+                    key={r.id}
+                    onClick={() => setSelected(r)}
+                    style={{
+                      background: C.surface, border: `1px solid ${C.border}`,
+                      borderLeft: `3px solid ${color}`, borderRadius: 10, padding: "14px 16px",
+                      cursor: "pointer", transition: "background 0.15s",
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = C.raised}
+                    onMouseLeave={e => e.currentTarget.style.background = C.surface}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6, gap: 12, flexWrap: "wrap" }}>
                       <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
                         <span style={{ fontSize: 14, color: C.pearl, fontWeight: 500 }}>{r.name || "Anonymous"}</span>
                         <span style={{ ...mono, fontSize: 10, color, letterSpacing: 0.5 }}>{r.quadrant || "Unknown"}</span>
                       </div>
-                      <span style={{ ...mono, fontSize: 10, color: C.dim }}>{date}</span>
+                      <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                        <span style={{ ...mono, fontSize: 10, color: C.dim }}>{date}</span>
+                        <button
+                          onClick={e => { e.stopPropagation(); setDeleteTarget(r.id); }}
+                          title="Delete entry"
+                          style={{ background: "none", border: "none", color: C.muted, fontSize: 11, cursor: "pointer", ...mono, padding: "2px 6px", borderRadius: 4, transition: "color 0.15s" }}
+                          onMouseEnter={e => e.currentTarget.style.color = "#e07868"}
+                          onMouseLeave={e => e.currentTarget.style.color = C.muted}
+                        >✕</button>
+                      </div>
                     </div>
                     {r.brave_reflection && (
-                      <div style={{ marginBottom: 6 }}>
+                      <div style={{ marginBottom: 4 }}>
                         <span style={{ ...mono, fontSize: 9, color: C.seafoam, letterSpacing: 1, textTransform: "uppercase" }}>brave: </span>
                         <span style={{ fontSize: 12, color: C.muted, fontStyle: "italic" }}>
-                          {r.brave_reflection.length > 80 ? r.brave_reflection.slice(0, 80) + "..." : r.brave_reflection}
+                          {r.brave_reflection.length > 90 ? r.brave_reflection.slice(0, 90) + "…" : r.brave_reflection}
                         </span>
                       </div>
                     )}
@@ -4089,10 +4353,11 @@ function CoachDashboard() {
                       <div>
                         <span style={{ ...mono, fontSize: 9, color: C.ocean, letterSpacing: 1, textTransform: "uppercase" }}>fears: </span>
                         <span style={{ fontSize: 12, color: C.muted, fontStyle: "italic" }}>
-                          {r.fears_reflection.length > 80 ? r.fears_reflection.slice(0, 80) + "..." : r.fears_reflection}
+                          {r.fears_reflection.length > 90 ? r.fears_reflection.slice(0, 90) + "…" : r.fears_reflection}
                         </span>
                       </div>
                     )}
+                    <div style={{ ...mono, fontSize: 9, color: C.dim, marginTop: 6 }}>tap to explore →</div>
                   </div>
                 );
               })}
@@ -4100,6 +4365,132 @@ function CoachDashboard() {
           </div>
         </>
       )}
+
+      {/* ── Entry detail overlay (bottom sheet) ── */}
+      {selected && (
+        <div
+          onClick={() => { setSelected(null); setDeleteTarget(null); }}
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.72)", zIndex: 100, display: "flex", alignItems: "flex-end", justifyContent: "center" }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              background: C.raised, border: `1px solid ${C.border}`,
+              borderRadius: "20px 20px 0 0", padding: "24px 28px 48px",
+              width: "100%", maxWidth: 680, maxHeight: "88vh", overflowY: "auto",
+            }}
+          >
+            <div style={{ width: 36, height: 3, background: C.border, borderRadius: 2, margin: "0 auto 22px" }} />
+            {(() => {
+              const key = Object.keys(QUADRANT_READS).find(k => QUADRANT_READS[k].title === selected.quadrant);
+              const color = key ? QUADRANT_READS[key].color : C.muted;
+              const date = selected.created_at
+                ? new Date(selected.created_at).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })
+                : "";
+              return (
+                <>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 18 }}>
+                    <div>
+                      <div style={{ fontSize: 20, color: C.pearl, fontWeight: 500, marginBottom: 4 }}>{selected.name || "Anonymous"}</div>
+                      <div style={{ ...mono, fontSize: 10, color, letterSpacing: 1 }}>{selected.quadrant || "Unknown quadrant"}</div>
+                    </div>
+                    <button onClick={() => { setSelected(null); setDeleteTarget(null); }} style={{ background: "none", border: "none", color: C.muted, fontSize: 18, cursor: "pointer", ...mono, padding: 0 }}>✕</button>
+                  </div>
+
+                  <div style={{ display: "flex", flexDirection: "column", gap: 5, marginBottom: 22 }}>
+                    {selected.phone && <CoachMetaRow label="email" value={selected.phone} mono={mono} />}
+                    <CoachMetaRow label="date" value={date} mono={mono} />
+                    <CoachMetaRow label="ref" value={selected.ref || "direct"} mono={mono} />
+                    <CoachMetaRow label="id" value={String(selected.id)} mono={mono} dim />
+                  </div>
+
+                  <div style={{ height: 1, background: C.border, marginBottom: 22 }} />
+
+                  {selected.brave_reflection && (
+                    <div style={{ marginBottom: 20 }}>
+                      <div style={{ ...mono, fontSize: 9, color: C.seafoam, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>brave decision</div>
+                      <div style={{ fontSize: 15, color: C.text, lineHeight: 1.75, fontStyle: "italic" }}>"{selected.brave_reflection}"</div>
+                    </div>
+                  )}
+
+                  {selected.fears_reflection && (
+                    <div style={{ marginBottom: 24 }}>
+                      <div style={{ ...mono, fontSize: 9, color: C.ocean, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>what's in the way</div>
+                      <div style={{ fontSize: 15, color: C.text, lineHeight: 1.75, fontStyle: "italic" }}>"{selected.fears_reflection}"</div>
+                    </div>
+                  )}
+
+                  <div style={{ height: 1, background: C.border, marginBottom: 20 }} />
+
+                  {deleteTarget === selected.id ? (
+                    <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                      <span style={{ ...mono, fontSize: 11, color: "#e07868" }}>delete this entry?</span>
+                      <button
+                        onClick={() => handleDelete(selected.id)}
+                        disabled={deleting}
+                        style={{ background: "#e0786818", border: "1px solid #e07868", borderRadius: 8, padding: "6px 14px", color: "#e07868", fontSize: 11, cursor: "pointer", ...mono }}
+                      >{deleting ? "deleting…" : "confirm delete"}</button>
+                      <button onClick={() => setDeleteTarget(null)} style={{ background: "none", border: "none", color: C.muted, fontSize: 11, cursor: "pointer", ...mono }}>cancel</button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setDeleteTarget(selected.id)}
+                      style={{ background: "none", border: `1px solid ${C.border}`, borderRadius: 8, padding: "8px 16px", color: C.muted, fontSize: 11, cursor: "pointer", ...mono, transition: "all 0.15s" }}
+                      onMouseEnter={e => { e.currentTarget.style.color = "#e07868"; e.currentTarget.style.borderColor = "#e07868"; }}
+                      onMouseLeave={e => { e.currentTarget.style.color = C.muted; e.currentTarget.style.borderColor = C.border; }}
+                    >delete entry</button>
+                  )}
+                </>
+              );
+            })()}
+          </div>
+        </div>
+      )}
+
+      {/* ── Delete confirm (triggered from list ✕ button) ── */}
+      {deleteTarget && !selected && (
+        <div
+          onClick={() => setDeleteTarget(null)}
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.72)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center" }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{ background: C.raised, border: `1px solid ${C.border}`, borderRadius: 16, padding: "28px 32px", maxWidth: 320, width: "90%" }}
+          >
+            <div style={{ fontSize: 15, color: C.pearl, marginBottom: 6 }}>Delete this entry?</div>
+            <div style={{ ...mono, fontSize: 11, color: C.muted, marginBottom: 24 }}>this cannot be undone</div>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button
+                onClick={() => handleDelete(deleteTarget)}
+                disabled={deleting}
+                style={{ flex: 1, background: "#e0786818", border: "1px solid #e07868", borderRadius: 10, padding: "10px", color: "#e07868", fontSize: 12, cursor: "pointer", ...mono }}
+              >{deleting ? "deleting…" : "delete"}</button>
+              <button
+                onClick={() => setDeleteTarget(null)}
+                style={{ flex: 1, background: "none", border: `1px solid ${C.border}`, borderRadius: 10, padding: "10px", color: C.muted, fontSize: 12, cursor: "pointer", ...mono }}
+              >cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CoachStatCard({ label, value, mono, valueColor, small }) {
+  return (
+    <div style={{ flex: "1 1 120px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 12, padding: "16px 20px" }}>
+      <div style={{ ...mono, fontSize: 9, color: C.muted, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>{label}</div>
+      <div style={{ fontSize: small ? 13 : 28, color: valueColor || C.pearl, fontWeight: 400, fontFamily: small ? "monospace" : "Georgia, serif", lineHeight: 1.2 }}>{value}</div>
+    </div>
+  );
+}
+
+function CoachMetaRow({ label, value, mono, dim }) {
+  return (
+    <div style={{ display: "flex", gap: 12, alignItems: "baseline" }}>
+      <span style={{ ...mono, fontSize: 10, color: C.muted, minWidth: 60, textAlign: "right", flexShrink: 0 }}>{label}</span>
+      <span style={{ ...mono, fontSize: 10, color: dim ? C.dim : C.text, wordBreak: "break-all" }}>{value}</span>
     </div>
   );
 }
@@ -4134,7 +4525,7 @@ function Avatar({ name, size = 36, glow = false }) {
       width: size, height: size, borderRadius: "50%", flexShrink: 0,
       background: `linear-gradient(150deg, ${C.oceanDeep}, ${C.tide})`,
       display: "flex", alignItems: "center", justifyContent: "center",
-      fontSize: size * 0.38, fontWeight: 600, color: "#e0eef8",
+      fontSize: size * 0.38, fontWeight: 600, color: C.pearl,
       boxShadow: glow ? `0 0 24px ${C.ocean}40` : "none",
     }}>{name[0]}</div>
   );
@@ -4207,11 +4598,26 @@ function SectionLabel({ children }) {
 }
 
 // ── You / Profile Tab ─────────────────────────────────────────────────────────
-function ProfileTab({ userData, onReset }) {
+function ProfileTab({ userData, update, onReset }) {
   const visible = useFadeIn(["you"]);
   const quadrant = userData.selfPosition ? getQuadrant(userData.selfPosition.x, userData.selfPosition.y) : null;
   const qr = quadrant ? QUADRANT_READS[quadrant] : null;
   const [confirming, setConfirming] = useState(false);
+  const [editingEmail, setEditingEmail] = useState(false);
+  const [emailDraft, setEmailDraft] = useState("");
+  const [emailSaving, setEmailSaving] = useState(false);
+  const [emailError, setEmailError] = useState("");
+
+  const saveEmail = async () => {
+    const trimmed = emailDraft.trim();
+    if (trimmed && !/\S+@\S+\.\S+/.test(trimmed)) { setEmailError("enter a valid email"); return; }
+    setEmailSaving(true);
+    update({ email: trimmed });
+    await upsertProfile({ ...userData, email: trimmed });
+    setEmailSaving(false);
+    setEditingEmail(false);
+    setEmailError("");
+  };
 
   const row = (label, value) => value ? (
     <div style={{ marginBottom: 16 }}>
@@ -4228,8 +4634,51 @@ function ProfileTab({ userData, onReset }) {
         <div style={{ width: 52, height: 52, borderRadius: 26, background: C.ocean + "22", border: `1.5px solid ${C.ocean}40`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 14 }}>
           <span style={{ fontSize: 22, color: C.ocean }}>◉</span>
         </div>
-        <h2 style={{ fontSize: 24, fontWeight: 300, color: C.pearl, margin: "0 0 4px" }}>{userData.name || "—"}</h2>
-        <p style={{ fontSize: 13, color: C.muted, margin: 0 }}>{userData.email || "no email saved"}</p>
+        <h2 style={{ fontSize: 24, fontWeight: 300, color: C.pearl, margin: "0 0 6px" }}>{userData.name || "—"}</h2>
+
+        {/* Email inline edit */}
+        {editingEmail ? (
+          <div style={{ marginTop: 4 }}>
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <input
+                autoFocus
+                type="email"
+                value={emailDraft}
+                onChange={e => { setEmailDraft(e.target.value); setEmailError(""); }}
+                onKeyDown={e => { if (e.key === "Enter") saveEmail(); if (e.key === "Escape") setEditingEmail(false); }}
+                placeholder="your@email.com"
+                style={{
+                  flex: 1, background: C.surface, border: `1px solid ${emailError ? "#e07070" : C.ocean}`,
+                  borderRadius: 8, padding: "7px 10px", color: C.text, fontSize: 13,
+                  fontFamily: "inherit", outline: "none",
+                }}
+              />
+              <button
+                onClick={saveEmail}
+                disabled={emailSaving}
+                style={{ background: C.ocean, border: "none", borderRadius: 8, padding: "7px 14px", color: "#fff", fontSize: 12, cursor: "pointer", fontFamily: "monospace", letterSpacing: 0.5, whiteSpace: "nowrap" }}
+              >{emailSaving ? "saving…" : "save"}</button>
+              <button
+                onClick={() => { setEditingEmail(false); setEmailError(""); }}
+                style={{ background: "none", border: `1px solid ${C.border}`, borderRadius: 8, padding: "7px 10px", color: C.muted, fontSize: 12, cursor: "pointer" }}
+              >✕</button>
+            </div>
+            {emailError && <p style={{ fontSize: 11, color: "#e07070", margin: "4px 0 0", fontFamily: "monospace" }}>{emailError}</p>}
+          </div>
+        ) : userData.email ? (
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <p style={{ fontSize: 13, color: C.muted, margin: 0 }}>{userData.email}</p>
+            <button
+              onClick={() => { setEmailDraft(userData.email); setEditingEmail(true); }}
+              style={{ background: "none", border: "none", padding: 0, color: C.dim, fontSize: 11, cursor: "pointer", fontFamily: "monospace", letterSpacing: 0.5 }}
+            >edit</button>
+          </div>
+        ) : (
+          <button
+            onClick={() => { setEmailDraft(""); setEditingEmail(true); }}
+            style={{ background: "none", border: "none", padding: 0, color: C.ocean + "cc", fontSize: 13, cursor: "pointer", fontFamily: "inherit", textDecoration: "underline", textUnderlineOffset: 3 }}
+          >+ add email</button>
+        )}
       </div>
 
       {/* Matrix */}
