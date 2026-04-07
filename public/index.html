@@ -1,36 +1,361 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-    <meta name="theme-color" content="#0b0f14" />
-    <meta name="description" content="cove. your career, your current." />
-    <title>cove</title>
-    <style>
-      * { box-sizing: border-box; margin: 0; padding: 0; }
-      body {
-        background: #0b0f14;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-        overscroll-behavior: none;
-        touch-action: manipulation; /* kill 300ms tap delay globally */
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="theme-color" content="#0b0f14" />
+  <meta name="description" content="cove. something good is coming." />
+  <title>cove.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-from: #180f3d;
+      --bg-mid: #0d1b4b;
+      --bg-to: #1a0533;
+      --star-opacity: 1;
+      --glow-color: rgba(147, 112, 219, 0.35);
+      --text-primary: #f0eaff;
+      --text-secondary: rgba(220, 210, 255, 0.65);
+      --orb1: #2d1b69;
+      --orb2: #0f2c5f;
+      --scene: "night";
+    }
+
+    html, body {
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      font-family: 'Inter', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    #scene {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse at 60% 40%, var(--orb1) 0%, transparent 60%),
+                  radial-gradient(ellipse at 30% 70%, var(--orb2) 0%, transparent 55%),
+                  linear-gradient(160deg, var(--bg-from) 0%, var(--bg-mid) 50%, var(--bg-to) 100%);
+      transition: background 3s ease;
+    }
+
+    /* Stars — only visible at night / dusk */
+    #stars {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: var(--star-opacity);
+      transition: opacity 3s ease;
+    }
+
+    .star {
+      position: absolute;
+      border-radius: 50%;
+      background: white;
+      animation: twinkle var(--d, 4s) ease-in-out infinite alternate;
+      animation-delay: var(--delay, 0s);
+    }
+
+    @keyframes twinkle {
+      from { opacity: var(--min-op, 0.2); transform: scale(1); }
+      to   { opacity: var(--max-op, 0.9); transform: scale(1.3); }
+    }
+
+    /* Floating orbs / light blobs */
+    .blob {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.45;
+      pointer-events: none;
+      animation: drift linear infinite alternate;
+    }
+
+    .blob-1 {
+      width: 420px; height: 420px;
+      background: var(--blob1-color, #4b2d8a);
+      top: -10%; left: -5%;
+      animation-duration: 18s;
+    }
+
+    .blob-2 {
+      width: 300px; height: 300px;
+      background: var(--blob2-color, #0a2461);
+      bottom: -5%; right: -5%;
+      animation-duration: 22s;
+    }
+
+    .blob-3 {
+      width: 200px; height: 200px;
+      background: var(--blob3-color, #6b21a8);
+      top: 40%; right: 15%;
+      animation-duration: 15s;
+    }
+
+    @keyframes drift {
+      0%   { transform: translate(0, 0) scale(1); }
+      33%  { transform: translate(30px, -20px) scale(1.05); }
+      66%  { transform: translate(-15px, 25px) scale(0.97); }
+      100% { transform: translate(20px, -10px) scale(1.03); }
+    }
+
+    /* Main content */
+    #content {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    .wordmark {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(4rem, 15vw, 9rem);
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+      line-height: 1;
+      text-shadow: 0 0 60px var(--glow-color), 0 0 120px var(--glow-color);
+      animation: glow-pulse 6s ease-in-out infinite alternate;
+      user-select: none;
+    }
+
+    @keyframes glow-pulse {
+      from { text-shadow: 0 0 40px var(--glow-color), 0 0 80px var(--glow-color); }
+      to   { text-shadow: 0 0 80px var(--glow-color), 0 0 160px var(--glow-color), 0 0 240px var(--glow-color); }
+    }
+
+    .tagline {
+      margin-top: 1.5rem;
+      font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+      font-weight: 300;
+      color: var(--text-secondary);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .divider {
+      margin: 2rem auto;
+      width: 40px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--text-secondary), transparent);
+    }
+
+    .message {
+      max-width: 400px;
+      font-size: clamp(0.95rem, 2.2vw, 1.05rem);
+      font-weight: 400;
+      color: var(--text-secondary);
+      line-height: 1.75;
+    }
+
+    .message em {
+      color: var(--text-primary);
+      font-style: normal;
+      font-weight: 500;
+    }
+
+    .time-label {
+      margin-top: 3rem;
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.25);
+    }
+
+    /* Horizon line for dawn/dusk */
+    #horizon {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 0;
+      pointer-events: none;
+      z-index: 1;
+      overflow: visible;
+    }
+
+    .horizon-glow {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100vw;
+      height: 200px;
+      background: radial-gradient(ellipse at 50% 100%, var(--horizon-color, transparent) 0%, transparent 70%);
+      opacity: var(--horizon-opacity, 0);
+      transition: opacity 3s ease;
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .blob-1 { width: 280px; height: 280px; }
+      .blob-2 { width: 200px; height: 200px; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="scene"></div>
+<div id="stars"></div>
+
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+<div class="blob blob-3"></div>
+
+<div id="horizon">
+  <div class="horizon-glow"></div>
+</div>
+
+<div id="content">
+  <div class="wordmark">cove.</div>
+  <div class="tagline" id="time-tagline">something good is coming</div>
+  <div class="divider"></div>
+  <div class="message">
+    we're taking in <em>your feedback</em>, rethinking a few things,
+    and building something that actually feels right.<br><br>
+    sit tight — we'll be back.
+  </div>
+  <div class="time-label" id="time-label"></div>
+</div>
+
+<script>
+  (function () {
+    const hour = new Date().getHours();
+
+    const themes = {
+      night: {
+        label: '🌙 late night hours',
+        tagline: 'something good is coming',
+        bgFrom: '#040d1f', bgMid: '#071833', bgTo: '#0a1e3d',
+        orb1: '#0d2a52', orb2: '#081a38',
+        blob1: '#0f3060', blob2: '#071f48', blob3: '#1a3f72',
+        glowColor: 'rgba(80, 150, 255, 0.35)',
+        textPrimary: '#d6eaff', textSecondary: 'rgba(170, 210, 255, 0.6)',
+        stars: true, horizonColor: 'transparent', horizonOpacity: 0
+      },
+      predawn: {
+        label: '🌌 almost dawn',
+        tagline: 'something good is coming',
+        bgFrom: '#050f24', bgMid: '#0a1e3d', bgTo: '#0f2952',
+        orb1: '#0d2a52', orb2: '#071833',
+        blob1: '#133566', blob2: '#0a2248', blob3: '#1e4a7a',
+        glowColor: 'rgba(60, 130, 240, 0.38)',
+        textPrimary: '#cce0ff', textSecondary: 'rgba(160, 205, 255, 0.6)',
+        stars: true, horizonColor: '#0d2a52', horizonOpacity: 0.45
+      },
+      sunrise: {
+        label: '🌅 sunrise',
+        tagline: 'a new day incoming',
+        bgFrom: '#1a0533', bgMid: '#5c1a4a', bgTo: '#b34a20',
+        orb1: '#7b2d52', orb2: '#c45c20',
+        blob1: '#9b3870', blob2: '#d4722a', blob3: '#5c1a4a',
+        glowColor: 'rgba(230, 130, 80, 0.4)',
+        textPrimary: '#ffe8d0', textSecondary: 'rgba(255, 210, 170, 0.65)',
+        stars: false, horizonColor: '#ff8c42', horizonOpacity: 0.6
+      },
+      morning: {
+        label: '☀️ morning',
+        tagline: 'something good is coming',
+        bgFrom: '#0a2252', bgMid: '#1a4a8c', bgTo: '#2d6fb5',
+        orb1: '#1a4a8c', orb2: '#2d6fb5',
+        blob1: '#1e5799', blob2: '#3a7bd5', blob3: '#0d3a7a',
+        glowColor: 'rgba(100, 160, 255, 0.4)',
+        textPrimary: '#e8f4ff', textSecondary: 'rgba(180, 220, 255, 0.7)',
+        stars: false, horizonColor: '#7ec8e3', horizonOpacity: 0.35
+      },
+      golden: {
+        label: '✨ golden hour',
+        tagline: 'almost there',
+        bgFrom: '#2d1a00', bgMid: '#7a3a00', bgTo: '#c45c10',
+        orb1: '#9b5500', orb2: '#c47820',
+        blob1: '#b86020', blob2: '#d4902a', blob3: '#7a3a00',
+        glowColor: 'rgba(255, 180, 50, 0.4)',
+        textPrimary: '#fff0cc', textSecondary: 'rgba(255, 230, 160, 0.7)',
+        stars: false, horizonColor: '#ffb830', horizonOpacity: 0.7
+      },
+      sunset: {
+        label: '🌇 sunset',
+        tagline: 'wrapping up for now',
+        bgFrom: '#1a0528', bgMid: '#6b1a3d', bgTo: '#c2391d',
+        orb1: '#8b2050', orb2: '#b03820',
+        blob1: '#9e2d60', blob2: '#c44830', blob3: '#6b1a3d',
+        glowColor: 'rgba(220, 80, 60, 0.4)',
+        textPrimary: '#ffe0d0', textSecondary: 'rgba(255, 195, 160, 0.65)',
+        stars: false, horizonColor: '#ff5722', horizonOpacity: 0.65
+      },
+      dusk: {
+        label: '🌆 dusk',
+        tagline: 'something good is coming',
+        bgFrom: '#040d1f', bgMid: '#081a38', bgTo: '#0f2952',
+        orb1: '#0d2a52', orb2: '#071833',
+        blob1: '#104070', blob2: '#0a2248', blob3: '#1a4070',
+        glowColor: 'rgba(60, 140, 255, 0.38)',
+        textPrimary: '#cce0ff', textSecondary: 'rgba(160, 205, 255, 0.65)',
+        stars: true, horizonColor: '#1a4070', horizonOpacity: 0.5
       }
-      a, button, [role="button"] {
-        touch-action: manipulation;
-        -webkit-tap-highlight-color: transparent;
+    };
+
+    function getScene(h) {
+      if (h >= 22 || h < 4)  return 'night';
+      if (h >= 4  && h < 6)  return 'predawn';
+      if (h >= 6  && h < 9)  return 'sunrise';
+      if (h >= 9  && h < 16) return 'morning';
+      if (h >= 16 && h < 18) return 'golden';
+      if (h >= 18 && h < 20) return 'sunset';
+      return 'dusk';
+    }
+
+    const scene = getScene(hour);
+    const t = themes[scene];
+
+    const root = document.documentElement;
+    root.style.setProperty('--bg-from', t.bgFrom);
+    root.style.setProperty('--bg-mid', t.bgMid);
+    root.style.setProperty('--bg-to', t.bgTo);
+    root.style.setProperty('--orb1', t.orb1);
+    root.style.setProperty('--orb2', t.orb2);
+    root.style.setProperty('--blob1-color', t.blob1);
+    root.style.setProperty('--blob2-color', t.blob2);
+    root.style.setProperty('--blob3-color', t.blob3);
+    root.style.setProperty('--glow-color', t.glowColor);
+    root.style.setProperty('--text-primary', t.textPrimary);
+    root.style.setProperty('--text-secondary', t.textSecondary);
+    root.style.setProperty('--horizon-color', t.horizonColor);
+    root.style.setProperty('--horizon-opacity', t.horizonOpacity);
+
+    document.getElementById('time-label').textContent = t.label;
+    document.getElementById('time-tagline').textContent = t.tagline;
+
+    // Stars
+    if (t.stars) {
+      const container = document.getElementById('stars');
+      const count = 90;
+      for (let i = 0; i < count; i++) {
+        const s = document.createElement('div');
+        s.className = 'star';
+        const size = Math.random() * 2.5 + 0.5;
+        s.style.cssText = `
+          width: ${size}px;
+          height: ${size}px;
+          top: ${Math.random() * 85}%;
+          left: ${Math.random() * 100}%;
+          --d: ${(Math.random() * 5 + 3).toFixed(1)}s;
+          --delay: ${(Math.random() * 6).toFixed(1)}s;
+          --min-op: ${(Math.random() * 0.2 + 0.05).toFixed(2)};
+          --max-op: ${(Math.random() * 0.5 + 0.4).toFixed(2)};
+        `;
+        container.appendChild(s);
       }
-      @keyframes pulse {
-        0%, 100% { opacity: 1; transform: scale(1); }
-        50% { opacity: 0.4; transform: scale(1.3); }
-      }
-      @keyframes wave {
-        0% { transform: scaleY(0.3); }
-        100% { transform: scaleY(1); }
-      }
-    </style>
-  </head>
-  <body>
-    <noscript>You need to enable JavaScript to run cove.</noscript>
-    <div id="root"></div>
-  </body>
+    }
+  })();
+</script>
+</body>
 </html>
