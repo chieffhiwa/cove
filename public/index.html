@@ -230,76 +230,76 @@
   (function () {
     const hour = new Date().getHours();
 
+    // All scenes stay in midnight blue → purple spectrum, #cfefff for lightness
+    const base = {
+      textPrimary: '#cfefff',
+      textSecondary: 'rgba(207, 239, 255, 0.55)',
+      glowColor: 'rgba(140, 180, 255, 0.4)',
+    };
+
     const themes = {
       night: {
         label: '🌙 late night hours',
         tagline: 'something good is coming',
-        bgFrom: '#040d1f', bgMid: '#071833', bgTo: '#0a1e3d',
-        orb1: '#0d2a52', orb2: '#081a38',
-        blob1: '#0f3060', blob2: '#071f48', blob3: '#1a3f72',
-        glowColor: 'rgba(80, 150, 255, 0.35)',
-        textPrimary: '#d6eaff', textSecondary: 'rgba(170, 210, 255, 0.6)',
-        stars: true, horizonColor: 'transparent', horizonOpacity: 0
+        bgFrom: '#03081a', bgMid: '#08102e', bgTo: '#10083a',
+        orb1: '#130a40', orb2: '#060e28',
+        blob1: '#1a1060', blob2: '#0a0f35', blob3: '#2a1570',
+        stars: true, horizonColor: 'transparent', horizonOpacity: 0,
+        ...base
       },
       predawn: {
         label: '🌌 almost dawn',
         tagline: 'something good is coming',
-        bgFrom: '#050f24', bgMid: '#0a1e3d', bgTo: '#0f2952',
-        orb1: '#0d2a52', orb2: '#071833',
-        blob1: '#133566', blob2: '#0a2248', blob3: '#1e4a7a',
-        glowColor: 'rgba(60, 130, 240, 0.38)',
-        textPrimary: '#cce0ff', textSecondary: 'rgba(160, 205, 255, 0.6)',
-        stars: true, horizonColor: '#0d2a52', horizonOpacity: 0.45
+        bgFrom: '#04091e', bgMid: '#0c0e38', bgTo: '#180d48',
+        orb1: '#1a0f50', orb2: '#080e30',
+        blob1: '#221265', blob2: '#0e0c3a', blob3: '#301878',
+        stars: true, horizonColor: '#1a1060', horizonOpacity: 0.5,
+        ...base
       },
       sunrise: {
-        label: '🌅 sunrise',
+        label: '🌅 early morning',
         tagline: 'a new day incoming',
-        bgFrom: '#1a0533', bgMid: '#5c1a4a', bgTo: '#b34a20',
-        orb1: '#7b2d52', orb2: '#c45c20',
-        blob1: '#9b3870', blob2: '#d4722a', blob3: '#5c1a4a',
-        glowColor: 'rgba(230, 130, 80, 0.4)',
-        textPrimary: '#ffe8d0', textSecondary: 'rgba(255, 210, 170, 0.65)',
-        stars: false, horizonColor: '#ff8c42', horizonOpacity: 0.6
+        bgFrom: '#050a20', bgMid: '#0d1240', bgTo: '#1e0e55',
+        orb1: '#1f1060', orb2: '#08102e',
+        blob1: '#2a1575', blob2: '#0f1045', blob3: '#180d5a',
+        stars: true, horizonColor: '#2a1575', horizonOpacity: 0.35,
+        ...base
       },
       morning: {
         label: '☀️ morning',
         tagline: 'something good is coming',
-        bgFrom: '#0a2252', bgMid: '#1a4a8c', bgTo: '#2d6fb5',
-        orb1: '#1a4a8c', orb2: '#2d6fb5',
-        blob1: '#1e5799', blob2: '#3a7bd5', blob3: '#0d3a7a',
-        glowColor: 'rgba(100, 160, 255, 0.4)',
-        textPrimary: '#e8f4ff', textSecondary: 'rgba(180, 220, 255, 0.7)',
-        stars: false, horizonColor: '#7ec8e3', horizonOpacity: 0.35
+        bgFrom: '#060c24', bgMid: '#0f183d', bgTo: '#1a1050',
+        orb1: '#1e1260', orb2: '#0a1030',
+        blob1: '#261870', blob2: '#101240', blob3: '#1e0f5a',
+        stars: false, horizonColor: '#1e1260', horizonOpacity: 0.3,
+        ...base
       },
       golden: {
-        label: '✨ golden hour',
-        tagline: 'almost there',
-        bgFrom: '#2d1a00', bgMid: '#7a3a00', bgTo: '#c45c10',
-        orb1: '#9b5500', orb2: '#c47820',
-        blob1: '#b86020', blob2: '#d4902a', blob3: '#7a3a00',
-        glowColor: 'rgba(255, 180, 50, 0.4)',
-        textPrimary: '#fff0cc', textSecondary: 'rgba(255, 230, 160, 0.7)',
-        stars: false, horizonColor: '#ffb830', horizonOpacity: 0.7
+        label: '✨ afternoon',
+        tagline: 'something good is coming',
+        bgFrom: '#050b22', bgMid: '#0e163a', bgTo: '#1c1255',
+        orb1: '#221568', orb2: '#090f2e',
+        blob1: '#2c1a78', blob2: '#111440', blob3: '#201060',
+        stars: false, horizonColor: '#2c1a78', horizonOpacity: 0.25,
+        ...base
       },
       sunset: {
-        label: '🌇 sunset',
+        label: '🌇 evening',
         tagline: 'wrapping up for now',
-        bgFrom: '#1a0528', bgMid: '#6b1a3d', bgTo: '#c2391d',
-        orb1: '#8b2050', orb2: '#b03820',
-        blob1: '#9e2d60', blob2: '#c44830', blob3: '#6b1a3d',
-        glowColor: 'rgba(220, 80, 60, 0.4)',
-        textPrimary: '#ffe0d0', textSecondary: 'rgba(255, 195, 160, 0.65)',
-        stars: false, horizonColor: '#ff5722', horizonOpacity: 0.65
+        bgFrom: '#06092a', bgMid: '#100e45', bgTo: '#200d5e',
+        orb1: '#251270', orb2: '#0a0c38',
+        blob1: '#301880', blob2: '#130e4a', blob3: '#221268',
+        stars: true, horizonColor: '#301880', horizonOpacity: 0.45,
+        ...base
       },
       dusk: {
         label: '🌆 dusk',
         tagline: 'something good is coming',
-        bgFrom: '#040d1f', bgMid: '#081a38', bgTo: '#0f2952',
-        orb1: '#0d2a52', orb2: '#071833',
-        blob1: '#104070', blob2: '#0a2248', blob3: '#1a4070',
-        glowColor: 'rgba(60, 140, 255, 0.38)',
-        textPrimary: '#cce0ff', textSecondary: 'rgba(160, 205, 255, 0.65)',
-        stars: true, horizonColor: '#1a4070', horizonOpacity: 0.5
+        bgFrom: '#04081c', bgMid: '#0a0e38', bgTo: '#180c52',
+        orb1: '#1e1060', orb2: '#080c2e',
+        blob1: '#281568', blob2: '#100e40', blob3: '#1e0e58',
+        stars: true, horizonColor: '#281568', horizonOpacity: 0.5,
+        ...base
       }
     };
 
