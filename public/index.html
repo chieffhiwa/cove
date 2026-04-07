@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <meta name="theme-color" content="#06091e" />
-  <meta name="description" content="cove. something good is coming." />
+  <meta name="theme-color" content="#1a2a6c" />
+  <meta name="description" content="cove. your career, your current." />
   <title>cove.</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -21,14 +21,10 @@
     }
 
     body {
-      background:
-        radial-gradient(ellipse at 50% 42%, #3a2080 0%, transparent 60%),
-        radial-gradient(ellipse at 50% 100%, #1a0d40 0%, transparent 70%),
-        linear-gradient(170deg, #08091f 0%, #0e0c30 50%, #160a3e 100%);
+      background: linear-gradient(155deg, #1c2f7a 0%, #1a1d6e 35%, #2a1760 65%, #1e1255 100%);
     }
 
     #content {
-      position: relative;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -36,12 +32,11 @@
       height: 100vh;
       padding: 2rem;
       text-align: center;
-      gap: 0;
     }
 
     .wordmark {
       font-family: 'DM Serif Display', serif;
-      font-size: clamp(5rem, 18vw, 11rem);
+      font-size: clamp(4.5rem, 16vw, 10rem);
       color: #cfefff;
       letter-spacing: -0.02em;
       line-height: 1;
@@ -49,44 +44,86 @@
     }
 
     .tagline {
-      margin-top: 1.4rem;
-      font-size: clamp(0.7rem, 1.8vw, 0.85rem);
+      margin-top: 0.75rem;
+      font-size: clamp(0.75rem, 1.8vw, 0.9rem);
       font-weight: 300;
       color: rgba(207, 239, 255, 0.5);
-      letter-spacing: 0.2em;
+      letter-spacing: 0.18em;
       text-transform: uppercase;
     }
 
     .divider {
-      margin: 2rem auto;
-      width: 32px;
+      margin: 2.5rem auto;
+      width: 28px;
       height: 1px;
       background: rgba(207, 239, 255, 0.2);
     }
 
     .message {
-      max-width: 380px;
-      font-size: clamp(0.9rem, 2vw, 1rem);
+      max-width: 360px;
+      font-size: clamp(0.88rem, 2vw, 0.98rem);
       font-weight: 300;
-      color: rgba(207, 239, 255, 0.58);
-      line-height: 1.8;
+      color: rgba(207, 239, 255, 0.55);
+      line-height: 1.85;
     }
 
     .message strong {
-      color: rgba(207, 239, 255, 0.85);
+      color: rgba(207, 239, 255, 0.88);
       font-weight: 400;
+    }
+
+    .buttons {
+      margin-top: 2.5rem;
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 0.6rem 1.4rem;
+      border-radius: 999px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 400;
+      letter-spacing: 0.04em;
+      text-decoration: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      opacity: 0.8;
+      transform: translateY(-1px);
+    }
+
+    .btn-outline {
+      color: rgba(207, 239, 255, 0.75);
+      border: 1px solid rgba(207, 239, 255, 0.2);
+      background: transparent;
+    }
+
+    .btn-solid {
+      color: #1a1d6e;
+      background: #cfefff;
+      border: 1px solid transparent;
     }
   </style>
 </head>
 <body>
   <div id="content">
     <div class="wordmark">cove.</div>
-    <div class="tagline">something good is coming</div>
+    <div class="tagline">your career. your current.</div>
     <div class="divider"></div>
     <div class="message">
-      we're taking in <strong>your feedback</strong> and building something that works for you.<br><br>
-      your career. your current.<br><br>
-      sit tight — we'll be back.
+      we're taking a step back — listening to <strong>your feedback</strong>,
+      rethinking the experience, and building something that actually works for you.<br><br>
+      we'll be back soon.
+    </div>
+    <div class="buttons">
+      <a class="btn btn-outline" href="https://github.com/chieffhiwa/cove" target="_blank" rel="noopener">↗ view on github</a>
+      <a class="btn btn-solid" href="https://github.com/sponsors/chieffhiwa" target="_blank" rel="noopener">♥ sponsor</a>
     </div>
   </div>
 </body>
