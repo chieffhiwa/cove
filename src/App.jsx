@@ -3667,6 +3667,32 @@ function List100Tab({ userData }) {
     } catch { return []; }
   });
 
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem("cove_list_dark") === "1");
+  const toggleDark = () => setDarkMode(d => {
+    const next = !d;
+    localStorage.setItem("cove_list_dark", next ? "1" : "0");
+    return next;
+  });
+
+  const D = darkMode ? {
+    bg:         "#0b0f14",
+    surface:    "#131920",
+    raised:     "#1a2230",
+    border:     "#2a3a4a",
+    borderSoft: "#1e2e3e",
+    text:       "#c8dae8",
+    muted:      "#7a9ab0",
+    faint:      "#141e28",
+    dim:        "#5a7888",
+    ocean:      "#4a9eca",
+    oceanDeep:  "#2a7aaa",
+    seafoam:    "#3aaa92",
+    sky:        "#4e98c8",
+    mist:       "#6e90a8",
+    tide:       "#4e90b0",
+    pearl:      "#ddeeff",
+  } : C;
+
   const [view, setView]         = useState("cards");
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId]     = useState(null);
@@ -3741,77 +3767,77 @@ function List100Tab({ userData }) {
   const reached  = entries.filter(e => e.attempt1 && e.attempt1 !== "—").length;
 
   const inputStyle = {
-    width: "100%", background: C.bg, border: `1px solid ${C.border}`,
+    width: "100%", background: D.bg, border: `1px solid ${D.border}`,
     borderRadius: 8, padding: "10px 12px", fontSize: 13,
-    color: C.text, outline: "none", fontFamily: "Georgia, serif",
+    color: D.text, outline: "none", fontFamily: "Georgia, serif",
     boxSizing: "border-box",
   };
 
   // ── Entry card ────────────────────────────────────────────────────────────
   const EntryCard = ({ e }) => {
     const fullName = `${e.firstName} ${e.lastName}`.trim();
-    const a1Color  = ATTEMPT_COLORS[e.attempt1] || C.dim;
-    const a2Color  = ATTEMPT_COLORS[e.attempt2] || C.dim;
+    const a1Color  = ATTEMPT_COLORS[e.attempt1] || D.dim;
+    const a2Color  = ATTEMPT_COLORS[e.attempt2] || D.dim;
     return (
       <div style={{
-        background: C.surface, borderRadius: 12,
-        border: `1px solid ${C.borderSoft}`,
-        borderLeft: `3px solid ${e.warm === "warm" ? "#c47020" : C.border}`,
+        background: D.surface, borderRadius: 12,
+        border: `1px solid ${D.borderSoft}`,
+        borderLeft: `3px solid ${e.warm === "warm" ? "#c47020" : D.border}`,
         padding: "14px 16px",
       }}>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 6 }}>
           <div>
-            <div style={{ fontSize: 15, color: C.pearl, fontWeight: 500 }}>{fullName || "—"}</div>
-            {e.company && <div style={{ fontSize: 12, color: C.muted, marginTop: 2 }}>{e.company}</div>}
+            <div style={{ fontSize: 15, color: D.pearl, fontWeight: 500 }}>{fullName || "—"}</div>
+            {e.company && <div style={{ fontSize: 12, color: D.muted, marginTop: 2 }}>{e.company}</div>}
           </div>
           <div style={{ display: "flex", gap: 12, flexShrink: 0, marginLeft: 12 }}>
-            <span onClick={() => openEdit(e)} style={{ fontSize: 11, color: C.muted, cursor: "pointer", fontFamily: "monospace" }}>edit</span>
-            <span onClick={() => deleteEntry(e.id)} style={{ fontSize: 13, color: C.dim, cursor: "pointer" }}>✕</span>
+            <span onClick={() => openEdit(e)} style={{ fontSize: 11, color: D.muted, cursor: "pointer", fontFamily: "monospace" }}>edit</span>
+            <span onClick={() => deleteEntry(e.id)} style={{ fontSize: 13, color: D.dim, cursor: "pointer" }}>✕</span>
           </div>
         </div>
         {e.why && (
-          <div style={{ fontSize: 12, color: C.muted, marginBottom: 3, lineHeight: 1.6 }}>
-            <span style={{ color: C.dim, fontFamily: "monospace", fontSize: 9, marginRight: 6, letterSpacing: 1 }}>WHY</span>{e.why}
+          <div style={{ fontSize: 12, color: D.muted, marginBottom: 3, lineHeight: 1.6 }}>
+            <span style={{ color: D.dim, fontFamily: "monospace", fontSize: 9, marginRight: 6, letterSpacing: 1 }}>WHY</span>{e.why}
           </div>
         )}
         {e.ask && (
-          <div style={{ fontSize: 12, color: C.muted, marginBottom: 8, lineHeight: 1.6 }}>
-            <span style={{ color: C.dim, fontFamily: "monospace", fontSize: 9, marginRight: 6, letterSpacing: 1 }}>ASK</span>{e.ask}
+          <div style={{ fontSize: 12, color: D.muted, marginBottom: 8, lineHeight: 1.6 }}>
+            <span style={{ color: D.dim, fontFamily: "monospace", fontSize: 9, marginRight: 6, letterSpacing: 1 }}>ASK</span>{e.ask}
           </div>
         )}
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
           <span style={{
             fontSize: 10, fontFamily: "monospace", padding: "3px 8px", borderRadius: 20,
-            background: e.warm === "warm" ? "#c4702018" : `${C.ocean}10`,
-            color: e.warm === "warm" ? "#c47020" : C.muted,
-            border: `1px solid ${e.warm === "warm" ? "#c4702030" : C.border}`,
+            background: e.warm === "warm" ? "#c4702018" : `${D.ocean}10`,
+            color: e.warm === "warm" ? "#c47020" : D.muted,
+            border: `1px solid ${e.warm === "warm" ? "#c4702030" : D.border}`,
           }}>
             {e.warm === "warm" ? "🔥 warm" : "❄️ cold"}
           </span>
           <span onClick={() => cycleAttempt(e.id, "attempt1")} title="click to cycle" style={{
             fontSize: 10, fontFamily: "monospace", padding: "3px 8px", borderRadius: 20, cursor: "pointer",
             background: e.attempt1 && e.attempt1 !== "—" ? `${a1Color}15` : "transparent",
-            color: e.attempt1 && e.attempt1 !== "—" ? a1Color : C.dim,
-            border: `1px solid ${e.attempt1 && e.attempt1 !== "—" ? a1Color + "50" : C.border}`,
+            color: e.attempt1 && e.attempt1 !== "—" ? a1Color : D.dim,
+            border: `1px solid ${e.attempt1 && e.attempt1 !== "—" ? a1Color + "50" : D.border}`,
           }}>
             {e.attempt1 && e.attempt1 !== "—" ? `A1: ${e.attempt1}` : "A1 —"}
           </span>
           <span onClick={() => cycleAttempt(e.id, "attempt2")} title="click to cycle" style={{
             fontSize: 10, fontFamily: "monospace", padding: "3px 8px", borderRadius: 20, cursor: "pointer",
             background: e.attempt2 && e.attempt2 !== "—" ? `${a2Color}15` : "transparent",
-            color: e.attempt2 && e.attempt2 !== "—" ? a2Color : C.dim,
-            border: `1px solid ${e.attempt2 && e.attempt2 !== "—" ? a2Color + "50" : C.border}`,
+            color: e.attempt2 && e.attempt2 !== "—" ? a2Color : D.dim,
+            border: `1px solid ${e.attempt2 && e.attempt2 !== "—" ? a2Color + "50" : D.border}`,
           }}>
             {e.attempt2 && e.attempt2 !== "—" ? `A2: ${e.attempt2}` : "A2 —"}
           </span>
           {e.linkedin && (
             <a href={e.linkedin.startsWith("http") ? e.linkedin : `https://${e.linkedin}`}
               target="_blank" rel="noopener noreferrer"
-              style={{ fontSize: 10, color: C.tide, fontFamily: "monospace", textDecoration: "none" }}>in ↗</a>
+              style={{ fontSize: 10, color: D.tide, fontFamily: "monospace", textDecoration: "none" }}>in ↗</a>
           )}
         </div>
-        {e.notes && <div style={{ fontSize: 11, color: C.dim, fontStyle: "italic", marginTop: 8, lineHeight: 1.6 }}>{e.notes}</div>}
-        <div style={{ fontSize: 9, color: C.dim, fontFamily: "monospace", marginTop: 6, opacity: 0.5 }}>{e.added}</div>
+        {e.notes && <div style={{ fontSize: 11, color: D.dim, fontStyle: "italic", marginTop: 8, lineHeight: 1.6 }}>{e.notes}</div>}
+        <div style={{ fontSize: 9, color: D.dim, fontFamily: "monospace", marginTop: 6, opacity: 0.5 }}>{e.added}</div>
       </div>
     );
   };
@@ -3819,35 +3845,35 @@ function List100Tab({ userData }) {
   // ── Table row ─────────────────────────────────────────────────────────────
   const TableRow = ({ e, i }) => {
     const fullName = `${e.firstName} ${e.lastName}`.trim();
-    const a1Color  = ATTEMPT_COLORS[e.attempt1] || C.dim;
-    const a2Color  = ATTEMPT_COLORS[e.attempt2] || C.dim;
+    const a1Color  = ATTEMPT_COLORS[e.attempt1] || D.dim;
+    const a2Color  = ATTEMPT_COLORS[e.attempt2] || D.dim;
     return (
       <div style={{
         display: "grid", gridTemplateColumns: "28px 1fr 80px 56px 56px 32px",
         gap: 8, alignItems: "center",
-        padding: "9px 0", borderBottom: `1px solid ${C.borderSoft}`,
+        padding: "9px 0", borderBottom: `1px solid ${D.borderSoft}`,
       }}>
-        <span style={{ color: C.dim, fontFamily: "monospace", fontSize: 10 }}>{i + 1}</span>
+        <span style={{ color: D.dim, fontFamily: "monospace", fontSize: 10 }}>{i + 1}</span>
         <div style={{ minWidth: 0 }}>
-          <span style={{ fontSize: 13, color: C.text }}>{fullName || "—"}</span>
-          {e.company && <span style={{ fontSize: 11, color: C.dim, marginLeft: 8 }}>{e.company}</span>}
+          <span style={{ fontSize: 13, color: D.text }}>{fullName || "—"}</span>
+          {e.company && <span style={{ fontSize: 11, color: D.dim, marginLeft: 8 }}>{e.company}</span>}
         </div>
-        <span style={{ fontSize: 10, fontFamily: "monospace", color: e.warm === "warm" ? "#c47020" : C.muted }}>
+        <span style={{ fontSize: 10, fontFamily: "monospace", color: e.warm === "warm" ? "#c47020" : D.muted }}>
           {e.warm === "warm" ? "🔥 warm" : "❄️ cold"}
         </span>
         <span onClick={() => cycleAttempt(e.id, "attempt1")} style={{
           fontSize: 10, fontFamily: "monospace", cursor: "pointer",
-          color: e.attempt1 && e.attempt1 !== "—" ? a1Color : C.dim,
+          color: e.attempt1 && e.attempt1 !== "—" ? a1Color : D.dim,
         }}>
           {e.attempt1 && e.attempt1 !== "—" ? e.attempt1 : "—"}
         </span>
         <span onClick={() => cycleAttempt(e.id, "attempt2")} style={{
           fontSize: 10, fontFamily: "monospace", cursor: "pointer",
-          color: e.attempt2 && e.attempt2 !== "—" ? a2Color : C.dim,
+          color: e.attempt2 && e.attempt2 !== "—" ? a2Color : D.dim,
         }}>
           {e.attempt2 && e.attempt2 !== "—" ? e.attempt2 : "—"}
         </span>
-        <span onClick={() => openEdit(e)} style={{ fontSize: 11, color: C.muted, fontFamily: "monospace", cursor: "pointer" }}>edit</span>
+        <span onClick={() => openEdit(e)} style={{ fontSize: 11, color: D.muted, fontFamily: "monospace", cursor: "pointer" }}>edit</span>
       </div>
     );
   };
@@ -3860,14 +3886,14 @@ function List100Tab({ userData }) {
     }} onClick={e => { if (e.target === e.currentTarget) setShowForm(false); }}>
       <div style={{
         width: "100%", maxHeight: "88vh", overflowY: "auto",
-        background: C.surface, borderRadius: "20px 20px 0 0",
+        background: D.surface, borderRadius: "20px 20px 0 0",
         padding: "24px 20px 44px",
       }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-          <span style={{ fontSize: 10, fontFamily: "monospace", letterSpacing: 2, color: C.muted }}>
+          <span style={{ fontSize: 10, fontFamily: "monospace", letterSpacing: 2, color: D.muted }}>
             {editId ? "EDIT CONTACT" : "ADD CONTACT"}
           </span>
-          <span onClick={() => setShowForm(false)} style={{ color: C.muted, cursor: "pointer", fontSize: 18 }}>✕</span>
+          <span onClick={() => setShowForm(false)} style={{ color: D.muted, cursor: "pointer", fontSize: 18 }}>✕</span>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
@@ -3898,9 +3924,9 @@ function List100Tab({ userData }) {
             <div key={p.val} onClick={() => setForm(f => ({ ...f, warm: p.val }))} style={{
               flex: 1, textAlign: "center", padding: "9px 0", borderRadius: 8, cursor: "pointer",
               fontSize: 12, fontFamily: "monospace",
-              border: `1px solid ${form.warm === p.val ? (p.val === "warm" ? "#c47020" : C.ocean) : C.border}`,
-              background: form.warm === p.val ? (p.val === "warm" ? "#c4702015" : `${C.ocean}15`) : "transparent",
-              color: form.warm === p.val ? (p.val === "warm" ? "#c47020" : C.ocean) : C.muted,
+              border: `1px solid ${form.warm === p.val ? (p.val === "warm" ? "#c47020" : D.ocean) : D.border}`,
+              background: form.warm === p.val ? (p.val === "warm" ? "#c4702015" : `${D.ocean}15`) : "transparent",
+              color: form.warm === p.val ? (p.val === "warm" ? "#c47020" : D.ocean) : D.muted,
             }}>{p.label}</div>
           ))}
         </div>
@@ -3908,14 +3934,14 @@ function List100Tab({ userData }) {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12 }}>
           {[{ field: "attempt1", label: "ATTEMPT 1" }, { field: "attempt2", label: "ATTEMPT 2" }].map(({ field, label }) => (
             <div key={field}>
-              <div style={{ fontSize: 9, color: C.dim, fontFamily: "monospace", letterSpacing: 1, marginBottom: 6 }}>{label}</div>
+              <div style={{ fontSize: 9, color: D.dim, fontFamily: "monospace", letterSpacing: 1, marginBottom: 6 }}>{label}</div>
               <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
                 {ATTEMPT_STATUSES.map(s => (
                   <div key={s} onClick={() => setForm(f => ({ ...f, [field]: s }))} style={{
                     padding: "4px 9px", borderRadius: 20, cursor: "pointer", fontSize: 11, fontFamily: "monospace",
-                    border: `1px solid ${form[field] === s ? (ATTEMPT_COLORS[s] || C.muted) + "80" : C.border}`,
-                    background: form[field] === s ? `${ATTEMPT_COLORS[s] || C.muted}15` : "transparent",
-                    color: form[field] === s ? (ATTEMPT_COLORS[s] || C.muted) : C.dim,
+                    border: `1px solid ${form[field] === s ? (ATTEMPT_COLORS[s] || D.muted) + "80" : D.border}`,
+                    background: form[field] === s ? `${ATTEMPT_COLORS[s] || D.muted}15` : "transparent",
+                    color: form[field] === s ? (ATTEMPT_COLORS[s] || D.muted) : D.dim,
                   }}>{s}</div>
                 ))}
               </div>
@@ -3932,29 +3958,43 @@ function List100Tab({ userData }) {
   );
 
   return (
-    <div style={{ padding: "24px 20px 0" }}>
+    <div style={{ padding: "24px 20px 0", background: D.bg, minHeight: "100%" }}>
 
       {/* Header */}
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 18 }}>
         <div>
           <SectionLabel>list of 100</SectionLabel>
-          <div style={{ fontSize: 20, color: C.pearl, fontWeight: 400 }}>Your target list</div>
+          <div style={{ fontSize: 20, color: D.pearl, fontWeight: 400 }}>Your target list</div>
         </div>
-        <div style={{ textAlign: "right" }}>
-          <div style={{ fontSize: 24, color: C.ocean, fontWeight: 400 }}>
-            {entries.length}<span style={{ fontSize: 13, color: C.muted }}>/100</span>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+          <div style={{ textAlign: "right" }}>
+            <div style={{ fontSize: 24, color: D.ocean, fontWeight: 400 }}>
+              {entries.length}<span style={{ fontSize: 13, color: D.muted }}>/100</span>
+            </div>
+            <div style={{ fontSize: 10, color: D.muted, fontFamily: "monospace" }}>
+              {warm} warm · {reached} reached
+            </div>
           </div>
-          <div style={{ fontSize: 10, color: C.muted, fontFamily: "monospace" }}>
-            {warm} warm · {reached} reached
+          <div
+            onClick={toggleDark}
+            title={darkMode ? "switch to light" : "switch to dark"}
+            style={{
+              cursor: "pointer", fontSize: 16, lineHeight: 1,
+              padding: "4px 6px", borderRadius: 8,
+              background: D.raised, border: `1px solid ${D.border}`,
+              color: D.muted, userSelect: "none",
+            }}
+          >
+            {darkMode ? "☀︎" : "◑"}
           </div>
         </div>
       </div>
 
       {/* Progress bar */}
-      <div style={{ height: 3, background: C.borderSoft, borderRadius: 4, marginBottom: 20, overflow: "hidden" }}>
+      <div style={{ height: 3, background: D.borderSoft, borderRadius: 4, marginBottom: 20, overflow: "hidden" }}>
         <div style={{
           height: "100%", width: `${pct}%`,
-          background: `linear-gradient(90deg, ${C.oceanDeep}, ${C.ocean})`,
+          background: `linear-gradient(90deg, ${D.oceanDeep}, ${D.ocean})`,
           borderRadius: 4, transition: "width 0.4s ease",
         }} />
       </div>
@@ -3964,22 +4004,22 @@ function List100Tab({ userData }) {
         <div onClick={openAdd} style={{
           flex: 1, display: "flex", alignItems: "center", gap: 8,
           padding: "11px 16px", borderRadius: 10,
-          border: `1px dashed ${C.ocean}60`, cursor: "pointer",
-          color: C.ocean, fontSize: 13,
+          border: `1px dashed ${D.ocean}60`, cursor: "pointer",
+          color: D.ocean, fontSize: 13,
         }}>
           <span style={{ fontSize: 16 }}>+</span> add contact
         </div>
-        <div style={{ display: "flex", background: C.surface, borderRadius: 8, border: `1px solid ${C.border}`, overflow: "hidden" }}>
+        <div style={{ display: "flex", background: D.surface, borderRadius: 8, border: `1px solid ${D.border}`, overflow: "hidden" }}>
           {[{ v: "cards", icon: "⊞" }, { v: "table", icon: "≡" }].map(({ v, icon }) => (
             <div key={v} onClick={() => setView(v)} style={{
               padding: "8px 13px", cursor: "pointer", fontSize: 14,
-              background: view === v ? C.raised : "transparent",
-              color: view === v ? C.ocean : C.muted,
+              background: view === v ? D.raised : "transparent",
+              color: view === v ? D.ocean : D.muted,
             }}>{icon}</div>
           ))}
         </div>
         {entries.length > 0 && (
-          <div onClick={exportCSV} style={{ fontSize: 11, color: C.muted, fontFamily: "monospace", cursor: "pointer", padding: "8px 10px" }} title="export csv">⬇</div>
+          <div onClick={exportCSV} style={{ fontSize: 11, color: D.muted, fontFamily: "monospace", cursor: "pointer", padding: "8px 10px" }} title="export csv">⬇</div>
         )}
       </div>
 
@@ -3987,8 +4027,8 @@ function List100Tab({ userData }) {
       {entries.length === 0 ? (
         <div style={{ textAlign: "center", padding: "56px 0 32px" }}>
           <div style={{ fontSize: 36, marginBottom: 16, opacity: 0.4 }}>◉</div>
-          <div style={{ fontSize: 14, color: C.muted, marginBottom: 6 }}>your list is empty</div>
-          <div style={{ fontSize: 12, color: C.dim }}>add the people you want in your corner</div>
+          <div style={{ fontSize: 14, color: D.muted, marginBottom: 6 }}>your list is empty</div>
+          <div style={{ fontSize: 12, color: D.dim }}>add the people you want in your corner</div>
         </div>
       ) : view === "cards" ? (
         <div style={{ display: "flex", flexDirection: "column", gap: 10, paddingBottom: 32 }}>
@@ -3998,10 +4038,10 @@ function List100Tab({ userData }) {
         <div style={{ paddingBottom: 32 }}>
           <div style={{
             display: "grid", gridTemplateColumns: "28px 1fr 80px 56px 56px 32px",
-            gap: 8, padding: "0 0 8px", borderBottom: `1px solid ${C.border}`,
+            gap: 8, padding: "0 0 8px", borderBottom: `1px solid ${D.border}`,
           }}>
             {["#", "NAME", "LEAD", "A1", "A2", ""].map((h, i) => (
-              <span key={i} style={{ fontSize: 9, color: C.dim, fontFamily: "monospace", letterSpacing: 1 }}>{h}</span>
+              <span key={i} style={{ fontSize: 9, color: D.dim, fontFamily: "monospace", letterSpacing: 1 }}>{h}</span>
             ))}
           </div>
           {entries.map((e, i) => <TableRow key={e.id} e={e} i={i} />)}
@@ -4013,7 +4053,7 @@ function List100Tab({ userData }) {
       {toast && (
         <div style={{
           position: "fixed", bottom: 90, left: "50%", transform: "translateX(-50%)",
-          background: C.raised, border: `1px solid ${C.border}`, color: C.pearl,
+          background: D.raised, border: `1px solid ${D.border}`, color: D.pearl,
           padding: "10px 20px", borderRadius: 8, fontSize: 13, fontFamily: "Georgia, serif",
           zIndex: 999, whiteSpace: "nowrap",
         }}>{toast}</div>
