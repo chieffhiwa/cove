@@ -227,7 +227,7 @@ function AppInner() {
   const [supaUser, setSupaUser] = useState(null);
   const [showFeaturePopup, setShowFeaturePopup] = useState(false);
 
-  C = darkMode ? DARK : LIGHT;
+  C = (darkMode && phase !== "onboard") ? DARK : LIGHT;
 
   const toggleDark = () => {
     const next = !darkMode;
