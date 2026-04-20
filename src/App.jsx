@@ -5543,7 +5543,7 @@ function ProfileTab({ userData, update, onReset }) {
           <p style={{ fontSize: 9, letterSpacing: 2, color: C.dim, fontFamily: "monospace", margin: "0 0 2px" }}>BUILT BY</p>
           <p style={{ fontSize: 13, color: C.pearl, margin: "0 0 6px", fontWeight: 400 }}>Fhiwa Ndou</p>
           <p style={{ fontSize: 11, color: C.muted, lineHeight: 1.6, margin: "0 0 10px" }}>Free and open-source. You don't always need a reason to help somebody.</p>
-          <a href="https://github.com/chieffhiwa/cove/issues/new" target="_blank" rel="noopener noreferrer" style={{ fontSize: 11, color: C.ocean, textDecoration: "none", fontFamily: "monospace", letterSpacing: 0.5 }}>contribute on github →</a>
+          <a href="https://github.com/sponsors/chieffhiwa" target="_blank" rel="noopener noreferrer" style={{ fontSize: 11, color: C.ocean, textDecoration: "none", fontFamily: "monospace", letterSpacing: 0.5 }}>contribute on github →</a>
         </div>
       </div>
 
