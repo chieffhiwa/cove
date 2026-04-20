@@ -3906,7 +3906,13 @@ function CoachTab({ supaUser, userData }) {
             <div style={{ position: "absolute", left: "50%", top: 0, bottom: 0, width: 1, background: C.border }} />
             <div style={{ position: "absolute", width: 7, height: 7, borderRadius: "50%", background: C.ocean, marginLeft: -3, marginTop: -3, left: `${(matrix.bravery ?? 0.5) * 100}%`, top: `${(1 - (matrix.curiosity ?? 0.5)) * 100}%` }} />
           </div>
-          <div style={{ fontSize: 11, color: C.muted }}>{matrix.archetype ?? "Pioneer"} · b{Math.round((matrix.bravery ?? 0.5) * 100)} c{Math.round((matrix.curiosity ?? 0.5) * 100)}</div>
+          <div style={{ fontSize: 11, color: C.muted }}>
+            {matrix.archetype ?? "Pioneer"} · {
+              matrix.bravery >= 0.65 ? "high bravery" : matrix.bravery >= 0.45 ? "mid bravery" : "building bravery"
+            }, {
+              matrix.curiosity >= 0.65 ? "high curiosity" : matrix.curiosity >= 0.45 ? "mid curiosity" : "building curiosity"
+            }
+          </div>
         </div>
       )}
 
