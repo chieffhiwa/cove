@@ -78,24 +78,45 @@ const TAGLINE = TAGLINE_VERSION === "A"
   : "where do you land on the matrix?";
 
 // ─── PALETTE ────────────────────────────────────────────────────────────────
-const C = {
-  bg:         "#f0f4f8",   // warm blue-gray, easier than pure white
-  surface:    "#fafcfe",   // near-white cards
-  raised:     "#e8f0f8",   // slightly lifted
+const LIGHT = {
+  bg:         "#f0f4f8",
+  surface:    "#fafcfe",
+  raised:     "#e8f0f8",
   border:     "#ccd8e4",
   borderSoft: "#dde6f0",
-  text:        "#1e2d3d",   // dark navy — readable
-  muted:      "#526070",   // visible mid-tone
+  text:       "#1e2d3d",
+  muted:      "#526070",
   faint:      "#dce8f4",
   dim:        "#708898",
-  ocean:      "#1e6fa8",   // strong enough on light bg
+  ocean:      "#1e6fa8",
   oceanDeep:  "#145280",
   seafoam:    "#178a72",
   sky:        "#2e78a8",
   mist:       "#4e7088",
   tide:       "#1e6080",
-  pearl:      "#0a1828",   // near-black for headings
+  pearl:      "#0a1828",
 };
+
+const DARK = {
+  bg:         "#0c1520",
+  surface:    "#111d2e",
+  raised:     "#172030",
+  border:     "#1e2e42",
+  borderSoft: "#192840",
+  text:       "#c8dced",
+  muted:      "#6a8faa",
+  faint:      "#172030",
+  dim:        "#4a6a80",
+  ocean:      "#4aa8e0",
+  oceanDeep:  "#2e7ab8",
+  seafoam:    "#2ab89a",
+  sky:        "#5ab8e0",
+  mist:       "#5a8aa8",
+  tide:       "#3a88b8",
+  pearl:      "#e0f0ff",
+};
+
+let C = LIGHT;
 
 // ─── FEELING DEFINITIONS ─────────────────────────────────────────────────────
 const FEELINGS = [
@@ -173,6 +194,8 @@ const DEFAULT_USER_DATA = {
   name: "",
   email: "",
   phone: "",
+  linkedin: "",
+  photoUrl: "",
   selfPosition: null,
   braveReflection: "",
   fearsReflection: "",
@@ -200,6 +223,17 @@ function AppInner() {
   });
   const [mainTab, setMainTab]   = useState("home");
   const [activeContact, setActiveContact] = useState(null);
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem("cove_dark") === "true");
+  const [supaUser, setSupaUser] = useState(null);
+  const [showFeaturePopup, setShowFeaturePopup] = useState(false);
+
+  C = darkMode ? DARK : LIGHT;
+
+  const toggleDark = () => {
+    const next = !darkMode;
+    setDarkMode(next);
+    localStorage.setItem("cove_dark", String(next));
+  };
 
   const update = (patch) => setUserData(d => ({ ...d, ...patch }));
 
@@ -208,9 +242,27 @@ function AppInner() {
     if (ref) localStorage.setItem("cove_ref", ref);
   }, []);
 
+  // Supabase auth listener
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSupaUser(session?.user ?? null);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
+      setSupaUser(session?.user ?? null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
   useEffect(() => { localStorage.setItem("cove_phase", phase); }, [phase]);
   useEffect(() => { localStorage.setItem("cove_step", String(onboardStep)); }, [onboardStep]);
   useEffect(() => { localStorage.setItem("cove_userData", JSON.stringify(userData)); }, [userData]);
+
+  // Show feature popup once when entering main phase
+  useEffect(() => {
+    if (phase === "main" && !localStorage.getItem("cove_feature_popup_v1")) {
+      setTimeout(() => setShowFeaturePopup(true), 800);
+    }
+  }, [phase]);
 
   if (phase === "onboard") {
     return (
@@ -219,6 +271,7 @@ function AppInner() {
         setStep={setStep}
         userData={userData}
         update={update}
+        supaUser={supaUser}
         finish={() => { upsertProfile(userData); setPhase("main"); }}
       />
     );
@@ -235,15 +288,33 @@ function AppInner() {
   };
 
   return (
-    <MainApp
-      userData={userData}
-      update={update}
-      tab={mainTab}
-      setTab={setMainTab}
-      activeContact={activeContact}
-      setActiveContact={setActiveContact}
-      onReset={resetAll}
-    />
+    <>
+      <MainApp
+        userData={userData}
+        update={update}
+        tab={mainTab}
+        setTab={setMainTab}
+        activeContact={activeContact}
+        setActiveContact={setActiveContact}
+        onReset={resetAll}
+        darkMode={darkMode}
+        toggleDark={toggleDark}
+        supaUser={supaUser}
+      />
+      {showFeaturePopup && (
+        <FeaturePopup
+          onDismiss={() => {
+            localStorage.setItem("cove_feature_popup_v1", "seen");
+            setShowFeaturePopup(false);
+          }}
+          onTryCoach={() => {
+            localStorage.setItem("cove_feature_popup_v1", "seen");
+            setShowFeaturePopup(false);
+            setMainTab("coach");
+          }}
+        />
+      )}
+    </>
   );
 }
 
@@ -251,7 +322,7 @@ function AppInner() {
 // ONBOARDING
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function Onboard({ step, setStep, userData, update, finish }) {
+function Onboard({ step, setStep, userData, update, finish, supaUser }) {
   const go = (nextStep, event, props = {}) => {
     track(event, { step: nextStep, ...props });
     setStep(nextStep);
@@ -301,7 +372,7 @@ function Onboard({ step, setStep, userData, update, finish }) {
     <StepListReveal     key={19} contacts={userData.contacts} name={userData.name} next={() => go(20, "step_completed", { step_name: "list_reveal" })} />,
     <StepBreath         key={20} name={userData.name} contacts={userData.contacts} selfPosition={userData.selfPosition} next={() => go(21, "step_completed", { step_name: "breath" })} />,
     <StepFounderNote    key={21} next={() => go(22, "step_completed", { step_name: "founder_note" })} />,
-    <StepBetaForm       key={22} name={userData.name} selfPosition={userData.selfPosition} contacts={userData.contacts} finish={() => { track("onboarding_completed"); finish(); }} />,
+    <StepBetaForm       key={22} name={userData.name} selfPosition={userData.selfPosition} userData={userData} supaUser={supaUser} finish={() => { track("onboarding_completed"); finish(); }} />,
   ];
 
   // Dots: philosophy(4), name(5), matrix intro(6), matrix(7), brave(12), fears(13), list(16-22)
@@ -2677,15 +2748,27 @@ function StepFounderNote({ next }) {
 }
 
 // ── Step Final: Share screen ───────────────────────────────────────────────────
-function StepBetaForm({ name, selfPosition, finish }) {
+function StepBetaForm({ name, selfPosition, userData, supaUser, finish }) {
   const visible = useFadeIn([]);
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied]   = useState(false);
+  const [email, setEmail]     = useState(userData?.email || "");
+  const [password, setPassword] = useState("");
+  const [authErr, setAuthErr] = useState("");
+  const [authLoading, setAuthLoading] = useState(false);
+  const [accountCreated, setAccountCreated] = useState(!!supaUser);
 
   const qLabel = selfPosition
     ? `${selfPosition.y < 50 ? "Brave" : "Fearful"} + ${selfPosition.x > 50 ? "Curious" : "Judgmental"}`
     : null;
-  const shareUrl = "https://cove-main.vercel.app";
+  const shareUrl  = "https://cove-main.vercel.app";
   const shareText = `Hey! Check out this new career app called Cove. I wanna see where you land on the matrix :) ${shareUrl}`;
+
+  const archetypeScores = {
+    Pioneer: { bravery: 0.75, curiosity: 0.75 },
+    Builder: { bravery: 0.75, curiosity: 0.45 },
+    Sage:    { bravery: 0.45, curiosity: 0.75 },
+    Anchor:  { bravery: 0.45, curiosity: 0.45 },
+  };
 
   const handleShare = async () => {
     if (navigator.share) {
@@ -2697,30 +2780,72 @@ function StepBetaForm({ name, selfPosition, finish }) {
     }
   };
 
+  const handleSignUp = async () => {
+    if (!email.trim() || !password.trim()) { setAuthErr("Enter your email and a password."); return; }
+    if (password.length < 6) { setAuthErr("Password must be at least 6 characters."); return; }
+    setAuthLoading(true);
+    setAuthErr("");
+
+    const { data, error } = await supabase.auth.signUp({
+      email: email.trim(),
+      password,
+      options: { data: { name: name || "" } },
+    });
+
+    if (error) {
+      if (error.message?.toLowerCase().includes("already registered")) {
+        const { error: signInErr } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+        if (signInErr) { setAuthErr("Couldn't sign in. Check your password."); setAuthLoading(false); return; }
+      } else {
+        setAuthErr(error.message);
+        setAuthLoading(false);
+        return;
+      }
+    }
+
+    // Write matrix scores
+    const userId = data?.user?.id;
+    if (userId && selfPosition) {
+      const bravery   = selfPosition.x / 100;
+      const curiosity = 1 - selfPosition.y / 100;
+      const archetype = bravery >= 0.5 && curiosity >= 0.5 ? "Pioneer"
+        : bravery >= 0.5 ? "Builder"
+        : curiosity >= 0.5 ? "Sage" : "Anchor";
+      await supabase.from("user_matrix_scores").upsert(
+        { user_id: userId, bravery, curiosity, archetype },
+        { onConflict: "user_id" }
+      );
+      if (userData?.braveReflection || userData?.fearsReflection) {
+        await supabase.from("onboarding_answers").upsert(
+          { user_id: userId, bravery_text: userData.braveReflection || null, curiosity_text: userData.fearsReflection || null, archetype },
+          { onConflict: "user_id" }
+        );
+      }
+    }
+
+    setAccountCreated(true);
+    setAuthLoading(false);
+  };
+
   return (
     <div style={{ ...fadeStyle(visible), minHeight: "100vh", display: "flex", flexDirection: "column", background: C.bg }}>
 
-      {/* Photo — light treatment */}
-      <div style={{ position: "relative", height: 280, overflow: "hidden", flexShrink: 0, background: C.raised }}>
-        <img
-          src="/fhiwa-kid.jpg"
-          alt=""
+      {/* Photo */}
+      <div style={{ position: "relative", height: 240, overflow: "hidden", flexShrink: 0, background: C.raised }}>
+        <img src="/fhiwa-kid.jpg" alt=""
           style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 50%", filter: "brightness(1.05) saturate(0.9)" }}
         />
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, transparent 50%, rgba(240,244,248,0.92) 100%)" }} />
       </div>
 
-      {/* Main content */}
-      <div style={{ flex: 1, padding: "32px 24px 56px", display: "flex", flexDirection: "column", gap: 20 }}>
+      <div style={{ flex: 1, padding: "28px 24px 56px", display: "flex", flexDirection: "column", gap: 18 }}>
 
-        {/* Caption */}
         <p style={{ fontSize: 11, color: C.dim, fontFamily: "monospace", letterSpacing: 1, margin: 0, fontStyle: "italic" }}>
           me, probably plotting something. — brave + curious
         </p>
 
-        {/* Heading */}
         <div>
-          <h2 style={{ fontSize: 26, fontWeight: 400, color: C.text, fontFamily: "Georgia, serif", lineHeight: 1.35, margin: "0 0 10px" }}>
+          <h2 style={{ fontSize: 26, fontWeight: 400, color: C.text, fontFamily: "Georgia, serif", lineHeight: 1.35, margin: "0 0 8px" }}>
             {name ? `You're in, ${name.split(" ")[0]}.` : "You're in."}
           </h2>
           <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.75, margin: 0 }}>
@@ -2730,15 +2855,68 @@ function StepBetaForm({ name, selfPosition, finish }) {
           </p>
         </div>
 
-        {/* Share nudge */}
-        <div
-          onClick={handleShare}
-          style={{
-            padding: "14px 18px", borderRadius: 10, border: `1px solid ${C.border}`,
-            background: C.surface, cursor: "pointer", display: "flex", alignItems: "center",
-            gap: 12, touchAction: "manipulation",
-          }}
-        >
+        {/* Account creation */}
+        {!accountCreated ? (
+          <div style={{ padding: "20px 18px", borderRadius: 14, background: C.surface, border: `1px solid ${C.border}` }}>
+            <div style={{ fontSize: 13, color: C.pearl, fontWeight: 600, marginBottom: 4 }}>
+              ✦ Save your profile + unlock Coach & Matches
+            </div>
+            <div style={{ fontSize: 12, color: C.muted, marginBottom: 14, lineHeight: 1.6 }}>
+              Create a free account to get AI coaching, see who matches your matrix, and track your progress across sessions.
+            </div>
+            <input
+              type="email"
+              placeholder="your email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              style={{
+                width: "100%", boxSizing: "border-box",
+                background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8,
+                padding: "11px 13px", fontSize: 14, color: C.text, outline: "none",
+                marginBottom: 8, fontFamily: "inherit",
+              }}
+            />
+            <input
+              type="password"
+              placeholder="choose a password (6+ chars)"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && handleSignUp()}
+              style={{
+                width: "100%", boxSizing: "border-box",
+                background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8,
+                padding: "11px 13px", fontSize: 14, color: C.text, outline: "none",
+                marginBottom: authErr ? 8 : 12, fontFamily: "inherit",
+              }}
+            />
+            {authErr && <div style={{ fontSize: 12, color: "#e07868", marginBottom: 10 }}>{authErr}</div>}
+            <div
+              onClick={handleSignUp}
+              style={{
+                background: C.ocean, color: "#fff", textAlign: "center",
+                padding: "12px 0", borderRadius: 10, cursor: "pointer",
+                fontSize: 14, fontWeight: 600, opacity: authLoading ? 0.6 : 1,
+              }}
+            >
+              {authLoading ? "creating account..." : "create free account →"}
+            </div>
+            <div onClick={finish} style={{ textAlign: "center", fontSize: 12, color: C.dim, marginTop: 10, cursor: "pointer" }}>
+              skip for now
+            </div>
+          </div>
+        ) : (
+          <div style={{ padding: "16px 18px", borderRadius: 14, background: "#f0fdf4", border: "1px solid #86efac" }}>
+            <div style={{ fontSize: 14, color: "#166534", fontWeight: 600 }}>✓ Account created — you're all set</div>
+            <div style={{ fontSize: 12, color: "#4ade80", marginTop: 4 }}>Coach and Matches are unlocked in your dashboard.</div>
+          </div>
+        )}
+
+        {/* Share */}
+        <div onClick={handleShare} style={{
+          padding: "14px 18px", borderRadius: 10, border: `1px solid ${C.border}`,
+          background: C.surface, cursor: "pointer", display: "flex", alignItems: "center",
+          gap: 12, touchAction: "manipulation",
+        }}>
           <span style={{ fontSize: 20 }}>🔗</span>
           <div>
             <div style={{ fontSize: 13, color: C.text, fontWeight: 600, marginBottom: 2 }}>
@@ -2748,23 +2926,17 @@ function StepBetaForm({ name, selfPosition, finish }) {
           </div>
         </div>
 
-        {/* Spacer */}
         <div style={{ flex: 1 }} />
 
-        {/* CTA */}
-        <div
-          onClick={finish}
-          style={{
-            textAlign: "center", padding: "20px 24px", cursor: "pointer",
-            background: C.ocean, color: "#fff",
-            fontSize: 17, borderRadius: 12, fontFamily: "Georgia, serif",
-            letterSpacing: 0.3, touchAction: "manipulation",
-            boxShadow: `0 4px 16px rgba(30,111,168,0.25)`,
-          }}
-        >
+        <div onClick={finish} style={{
+          textAlign: "center", padding: "20px 24px", cursor: "pointer",
+          background: C.ocean, color: "#fff",
+          fontSize: 17, borderRadius: 12, fontFamily: "Georgia, serif",
+          letterSpacing: 0.3, touchAction: "manipulation",
+          boxShadow: `0 4px 16px rgba(30,111,168,0.25)`,
+        }}>
           go to your dashboard →
         </div>
-
       </div>
     </div>
   );
@@ -2801,7 +2973,7 @@ function StepDone({ name, finish }) {
 // MAIN APP
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function MainApp({ userData, update, tab, setTab, activeContact, setActiveContact, onReset }) {
+function MainApp({ userData, update, tab, setTab, activeContact, setActiveContact, onReset, darkMode, toggleDark, supaUser }) {
   const openContact = (c) => { setActiveContact(c); setTab("contact"); };
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(userData.name || "");
@@ -2831,30 +3003,37 @@ function MainApp({ userData, update, tab, setTab, activeContact, setActiveContac
               </div>
             : <div style={{ fontSize: 16, letterSpacing: 4, color: C.ocean, fontFamily: "monospace" }}>cove</div>
           }
-          <div style={{ fontSize: 12, color: C.dim }}>
-            {tab !== "contact" && (
-              editingName
-                ? <input
-                    autoFocus
-                    value={nameInput}
-                    onChange={e => setNameInput(e.target.value)}
-                    onBlur={saveName}
-                    onKeyDown={e => e.key === "Enter" && saveName()}
-                    style={{
-                      background: "transparent", border: "none",
-                      borderBottom: `1px solid ${C.ocean}`,
-                      color: C.pearl, fontSize: 12, outline: "none",
-                      width: 80, fontFamily: "Georgia, serif",
-                    }}
-                  />
-                : <span
-                    onClick={() => { setNameInput(userData.name || ""); setEditingName(true); }}
-                    style={{ cursor: "pointer", borderBottom: `1px dashed ${C.dim}` }}
-                    title="tap to edit"
-                  >
-                    hi, {userData.name || "you"}
-                  </span>
-            )}
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <button
+              onClick={toggleDark}
+              title={darkMode ? "switch to light" : "switch to dark"}
+              style={{ background: "none", border: "none", cursor: "pointer", fontSize: 15, padding: "2px 4px", color: C.dim, lineHeight: 1 }}
+            >{darkMode ? "☀︎" : "☽"}</button>
+            <div style={{ fontSize: 12, color: C.dim }}>
+              {tab !== "contact" && (
+                editingName
+                  ? <input
+                      autoFocus
+                      value={nameInput}
+                      onChange={e => setNameInput(e.target.value)}
+                      onBlur={saveName}
+                      onKeyDown={e => e.key === "Enter" && saveName()}
+                      style={{
+                        background: "transparent", border: "none",
+                        borderBottom: `1px solid ${C.ocean}`,
+                        color: C.pearl, fontSize: 12, outline: "none",
+                        width: 80, fontFamily: "Georgia, serif",
+                      }}
+                    />
+                  : <span
+                      onClick={() => { setNameInput(userData.name || ""); setEditingName(true); }}
+                      style={{ cursor: "pointer", borderBottom: `1px dashed ${C.dim}` }}
+                      title="tap to edit"
+                    >
+                      hi, {userData.name || "you"}
+                    </span>
+              )}
+            </div>
           </div>
         </div>
 
@@ -2864,7 +3043,8 @@ function MainApp({ userData, update, tab, setTab, activeContact, setActiveContac
           {tab === "contact"   && activeContact && <ContactTab contact={activeContact} />}
           {tab === "values"    && <ValuesTab    wants={userData.wants} />}
           {tab === "matrix"    && <MatrixTab    contacts={userData.contacts} openContact={openContact} selfPosition={userData.selfPosition} name={userData.name} />}
-          {tab === "vibes"     && <VibesTab />}
+          {tab === "coach"     && <CoachTab     supaUser={supaUser} userData={userData} />}
+          {tab === "matches"   && <MatchesTab   supaUser={supaUser} userData={userData} />}
           {tab === "list"      && <List100Tab userData={userData} />}
           {tab === "you"       && <ProfileTab   userData={userData} update={update} onReset={onReset} />}
         </div>
@@ -2878,11 +3058,11 @@ function MainApp({ userData, update, tab, setTab, activeContact, setActiveContac
           flexShrink: 0, zIndex: 20,
         }}>
           {[
-            { id: "home",   label: "Home",   icon: "⌂" },
-            { id: "matrix", label: "Matrix", icon: "⊹" },
-            { id: "list",   label: "List",   icon: "≡" },
-            { id: "vibes",  label: "Vibes",  icon: "〰" },
-            { id: "you",    label: "You",    icon: "◉" },
+            { id: "home",    label: "Home",    icon: "⌂" },
+            { id: "coach",   label: "Coach",   icon: "💬", isNew: true },
+            { id: "matches", label: "Matches", icon: "◎", isNew: true },
+            { id: "list",    label: "List",    icon: "≡" },
+            { id: "you",     label: "You",     icon: "◉" },
           ].map(t => (
             <div
               key={t.id}
@@ -3464,6 +3644,560 @@ function MatrixTab({ contacts = [], openContact, selfPosition, name }) {
           Not everyone gets the front row. Your energy is finite and the people in the top-right quadrant will multiply it. The others still deserve your generosity just in different doses. This is how you stay warm without burning out.
         </p>
       </div>
+    </div>
+  );
+}
+
+// ── Feature Popup ─────────────────────────────────────────────────────────────
+function FeaturePopup({ onDismiss, onTryCoach }) {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => { requestAnimationFrame(() => setVisible(true)); }, []);
+
+  const features = [
+    { icon: "💬", title: "AI Coach",       desc: "Talk through your career — get real, personalized coaching." },
+    { icon: "🧠", title: "Q&A Engine",     desc: "Answer layered questions. Your profile gets smarter with every answer." },
+    { icon: "◎",  title: "Matches",        desc: "See who has a similar matrix — and what you share." },
+  ];
+
+  return (
+    <div style={{
+      position: "fixed", inset: 0, zIndex: 1000,
+      background: "rgba(0,0,0,0.55)",
+      display: "flex", alignItems: "flex-end", justifyContent: "center",
+      opacity: visible ? 1 : 0,
+      transition: "opacity 0.3s ease",
+    }}>
+      <div style={{
+        width: "100%", maxWidth: 480,
+        background: C.surface,
+        borderRadius: "24px 24px 0 0",
+        padding: "28px 24px 40px",
+        transform: visible ? "translateY(0)" : "translateY(40px)",
+        transition: "transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)",
+        boxShadow: "0 -8px 40px rgba(0,0,0,0.2)",
+      }}>
+        {/* Drag handle */}
+        <div style={{ width: 40, height: 4, background: C.border, borderRadius: 2, margin: "0 auto 24px" }} />
+
+        <div style={{ fontSize: 10, letterSpacing: 3, color: C.ocean, fontFamily: "monospace", marginBottom: 8 }}>✦ JUST SHIPPED</div>
+        <h2 style={{ fontSize: 24, fontWeight: 700, color: C.pearl, margin: "0 0 6px", lineHeight: 1.25 }}>
+          Coach & Matches are live.
+        </h2>
+        <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.7, margin: "0 0 22px" }}>
+          We built the things that make Cove actually useful. Here's what's new:
+        </p>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 24 }}>
+          {features.map((f, i) => (
+            <div key={i} style={{
+              display: "flex", gap: 14, padding: "14px 16px",
+              borderRadius: 12, background: C.bg,
+              border: `1px solid ${C.borderSoft}`,
+            }}>
+              <span style={{ fontSize: 22, flexShrink: 0 }}>{f.icon}</span>
+              <div>
+                <div style={{ fontSize: 14, color: C.pearl, fontWeight: 600, marginBottom: 3 }}>{f.title}</div>
+                <div style={{ fontSize: 12, color: C.muted, lineHeight: 1.6 }}>{f.desc}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div onClick={onTryCoach} style={{
+          background: C.ocean, color: "#fff", textAlign: "center",
+          padding: "16px 0", borderRadius: 12, cursor: "pointer",
+          fontSize: 16, fontWeight: 600, marginBottom: 12,
+          boxShadow: `0 4px 16px rgba(30,111,168,0.3)`,
+          touchAction: "manipulation",
+        }}>
+          try coach now →
+        </div>
+        <div onClick={onDismiss} style={{
+          textAlign: "center", padding: "10px 0",
+          fontSize: 13, color: C.dim, cursor: "pointer",
+        }}>
+          maybe later
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Coach Tab ─────────────────────────────────────────────────────────────────
+const ANTHROPIC_KEY = process.env.REACT_APP_ANTHROPIC_KEY;
+
+const ARCHETYPE_DESCRIPTIONS = {
+  Pioneer: "acts fast, asks big questions, bridges between worlds, but can lose the thread",
+  Builder: "executes with conviction, needs someone to ask why, doesn't wait for permission",
+  Sage:    "sees patterns others miss, thinks before leaping, needs someone to push them out the door",
+  Anchor:  "deep expertise, high reliability, steady — needs someone to expand their horizon",
+};
+
+function buildCoachPrompt(archetype, bravery, curiosity) {
+  const base = `You are a calm, honest career coach inside Cove — an app for early-career people navigating jobs, networks, and what they actually want. Your tone: warm but direct. No corporate speak. No empty affirmations. You say hard things gently. You ask one good question at a time. Keep responses short — 2-4 sentences unless the person is sharing something long.`;
+  if (!archetype) return base;
+  const score = `bravery ${Math.round((bravery ?? 0.5) * 100)}, curiosity ${Math.round((curiosity ?? 0.5) * 100)}`;
+  return `${base}\n\nThe person you're talking to has a ${archetype} profile (${score}): ${ARCHETYPE_DESCRIPTIONS[archetype] ?? "still figuring out their shape"}. Speak to that. Don't mention the matrix directly — let it shape how you respond.`;
+}
+
+const COACH_SEED_PROMPTS = [
+  "I keep applying but never hearing back.",
+  "I don't know what I actually want.",
+  "I have an offer but I'm not sure about it.",
+  "How do I reach out to someone I don't know?",
+];
+
+const LAYER_LABELS = { 1: "GETTING TO KNOW YOU", 2: "GOING DEEPER", 3: "EARNED THIS ONE" };
+const LAYER_COLORS = { 1: "#1e6fa8", 2: "#178a72", 3: "#6d3fa8" };
+
+function CoachTab({ supaUser, userData }) {
+  const [messages, setMessages] = useState([{ role: "assistant", content: "Hey. What's actually going on right now?" }]);
+  const [input, setInput]       = useState("");
+  const [loading, setLoading]   = useState(false);
+  const [question, setQuestion] = useState(null);
+  const [qVisible, setQVisible] = useState(false);
+  const [matrix, setMatrix]     = useState(null);
+  const [email, setEmail]       = useState("");
+  const [password, setPassword] = useState("");
+  const [authErr, setAuthErr]   = useState("");
+  const [authLoading, setAuthLoading] = useState(false);
+  const scrollRef = useRef(null);
+
+  const scrollBottom = () => setTimeout(() => scrollRef.current?.scrollTo({ top: 9999, behavior: "smooth" }), 120);
+
+  useEffect(() => {
+    if (!supaUser) return;
+    loadQuestion();
+    supabase.from("user_matrix_scores").select("*").eq("user_id", supaUser.id).maybeSingle()
+      .then(({ data }) => setMatrix(data));
+  }, [supaUser]);
+
+  async function loadQuestion() {
+    const { data: answered } = await supabase
+      .from("user_answers")
+      .select("question_id")
+      .eq("user_id", supaUser.id);
+
+    const ids = (answered ?? []).map(a => a.question_id);
+    let q = supabase.from("questions").select("*").order("layer").order("sort_order").limit(1);
+    if (ids.length > 0) q = q.not("id", "in", `(${ids.map(id => `"${id}"`).join(",")})`);
+    const { data } = await q;
+    if (data?.[0]) { setQuestion(data[0]); setQVisible(true); }
+  }
+
+  async function submitQuestion(answer) {
+    setQVisible(false);
+    const q = question;
+    setQuestion(null);
+
+    let tags = [], braveryDelta = 0, curiosityDelta = 0;
+    if (answer.option_id && q.options) {
+      const opt = q.options.find(o => o.id === answer.option_id);
+      tags = opt?.tags ?? [];
+      braveryDelta  = opt?.matrix_delta?.bravery  ?? 0;
+      curiosityDelta = opt?.matrix_delta?.curiosity ?? 0;
+    }
+
+    await supabase.from("user_answers").upsert(
+      { user_id: supaUser.id, question_id: q.id, answer_text: answer.text, option_id: answer.option_id, answer_tags: tags },
+      { onConflict: "user_id,question_id" }
+    );
+
+    if (braveryDelta !== 0 || curiosityDelta !== 0) {
+      const { data: cur } = await supabase.from("user_matrix_scores").select("*").eq("user_id", supaUser.id).single();
+      const newB = Math.min(1, Math.max(0, (cur?.bravery ?? 0.5) + braveryDelta));
+      const newC = Math.min(1, Math.max(0, (cur?.curiosity ?? 0.5) + curiosityDelta));
+      const arch = newB >= 0.65 && newC >= 0.65 ? "Pioneer" : newB >= 0.65 ? "Builder" : newC >= 0.65 ? "Sage" : "Anchor";
+      await supabase.from("user_matrix_scores").upsert({ user_id: supaUser.id, bravery: newB, curiosity: newC, archetype: arch }, { onConflict: "user_id" });
+      setMatrix({ bravery: newB, curiosity: newC, archetype: arch });
+    }
+
+    if (q.hook_after) {
+      setMessages(prev => [...prev, { role: "assistant", content: q.hook_after }]);
+      scrollBottom();
+    }
+    // Load next question after a pause
+    setTimeout(loadQuestion, 2500);
+  }
+
+  const send = async () => {
+    const text = input.trim();
+    if (!text || loading) return;
+    setInput("");
+    const next = [...messages, { role: "user", content: text }];
+    setMessages(next);
+    setLoading(true);
+    scrollBottom();
+
+    if (!ANTHROPIC_KEY) {
+      setMessages(prev => [...prev, { role: "assistant", content: "AI coach coming soon — add your Anthropic key to unlock it." }]);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const systemPrompt = buildCoachPrompt(matrix?.archetype, matrix?.bravery, matrix?.curiosity);
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-6", max_tokens: 300, system: systemPrompt,
+          messages: next.map(m => ({ role: m.role, content: m.content })),
+        }),
+      });
+      const data = await res.json();
+      setMessages(prev => [...prev, { role: "assistant", content: data?.content?.[0]?.text ?? "Lost the thread. Try again." }]);
+    } catch {
+      setMessages(prev => [...prev, { role: "assistant", content: "Lost connection. Try again." }]);
+    } finally {
+      setLoading(false);
+      scrollBottom();
+    }
+  };
+
+  const handleSignIn = async () => {
+    if (!email.trim() || !password) { setAuthErr("Enter email and password."); return; }
+    setAuthLoading(true); setAuthErr("");
+    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+    if (error) { setAuthErr(error.message); }
+    setAuthLoading(false);
+  };
+
+  // Gated behind auth
+  if (!supaUser) {
+    return (
+      <div style={{ padding: "40px 24px", display: "flex", flexDirection: "column", gap: 20 }}>
+        <div style={{ fontSize: 10, letterSpacing: 3, color: C.ocean, fontFamily: "monospace" }}>💬 COACH</div>
+        <h2 style={{ fontSize: 24, fontWeight: 700, color: C.pearl, margin: 0, lineHeight: 1.3 }}>
+          Your AI career coach.
+        </h2>
+        <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.75, margin: 0 }}>
+          Answer questions, build your profile, get coaching that actually knows your matrix position.
+          Sign in to unlock it.
+        </p>
+        <div style={{ padding: "20px 18px", borderRadius: 14, background: C.surface, border: `1px solid ${C.border}` }}>
+          <input type="email" placeholder="your email" value={email} onChange={e => setEmail(e.target.value)}
+            style={{ width: "100%", boxSizing: "border-box", background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, padding: "11px 13px", fontSize: 14, color: C.text, outline: "none", marginBottom: 8, fontFamily: "inherit" }}
+          />
+          <input type="password" placeholder="password" value={password} onChange={e => setPassword(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && handleSignIn()}
+            style={{ width: "100%", boxSizing: "border-box", background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, padding: "11px 13px", fontSize: 14, color: C.text, outline: "none", marginBottom: authErr ? 8 : 12, fontFamily: "inherit" }}
+          />
+          {authErr && <div style={{ fontSize: 12, color: "#e07868", marginBottom: 10 }}>{authErr}</div>}
+          <div onClick={handleSignIn} style={{ background: C.ocean, color: "#fff", textAlign: "center", padding: "12px 0", borderRadius: 10, cursor: "pointer", fontSize: 14, fontWeight: 600, opacity: authLoading ? 0.6 : 1 }}>
+            {authLoading ? "signing in..." : "sign in →"}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const showSeeds = messages.length === 1 && !qVisible;
+  const accentColor = question ? (LAYER_COLORS[question.layer] ?? LAYER_COLORS[1]) : LAYER_COLORS[1];
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" }}>
+
+      {/* Matrix mini header */}
+      {matrix && (
+        <div style={{ padding: "10px 20px 6px", display: "flex", alignItems: "center", gap: 10, borderBottom: `1px solid ${C.borderSoft}`, flexShrink: 0 }}>
+          <div style={{ width: 32, height: 32, borderRadius: 6, border: `1px solid ${C.border}`, background: C.raised, position: "relative", flexShrink: 0 }}>
+            <div style={{ position: "absolute", top: "50%", left: 0, right: 0, height: 1, background: C.border }} />
+            <div style={{ position: "absolute", left: "50%", top: 0, bottom: 0, width: 1, background: C.border }} />
+            <div style={{ position: "absolute", width: 7, height: 7, borderRadius: "50%", background: C.ocean, marginLeft: -3, marginTop: -3, left: `${(matrix.bravery ?? 0.5) * 100}%`, top: `${(1 - (matrix.curiosity ?? 0.5)) * 100}%` }} />
+          </div>
+          <div style={{ fontSize: 11, color: C.muted }}>{matrix.archetype ?? "Pioneer"} · b{Math.round((matrix.bravery ?? 0.5) * 100)} c{Math.round((matrix.curiosity ?? 0.5) * 100)}</div>
+        </div>
+      )}
+
+      {/* Question card */}
+      {qVisible && question && (
+        <div style={{
+          margin: "12px 16px 2px", padding: "18px", borderRadius: 14,
+          background: C.surface, border: `1px solid ${C.border}`, borderLeftWidth: 3, borderLeftColor: accentColor,
+          flexShrink: 0,
+        }}>
+          <div style={{ fontSize: 8, letterSpacing: 2, color: accentColor, marginBottom: 10, fontFamily: "monospace" }}>
+            {LAYER_LABELS[question.layer] ?? "QUESTION"}
+          </div>
+          <div style={{ fontSize: 15, color: C.pearl, lineHeight: 1.65, marginBottom: 16 }}>{question.body}</div>
+          <QuestionInput question={question} accentColor={accentColor} onSubmit={submitQuestion} onSkip={() => { setQVisible(false); setQuestion(null); }} />
+        </div>
+      )}
+
+      {/* Messages */}
+      <div ref={scrollRef} style={{ flex: 1, overflowY: "auto", padding: "16px 20px", display: "flex", flexDirection: "column", gap: 12 }}>
+        {messages.map((m, i) => (
+          <div key={i} style={{
+            maxWidth: "85%", padding: "13px 16px", borderRadius: 14, fontSize: 14, lineHeight: 1.65,
+            alignSelf: m.role === "user" ? "flex-end" : "flex-start",
+            background: m.role === "user" ? C.ocean : C.surface,
+            color: m.role === "user" ? "#fff" : C.text,
+            border: m.role === "user" ? "none" : `1px solid ${C.border}`,
+          }}>
+            {m.role === "assistant" && <div style={{ fontSize: 8, letterSpacing: 2, color: C.dim, marginBottom: 6, fontFamily: "monospace" }}>COVE</div>}
+            {m.content}
+          </div>
+        ))}
+        {loading && (
+          <div style={{ maxWidth: "85%", padding: "13px 16px", borderRadius: 14, background: C.surface, border: `1px solid ${C.border}`, alignSelf: "flex-start" }}>
+            <div style={{ fontSize: 8, letterSpacing: 2, color: C.dim, marginBottom: 6, fontFamily: "monospace" }}>COVE</div>
+            <span style={{ fontSize: 18, color: C.dim, letterSpacing: 4 }}>· · ·</span>
+          </div>
+        )}
+        {showSeeds && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 4 }}>
+            {COACH_SEED_PROMPTS.map((p, i) => (
+              <div key={i} onClick={() => setInput(p)} style={{
+                padding: "13px 16px", borderRadius: 12, cursor: "pointer",
+                background: C.surface, border: `1px solid ${C.border}`,
+                fontSize: 13, color: C.muted, lineHeight: 1.5,
+              }}>{p}</div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Input row */}
+      <div style={{ display: "flex", gap: 10, padding: "12px 16px", borderTop: `1px solid ${C.borderSoft}`, background: C.surface, flexShrink: 0, alignItems: "flex-end" }}>
+        <textarea
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
+          placeholder="say anything..."
+          rows={1}
+          style={{
+            flex: 1, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10,
+            padding: "11px 13px", fontSize: 14, color: C.text, outline: "none", resize: "none",
+            fontFamily: "inherit", lineHeight: 1.5, maxHeight: 100,
+          }}
+        />
+        <div onClick={send} style={{
+          width: 40, height: 40, borderRadius: 10, background: input.trim() && !loading ? C.ocean : C.faint,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          cursor: input.trim() && !loading ? "pointer" : "default",
+          fontSize: 18, color: input.trim() && !loading ? "#fff" : C.dim, flexShrink: 0,
+          transition: "background 0.15s",
+        }}>→</div>
+      </div>
+    </div>
+  );
+}
+
+// Extracted input widget for CoachTab questions
+function QuestionInput({ question, accentColor, onSubmit, onSkip }) {
+  const [openText, setOpenText] = useState("");
+  const [selected, setSelected] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async () => {
+    if (submitting) return;
+    const isChoice = question.input_type === "choice";
+    if (isChoice && !selected) return;
+    if (!isChoice && !openText.trim()) return;
+    setSubmitting(true);
+    await onSubmit(isChoice ? { option_id: selected } : { text: openText.trim() });
+  };
+
+  if (question.input_type === "choice" && question.options) {
+    return (
+      <div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 7, marginBottom: 12 }}>
+          {question.options.map(opt => (
+            <div key={opt.id} onClick={() => setSelected(opt.id)} style={{
+              padding: "12px 14px", borderRadius: 10, cursor: "pointer",
+              border: `1px solid ${selected === opt.id ? accentColor : C.border}`,
+              background: selected === opt.id ? accentColor + "12" : C.raised,
+              fontSize: 13, color: selected === opt.id ? C.pearl : C.muted, lineHeight: 1.5,
+              transition: "all 0.15s",
+            }}>{opt.text}</div>
+          ))}
+        </div>
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          <div onClick={handleSubmit} style={{ padding: "10px 18px", borderRadius: 10, background: accentColor + "15", border: `1px solid ${accentColor}40`, cursor: "pointer", fontSize: 13, fontWeight: 500, color: accentColor, opacity: submitting ? 0.6 : 1 }}>
+            {submitting ? "..." : "answer"}
+          </div>
+          <div onClick={onSkip} style={{ fontSize: 12, color: C.dim, cursor: "pointer", padding: "8px" }}>not now</div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <textarea value={openText} onChange={e => setOpenText(e.target.value)} placeholder="type your answer..." rows={3}
+        style={{ width: "100%", boxSizing: "border-box", background: C.raised, border: `1px solid ${C.border}`, borderRadius: 10, padding: "12px 13px", fontSize: 13, color: C.text, outline: "none", resize: "none", fontFamily: "inherit", lineHeight: 1.55, marginBottom: 10 }}
+      />
+      <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+        <div onClick={handleSubmit} style={{ padding: "10px 18px", borderRadius: 10, background: accentColor + "15", border: `1px solid ${accentColor}40`, cursor: "pointer", fontSize: 13, fontWeight: 500, color: accentColor, opacity: submitting ? 0.6 : 1 }}>
+          {submitting ? "..." : "answer"}
+        </div>
+        <div onClick={onSkip} style={{ fontSize: 12, color: C.dim, cursor: "pointer", padding: "8px" }}>not now</div>
+      </div>
+    </div>
+  );
+}
+
+// ── Matches Tab ────────────────────────────────────────────────────────────────
+function MatchesTab({ supaUser, userData }) {
+  const [users, setUsers]       = useState([]);
+  const [myCount, setMyCount]   = useState(0);
+  const [loading, setLoading]   = useState(true);
+  const [sortBy, setSortBy]     = useState("similarity");
+  const [email, setEmail]       = useState("");
+  const [password, setPassword] = useState("");
+  const [authErr, setAuthErr]   = useState("");
+  const [authLoading, setAuthLoading] = useState(false);
+
+  useEffect(() => {
+    if (!supaUser) return;
+    loadMatches();
+  }, [supaUser, sortBy]);
+
+  async function loadMatches() {
+    setLoading(true);
+    const { count } = await supabase.from("user_answers").select("id", { count: "exact", head: true }).eq("user_id", supaUser.id);
+    setMyCount(count ?? 0);
+
+    const { data } = await supabase
+      .from("similar_minds")
+      .select("*")
+      .eq("viewer_id", supaUser.id)
+      .order(sortBy === "overlap" ? "overlap_count" : "similarity_score", { ascending: false })
+      .limit(20);
+
+    setUsers(data ?? []);
+    setLoading(false);
+  }
+
+  const handleSignIn = async () => {
+    if (!email.trim() || !password) { setAuthErr("Enter email and password."); return; }
+    setAuthLoading(true); setAuthErr("");
+    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+    if (error) { setAuthErr(error.message); }
+    setAuthLoading(false);
+  };
+
+  if (!supaUser) {
+    return (
+      <div style={{ padding: "40px 24px", display: "flex", flexDirection: "column", gap: 20 }}>
+        <div style={{ fontSize: 10, letterSpacing: 3, color: C.ocean, fontFamily: "monospace" }}>◎ MATCHES</div>
+        <h2 style={{ fontSize: 24, fontWeight: 700, color: C.pearl, margin: 0, lineHeight: 1.3 }}>
+          See who matches your matrix.
+        </h2>
+        <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.75, margin: 0 }}>
+          Answer questions to build your profile. We'll surface people with similar positions, similar answers, similar ambitions. Sign in to see yours.
+        </p>
+        <div style={{ padding: "20px 18px", borderRadius: 14, background: C.surface, border: `1px solid ${C.border}` }}>
+          <input type="email" placeholder="your email" value={email} onChange={e => setEmail(e.target.value)}
+            style={{ width: "100%", boxSizing: "border-box", background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, padding: "11px 13px", fontSize: 14, color: C.text, outline: "none", marginBottom: 8, fontFamily: "inherit" }}
+          />
+          <input type="password" placeholder="password" value={password} onChange={e => setPassword(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && handleSignIn()}
+            style={{ width: "100%", boxSizing: "border-box", background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, padding: "11px 13px", fontSize: 14, color: C.text, outline: "none", marginBottom: authErr ? 8 : 12, fontFamily: "inherit" }}
+          />
+          {authErr && <div style={{ fontSize: 12, color: "#e07868", marginBottom: 10 }}>{authErr}</div>}
+          <div onClick={handleSignIn} style={{ background: C.ocean, color: "#fff", textAlign: "center", padding: "12px 0", borderRadius: 10, cursor: "pointer", fontSize: 14, fontWeight: 600, opacity: authLoading ? 0.6 : 1 }}>
+            {authLoading ? "signing in..." : "sign in →"}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div style={{ padding: "60px 24px", textAlign: "center", color: C.dim, fontSize: 13 }}>
+        loading your matches...
+      </div>
+    );
+  }
+
+  if (myCount < 3) {
+    return (
+      <div style={{ padding: "40px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
+        <div style={{ fontSize: 10, letterSpacing: 3, color: C.ocean, fontFamily: "monospace" }}>◎ MATCHES</div>
+        <h2 style={{ fontSize: 22, fontWeight: 700, color: C.pearl, margin: 0, lineHeight: 1.3 }}>Answer a few more questions first.</h2>
+        <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.75, margin: 0 }}>
+          You've answered {myCount} {myCount === 1 ? "question" : "questions"}. We need at least 3 to find meaningful matches. Head to the Coach tab to keep going.
+        </p>
+        <div style={{ padding: "18px 20px", borderRadius: 14, background: C.surface, border: `1px solid ${C.border}` }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            {[1, 2, 3].map(i => (
+              <div key={i} style={{ flex: 1, height: 6, borderRadius: 3, background: i <= myCount ? C.ocean : C.faint }} />
+            ))}
+          </div>
+          <div style={{ fontSize: 12, color: C.muted, marginTop: 8 }}>{myCount}/3 answered</div>
+        </div>
+      </div>
+    );
+  }
+
+  const archetypeColors = { Pioneer: "#1e6fa8", Builder: "#c2410c", Sage: "#0f766e", Anchor: "#7c3aed" };
+
+  return (
+    <div style={{ padding: "0 0 80px" }}>
+      <div style={{ padding: "20px 24px 12px" }}>
+        <div style={{ fontSize: 10, letterSpacing: 3, color: C.ocean, fontFamily: "monospace", marginBottom: 8 }}>◎ MATCHES</div>
+        <h2 style={{ fontSize: 20, fontWeight: 700, color: C.pearl, margin: "0 0 4px" }}>Similar minds.</h2>
+        <p style={{ fontSize: 13, color: C.muted, margin: 0 }}>People who answered like you did.</p>
+      </div>
+
+      {/* Sort toggle */}
+      <div style={{ display: "flex", gap: 8, padding: "0 24px", marginBottom: 16 }}>
+        {[{ id: "similarity", label: "closest match" }, { id: "overlap", label: "most overlap" }].map(s => (
+          <div key={s.id} onClick={() => setSortBy(s.id)} style={{
+            padding: "7px 14px", borderRadius: 20, cursor: "pointer", fontSize: 12,
+            background: sortBy === s.id ? C.ocean : C.surface,
+            color: sortBy === s.id ? "#fff" : C.muted,
+            border: `1px solid ${sortBy === s.id ? C.ocean : C.border}`,
+            transition: "all 0.15s",
+          }}>{s.label}</div>
+        ))}
+      </div>
+
+      {users.length === 0 ? (
+        <div style={{ padding: "40px 24px", textAlign: "center", color: C.muted, fontSize: 14 }}>
+          No matches yet — you might be one of the first. Keep answering questions.
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, padding: "0 20px" }}>
+          {users.map((u, i) => {
+            const pct = Math.round((u.similarity_score ?? 0) * 100);
+            const accentColor = archetypeColors[u.candidate_archetype] ?? C.ocean;
+            return (
+              <div key={i} style={{
+                padding: "16px 18px", borderRadius: 14,
+                background: C.surface, border: `1px solid ${C.border}`,
+              }}>
+                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 10 }}>
+                  <div>
+                    <div style={{ fontSize: 15, fontWeight: 600, color: C.pearl, marginBottom: 3 }}>{u.candidate_name}</div>
+                    <div style={{ fontSize: 11, color: C.muted }}>{u.candidate_school} · {u.candidate_grad_year}</div>
+                  </div>
+                  <div style={{
+                    padding: "5px 10px", borderRadius: 20,
+                    background: accentColor + "15", border: `1px solid ${accentColor}40`,
+                    fontSize: 11, fontWeight: 600, color: accentColor,
+                  }}>
+                    {u.candidate_archetype ?? "—"}
+                  </div>
+                </div>
+                <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
+                  <div style={{ flex: 1, padding: "8px 10px", borderRadius: 8, background: C.bg, border: `1px solid ${C.borderSoft}`, textAlign: "center" }}>
+                    <div style={{ fontSize: 16, fontWeight: 300, color: C.ocean, marginBottom: 2 }}>{pct}%</div>
+                    <div style={{ fontSize: 9, color: C.dim, letterSpacing: 0.5, fontFamily: "monospace" }}>SIMILAR</div>
+                  </div>
+                  <div style={{ flex: 1, padding: "8px 10px", borderRadius: 8, background: C.bg, border: `1px solid ${C.borderSoft}`, textAlign: "center" }}>
+                    <div style={{ fontSize: 16, fontWeight: 300, color: C.ocean, marginBottom: 2 }}>{u.overlap_count}</div>
+                    <div style={{ fontSize: 9, color: C.dim, letterSpacing: 0.5, fontFamily: "monospace" }}>SHARED Q's</div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
@@ -4647,6 +5381,9 @@ function ProfileTab({ userData, update, onReset }) {
   const [emailDraft, setEmailDraft] = useState("");
   const [emailSaving, setEmailSaving] = useState(false);
   const [emailError, setEmailError] = useState("");
+  const [editingLinkedin, setEditingLinkedin] = useState(false);
+  const [linkedinDraft, setLinkedinDraft] = useState("");
+  const photoInputRef = useRef(null);
 
   const saveEmail = async () => {
     const trimmed = emailDraft.trim();
@@ -4659,6 +5396,20 @@ function ProfileTab({ userData, update, onReset }) {
     setEmailError("");
   };
 
+  const saveLinkedin = () => {
+    const trimmed = linkedinDraft.trim();
+    update({ linkedin: trimmed });
+    setEditingLinkedin(false);
+  };
+
+  const handlePhotoChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => update({ photoUrl: ev.target.result });
+    reader.readAsDataURL(file);
+  };
+
   const row = (label, value) => value ? (
     <div style={{ marginBottom: 16 }}>
       <p style={{ fontSize: 9, letterSpacing: 2, color: C.muted, fontFamily: "monospace", margin: "0 0 5px" }}>{label}</p>
@@ -4666,146 +5417,143 @@ function ProfileTab({ userData, update, onReset }) {
     </div>
   ) : null;
 
+  const inlineInput = (type, value, setValue, placeholder, onSave, onCancel) => (
+    <div style={{ display: "flex", gap: 6, alignItems: "center", marginTop: 4 }}>
+      <input
+        autoFocus type={type} value={value}
+        onChange={e => setValue(e.target.value)}
+        onKeyDown={e => { if (e.key === "Enter") onSave(); if (e.key === "Escape") onCancel(); }}
+        placeholder={placeholder}
+        style={{ flex: 1, background: C.raised, border: `1px solid ${C.ocean}60`, borderRadius: 7, padding: "6px 10px", color: C.text, fontSize: 12, fontFamily: "inherit", outline: "none" }}
+      />
+      <button onClick={onSave} style={{ background: C.ocean, border: "none", borderRadius: 7, padding: "6px 12px", color: "#fff", fontSize: 11, cursor: "pointer", fontFamily: "monospace", letterSpacing: 0.5 }}>save</button>
+      <button onClick={onCancel} style={{ background: "none", border: `1px solid ${C.border}`, borderRadius: 7, padding: "6px 8px", color: C.muted, fontSize: 11, cursor: "pointer" }}>✕</button>
+    </div>
+  );
+
   return (
-    <div style={{ ...fadeStyle(visible), padding: "28px 24px 40px" }}>
+    <div style={{ ...fadeStyle(visible), padding: "24px 20px 40px" }}>
 
-      {/* Identity */}
-      <div style={{ marginBottom: 32 }}>
-        <div style={{ width: 52, height: 52, borderRadius: 26, background: C.ocean + "22", border: `1.5px solid ${C.ocean}40`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 14 }}>
-          <span style={{ fontSize: 22, color: C.ocean }}>◉</span>
+      {/* Identity header */}
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 16, marginBottom: 28 }}>
+        {/* Avatar */}
+        <input ref={photoInputRef} type="file" accept="image/*" onChange={handlePhotoChange} style={{ display: "none" }} />
+        <div
+          onClick={() => photoInputRef.current?.click()}
+          style={{ width: 58, height: 58, borderRadius: 29, flexShrink: 0, background: C.ocean + "18", border: `1.5px solid ${C.ocean}30`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", overflow: "hidden" }}
+          title="tap to change photo"
+        >
+          {userData.photoUrl
+            ? <img src={userData.photoUrl} alt="profile" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            : <span style={{ fontSize: 20, color: C.ocean + "80" }}>◉</span>
+          }
         </div>
-        <h2 style={{ fontSize: 24, fontWeight: 300, color: C.pearl, margin: "0 0 6px" }}>{userData.name || "—"}</h2>
 
-        {/* Email inline edit */}
-        {editingEmail ? (
-          <div style={{ marginTop: 4 }}>
-            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              <input
-                autoFocus
-                type="email"
-                value={emailDraft}
-                onChange={e => { setEmailDraft(e.target.value); setEmailError(""); }}
-                onKeyDown={e => { if (e.key === "Enter") saveEmail(); if (e.key === "Escape") setEditingEmail(false); }}
-                placeholder="your@email.com"
-                style={{
-                  flex: 1, background: C.surface, border: `1px solid ${emailError ? "#e07070" : C.ocean}`,
-                  borderRadius: 8, padding: "7px 10px", color: C.text, fontSize: 13,
-                  fontFamily: "inherit", outline: "none",
-                }}
-              />
-              <button
-                onClick={saveEmail}
-                disabled={emailSaving}
-                style={{ background: C.ocean, border: "none", borderRadius: 8, padding: "7px 14px", color: "#fff", fontSize: 12, cursor: "pointer", fontFamily: "monospace", letterSpacing: 0.5, whiteSpace: "nowrap" }}
-              >{emailSaving ? "saving…" : "save"}</button>
-              <button
-                onClick={() => { setEditingEmail(false); setEmailError(""); }}
-                style={{ background: "none", border: `1px solid ${C.border}`, borderRadius: 8, padding: "7px 10px", color: C.muted, fontSize: 12, cursor: "pointer" }}
-              >✕</button>
-            </div>
-            {emailError && <p style={{ fontSize: 11, color: "#e07070", margin: "4px 0 0", fontFamily: "monospace" }}>{emailError}</p>}
-          </div>
-        ) : userData.email ? (
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <p style={{ fontSize: 13, color: C.muted, margin: 0 }}>{userData.email}</p>
-            <button
-              onClick={() => { setEmailDraft(userData.email); setEditingEmail(true); }}
-              style={{ background: "none", border: "none", padding: 0, color: C.dim, fontSize: 11, cursor: "pointer", fontFamily: "monospace", letterSpacing: 0.5 }}
-            >edit</button>
-          </div>
-        ) : (
-          <button
-            onClick={() => { setEmailDraft(""); setEditingEmail(true); }}
-            style={{ background: "none", border: "none", padding: 0, color: C.ocean + "cc", fontSize: 13, cursor: "pointer", fontFamily: "inherit", textDecoration: "underline", textUnderlineOffset: 3 }}
-          >+ add email</button>
-        )}
+        {/* Name + meta */}
+        <div style={{ flex: 1, paddingTop: 2 }}>
+          <h2 style={{ fontSize: 22, fontWeight: 300, color: C.pearl, margin: "0 0 8px", lineHeight: 1 }}>{userData.name || "—"}</h2>
+
+          {/* Email */}
+          {editingEmail
+            ? <>{inlineInput("email", emailDraft, v => { setEmailDraft(v); setEmailError(""); }, "your@email.com", saveEmail, () => { setEditingEmail(false); setEmailError(""); })}
+                {emailError && <p style={{ fontSize: 10, color: "#e07070", margin: "3px 0 0", fontFamily: "monospace" }}>{emailError}</p>}</>
+            : <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                {userData.email
+                  ? <><span style={{ fontSize: 12, color: C.muted }}>{userData.email}</span>
+                      <button onClick={() => { setEmailDraft(userData.email); setEditingEmail(true); }} style={{ background: "none", border: "none", padding: 0, color: C.dim, fontSize: 10, cursor: "pointer", fontFamily: "monospace" }}>edit</button></>
+                  : <button onClick={() => { setEmailDraft(""); setEditingEmail(true); }} style={{ background: "none", border: "none", padding: 0, color: C.ocean + "99", fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>+ add email</button>
+                }
+              </div>
+          }
+
+          {/* LinkedIn */}
+          {editingLinkedin
+            ? inlineInput("url", linkedinDraft, setLinkedinDraft, "linkedin.com/in/yourname", saveLinkedin, () => setEditingLinkedin(false))
+            : <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                {userData.linkedin
+                  ? <><a href={userData.linkedin.startsWith("http") ? userData.linkedin : `https://${userData.linkedin}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, color: C.ocean, textDecoration: "none" }}>{userData.linkedin.replace(/^https?:\/\/(www\.)?/, "")}</a>
+                      <button onClick={() => { setLinkedinDraft(userData.linkedin); setEditingLinkedin(true); }} style={{ background: "none", border: "none", padding: 0, color: C.dim, fontSize: 10, cursor: "pointer", fontFamily: "monospace" }}>edit</button></>
+                  : <button onClick={() => { setLinkedinDraft(""); setEditingLinkedin(true); }} style={{ background: "none", border: "none", padding: 0, color: C.ocean + "99", fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>+ add linkedin</button>
+                }
+              </div>
+          }
+        </div>
       </div>
 
-      {/* Matrix */}
-      {qr && (
-        <div style={{ padding: "18px 20px", borderRadius: 14, background: C.surface, border: `1px solid ${qr.color}40`, borderLeft: `3px solid ${qr.color}`, marginBottom: 20 }}>
-          <p style={{ fontSize: 9, letterSpacing: 2, color: C.muted, fontFamily: "monospace", margin: "0 0 6px" }}>YOUR MATRIX</p>
-          <p style={{ fontSize: 16, fontWeight: 400, color: qr.color, margin: "0 0 6px" }}>{qr.title}</p>
-          <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.7, margin: 0 }}>{qr.short}</p>
-        </div>
-      )}
+      {/* Cards */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
 
-      {/* Reflections */}
-      {(userData.braveReflection || userData.fearsReflection) && (
-        <div style={{ padding: "18px 20px", borderRadius: 14, background: C.surface, border: `1px solid ${C.borderSoft}`, marginBottom: 20 }}>
-          <p style={{ fontSize: 9, letterSpacing: 2, color: C.muted, fontFamily: "monospace", margin: "0 0 16px" }}>YOUR REFLECTIONS</p>
-          {row("THE BRAVE THING", userData.braveReflection)}
-          {row("WHAT'S IN THE WAY", userData.fearsReflection)}
-        </div>
-      )}
-
-      {/* List */}
-      {userData.contacts?.length > 0 && (
-        <div style={{ padding: "18px 20px", borderRadius: 14, background: C.surface, border: `1px solid ${C.borderSoft}`, marginBottom: 20 }}>
-          <p style={{ fontSize: 9, letterSpacing: 2, color: C.muted, fontFamily: "monospace", margin: "0 0 14px" }}>YOUR LIST ({userData.contacts.length})</p>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {userData.contacts.map((c, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <span style={{ fontSize: 10, color: C.dim, fontFamily: "monospace", minWidth: 18 }}>{i + 1}</span>
-                <span style={{ fontSize: 14, color: C.text }}>{c.name}</span>
-              </div>
-            ))}
+        {/* Matrix */}
+        {qr && (
+          <div style={{ padding: "14px 16px", borderRadius: 12, background: C.surface, borderLeft: `2.5px solid ${qr.color}`, border: `1px solid ${qr.color}30` }}>
+            <p style={{ fontSize: 9, letterSpacing: 2, color: C.dim, fontFamily: "monospace", margin: "0 0 4px" }}>YOUR MATRIX</p>
+            <p style={{ fontSize: 15, fontWeight: 400, color: qr.color, margin: "0 0 4px" }}>{qr.title}</p>
+            <p style={{ fontSize: 12, color: C.muted, lineHeight: 1.6, margin: 0 }}>{qr.short}</p>
           </div>
-        </div>
-      )}
+        )}
+
+        {/* Reflections */}
+        {(userData.braveReflection || userData.fearsReflection) && (
+          <div style={{ padding: "14px 16px", borderRadius: 12, background: C.surface, border: `1px solid ${C.borderSoft}` }}>
+            <p style={{ fontSize: 9, letterSpacing: 2, color: C.dim, fontFamily: "monospace", margin: "0 0 12px" }}>YOUR REFLECTIONS</p>
+            {userData.braveReflection && (
+              <div style={{ marginBottom: userData.fearsReflection ? 10 : 0 }}>
+                <p style={{ fontSize: 9, letterSpacing: 1.5, color: C.dim, fontFamily: "monospace", margin: "0 0 3px" }}>THE BRAVE THING</p>
+                <p style={{ fontSize: 13, color: C.text, lineHeight: 1.6, margin: 0 }}>{userData.braveReflection}</p>
+              </div>
+            )}
+            {userData.fearsReflection && (
+              <div>
+                <p style={{ fontSize: 9, letterSpacing: 1.5, color: C.dim, fontFamily: "monospace", margin: "0 0 3px" }}>WHAT'S IN THE WAY</p>
+                <p style={{ fontSize: 13, color: C.text, lineHeight: 1.6, margin: 0 }}>{userData.fearsReflection}</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* List */}
+        {userData.contacts?.length > 0 && (
+          <div style={{ padding: "14px 16px", borderRadius: 12, background: C.surface, border: `1px solid ${C.borderSoft}` }}>
+            <p style={{ fontSize: 9, letterSpacing: 2, color: C.dim, fontFamily: "monospace", margin: "0 0 10px" }}>YOUR LIST ({userData.contacts.length})</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              {userData.contacts.map((c, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ fontSize: 9, color: C.dim, fontFamily: "monospace", minWidth: 16 }}>{i + 1}</span>
+                  <span style={{ fontSize: 13, color: C.text }}>{c.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+      </div>
 
       {/* About Cove */}
-      <div style={{
-        borderRadius: 14, marginBottom: 20, overflow: "hidden",
-        background: C.surface, border: `1px solid ${C.borderSoft}`,
-      }}>
-        <div style={{ padding: "18px 18px 6px", display: "flex", gap: 14, alignItems: "center" }}>
-          <div style={{ width: 52, height: 52, borderRadius: "50%", overflow: "hidden", flexShrink: 0, background: C.raised, border: `1.5px solid ${C.border}` }}>
-            <img
-              src="/fhiwa.jpg"
-              alt="Fhiwa"
-              style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }}
-              onError={e => { e.target.style.display = "none"; }}
-            />
-          </div>
-          <div>
-            <p style={{ fontSize: 9, letterSpacing: 2, color: C.dim, textTransform: "uppercase", margin: "0 0 3px", fontFamily: "monospace" }}>built by</p>
-            <p style={{ fontSize: 14, color: C.pearl, margin: 0, fontWeight: 400 }}>Fhiwa Ndou</p>
-          </div>
+      <div style={{ marginTop: 10, padding: "14px 16px", borderRadius: 12, background: C.surface, border: `1px solid ${C.borderSoft}`, display: "flex", gap: 12, alignItems: "center" }}>
+        <div style={{ width: 40, height: 40, borderRadius: "50%", overflow: "hidden", flexShrink: 0, background: C.raised, border: `1px solid ${C.border}` }}>
+          <img src="/fhiwa.jpg" alt="Fhiwa" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }} onError={e => { e.target.style.display = "none"; }} />
         </div>
-        <div style={{ padding: "10px 18px 18px" }}>
-          <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.75, margin: "0 0 14px" }}>
-            Cove is free and open-source. It shouldn't cost a ton of money just to get started. You don't always need a reason to help somebody.
-          </p>
-          <a
-            href="https://github.com/chieffhiwa/cove/issues/new"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              display: "block", padding: "10px 14px", borderRadius: 10, textAlign: "center",
-              background: C.ocean + "18", border: `1px solid ${C.ocean}40`,
-              color: C.ocean, fontSize: 12, textDecoration: "none",
-              touchAction: "manipulation",
-            }}
-          >Get involved on GitHub →</a>
+        <div style={{ flex: 1 }}>
+          <p style={{ fontSize: 9, letterSpacing: 2, color: C.dim, fontFamily: "monospace", margin: "0 0 2px" }}>BUILT BY</p>
+          <p style={{ fontSize: 13, color: C.pearl, margin: "0 0 6px", fontWeight: 400 }}>Fhiwa Ndou</p>
+          <p style={{ fontSize: 11, color: C.muted, lineHeight: 1.6, margin: "0 0 10px" }}>Free and open-source. You don't always need a reason to help somebody.</p>
+          <a href="https://github.com/chieffhiwa/cove/issues/new" target="_blank" rel="noopener noreferrer" style={{ fontSize: 11, color: C.ocean, textDecoration: "none", fontFamily: "monospace", letterSpacing: 0.5 }}>contribute on github →</a>
         </div>
       </div>
 
       {/* Reset */}
-      <div style={{ marginTop: 0 }}>
+      <div style={{ marginTop: 10 }}>
         {!confirming ? (
           <button
             onClick={() => setConfirming(true)}
-            style={{ background: "none", border: `1px solid ${C.borderSoft}`, borderRadius: 10, padding: "12px 20px", color: C.muted, fontSize: 12, cursor: "pointer", fontFamily: "monospace", letterSpacing: 1, width: "100%" }}
-          >
-            start over / redo onboarding
-          </button>
+            style={{ background: "none", border: `1px solid ${C.borderSoft}`, borderRadius: 10, padding: "11px 20px", color: C.dim, fontSize: 11, cursor: "pointer", fontFamily: "monospace", letterSpacing: 1, width: "100%" }}
+          >start over / redo onboarding</button>
         ) : (
-          <div style={{ padding: "16px 20px", borderRadius: 12, background: C.surface, border: `1px solid ${C.border}` }}>
-            <p style={{ fontSize: 13, color: C.muted, margin: "0 0 14px", lineHeight: 1.7 }}>This will clear your local data and restart the flow. Your Supabase record stays intact.</p>
-            <div style={{ display: "flex", gap: 10 }}>
-              <button onClick={() => setConfirming(false)} style={{ flex: 1, background: "none", border: `1px solid ${C.border}`, borderRadius: 8, padding: "10px", color: C.muted, fontSize: 12, cursor: "pointer" }}>cancel</button>
-              <button onClick={onReset} style={{ flex: 1, background: "#e07070", border: "none", borderRadius: 8, padding: "10px", color: "#fff", fontSize: 12, cursor: "pointer", fontWeight: 600 }}>yes, start over</button>
+          <div style={{ padding: "14px 16px", borderRadius: 12, background: C.surface, border: `1px solid ${C.border}` }}>
+            <p style={{ fontSize: 12, color: C.muted, margin: "0 0 12px", lineHeight: 1.6 }}>This will clear your local data and restart the flow. Your Supabase record stays intact.</p>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button onClick={() => setConfirming(false)} style={{ flex: 1, background: "none", border: `1px solid ${C.border}`, borderRadius: 8, padding: "9px", color: C.muted, fontSize: 12, cursor: "pointer" }}>cancel</button>
+              <button onClick={onReset} style={{ flex: 1, background: "#e07070", border: "none", borderRadius: 8, padding: "9px", color: "#fff", fontSize: 12, cursor: "pointer", fontWeight: 600 }}>yes, start over</button>
             </div>
           </div>
         )}
