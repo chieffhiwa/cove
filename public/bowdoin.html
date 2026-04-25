@@ -384,7 +384,7 @@
 <!-- ── NAV ──────────────────────────────────────────────── -->
 <nav>
   <div class="nav-left">
-    <span style="font-size:28px;line-height:1;">🐻‍❄️</span>
+    <img src="bear1.jpg" class="bear-logo" style="width:34px;height:34px;object-fit:contain;mix-blend-mode:multiply;"/>
     <span class="nav-wordmark">COVE</span>
     <div class="nav-divider"></div>
     <span class="nav-school">BOWDOIN</span>
@@ -412,7 +412,7 @@
     </div>
 
     <div class="hero-visual">
-      <span style="font-size:96px;line-height:1;display:block;margin-bottom:8px;">🐻‍❄️</span>
+      <img src="bear1.jpg" class="bear-logo" style="width:120px;height:120px;object-fit:contain;mix-blend-mode:multiply;"/>
       <span class="bear-label">YOUR CAREER COACH</span>
       <p class="hero-quote">"The warm intro is not a shortcut. It's the only path that actually works."</p>
       <div class="hero-stat-row">
@@ -879,7 +879,7 @@
 <!-- ── FOOTER ─────────────────────────────────────────────── -->
 <footer>
   <div class="footer-left">
-    <span style="font-size:22px;line-height:1;">🐻‍❄️</span>
+    <img src="bear1.jpg" class="bear-logo" style="width:28px;height:28px;object-fit:contain;mix-blend-mode:multiply;"/>
     <span class="footer-wordmark">COVE × BOWDOIN</span>
   </div>
   <div class="footer-links">
@@ -890,6 +890,10 @@
 
 <script>
 (function() {
+  var bears = ['bear1.jpg','bear2.jpg','bear3.jpg','bear4.jpg','bear5.jpg'];
+  var pick = bears[Math.floor(Math.random() * bears.length)];
+  document.querySelectorAll('.bear-logo').forEach(function(img) { img.src = pick; });
+
 </script>
 
 </body>
