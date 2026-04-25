@@ -575,7 +575,7 @@ function StepWhyCove({ next }) {
         {/* Stats */}
         <div style={{ display: "flex", gap: 12, marginBottom: 28 }}>
           {[
-            { stat: "40×", label: "warm vs. cold outreach" },
+            { stat: "40×", label: "more replies warm vs. cold" },
             { stat: "85%", label: "jobs filled via network" },
           ].map(({ stat, label }) => (
             <div key={stat} style={{ flex: 1, padding: "18px 16px", borderRadius: 14, background: C.surface, border: `1px solid ${C.borderSoft}`, textAlign: "center" }}>
