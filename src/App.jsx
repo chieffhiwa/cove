@@ -212,7 +212,7 @@ export default function App() {
 
 function AppInner() {
   const [phase, setPhase] = useState(() =>
-    localStorage.getItem("cove_phase") || "onboard"
+    localStorage.getItem("cove_phase") || "login"
   );
   const [onboardStep, setStep] = useState(() =>
     parseInt(localStorage.getItem("cove_step") || "0")
@@ -227,7 +227,7 @@ function AppInner() {
   const [supaUser, setSupaUser] = useState(null);
   const [showFeaturePopup, setShowFeaturePopup] = useState(false);
 
-  C = (darkMode && phase !== "onboard") ? DARK : LIGHT;
+  C = darkMode ? DARK : LIGHT;
 
   const toggleDark = () => {
     const next = !darkMode;
@@ -245,10 +245,14 @@ function AppInner() {
   // Supabase auth listener
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSupaUser(session?.user ?? null);
+      const user = session?.user ?? null;
+      setSupaUser(user);
+      if (user) setPhase(prev => prev === "login" ? "main" : prev);
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
-      setSupaUser(session?.user ?? null);
+      const user = session?.user ?? null;
+      setSupaUser(user);
+      if (user) setPhase(prev => prev === "login" ? "main" : prev);
     });
     return () => subscription.unsubscribe();
   }, []);
@@ -264,6 +268,17 @@ function AppInner() {
     }
   }, [phase]);
 
+  if (phase === "login") {
+    return (
+      <LoginLanding
+        onLogin={() => setPhase("main")}
+        onNewUser={() => { setPhase("onboard"); }}
+        darkMode={darkMode}
+        toggleDark={toggleDark}
+      />
+    );
+  }
+
   if (phase === "onboard") {
     return (
       <Onboard
@@ -273,6 +288,8 @@ function AppInner() {
         update={update}
         supaUser={supaUser}
         finish={() => { upsertProfile(userData); setPhase("main"); }}
+        darkMode={darkMode}
+        toggleDark={toggleDark}
       />
     );
   }
@@ -287,6 +304,12 @@ function AppInner() {
     setMainTab("home");
   };
 
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    localStorage.removeItem("cove_phase");
+    setPhase("login");
+  };
+
   return (
     <>
       <MainApp
@@ -297,6 +320,7 @@ function AppInner() {
         activeContact={activeContact}
         setActiveContact={setActiveContact}
         onReset={resetAll}
+        onSignOut={signOut}
         darkMode={darkMode}
         toggleDark={toggleDark}
         supaUser={supaUser}
@@ -322,7 +346,73 @@ function AppInner() {
 // ONBOARDING
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function Onboard({ step, setStep, userData, update, finish, supaUser }) {
+function LoginLanding({ onLogin, onNewUser, darkMode, toggleDark }) {
+  const visible = useFadeIn([]);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [authErr, setAuthErr] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSignIn = async () => {
+    if (!email.trim() || !password) { setAuthErr("Enter email and password."); return; }
+    setLoading(true); setAuthErr("");
+    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+    if (error) { setAuthErr(error.message); setLoading(false); }
+    // on success, auth listener fires onLogin via setPhase
+  };
+
+  return (
+    <div style={{ ...fadeStyle(visible), position: "relative", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", minHeight: "100vh", padding: "48px 28px", textAlign: "center", background: C.bg, color: C.text }}>
+      <button
+        onClick={toggleDark}
+        style={{ position: "absolute", top: 16, right: 18, background: "none", border: "none", cursor: "pointer", fontSize: 16, color: C.dim, padding: "6px 8px", lineHeight: 1 }}
+        title={darkMode ? "switch to light" : "switch to dark"}
+      >{darkMode ? "☀︎" : "☽"}</button>
+      <div style={{ marginBottom: 44 }}>
+        <div style={{ fontSize: 11, letterSpacing: 8, color: C.sky, fontFamily: "monospace", marginBottom: 28, opacity: 0.7 }}>
+          C O V E
+        </div>
+        <h1 style={{ fontSize: 34, fontWeight: 400, margin: "0 0 16px", color: C.pearl, lineHeight: 1.25, letterSpacing: -1 }}>
+          Find work that<br />actually fits.
+        </h1>
+        <p style={{ fontSize: 14, color: C.mist, lineHeight: 1.85, margin: 0, maxWidth: 280 }}>
+          your career. your current.
+        </p>
+      </div>
+
+      <div style={{ width: "100%", maxWidth: 320, padding: "24px 22px", borderRadius: 16, background: C.surface, border: `1px solid ${C.border}`, textAlign: "left" }}>
+        <p style={{ fontSize: 10, letterSpacing: 3, color: C.ocean, fontFamily: "monospace", margin: "0 0 16px" }}>SIGN IN</p>
+        <input
+          type="email" placeholder="email" value={email}
+          onChange={e => setEmail(e.target.value)}
+          style={{ width: "100%", boxSizing: "border-box", background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, padding: "11px 13px", fontSize: 14, color: C.text, outline: "none", marginBottom: 8, fontFamily: "inherit" }}
+        />
+        <input
+          type="password" placeholder="password" value={password}
+          onChange={e => setPassword(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && handleSignIn()}
+          style={{ width: "100%", boxSizing: "border-box", background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, padding: "11px 13px", fontSize: 14, color: C.text, outline: "none", marginBottom: authErr ? 8 : 14, fontFamily: "inherit" }}
+        />
+        {authErr && <div style={{ fontSize: 12, color: "#e07868", marginBottom: 10 }}>{authErr}</div>}
+        <div
+          onClick={handleSignIn}
+          style={{ background: C.ocean, color: "#fff", textAlign: "center", padding: "12px 0", borderRadius: 10, cursor: "pointer", fontSize: 14, fontWeight: 600, opacity: loading ? 0.6 : 1 }}
+        >
+          {loading ? "signing in..." : "sign in →"}
+        </div>
+      </div>
+
+      <p style={{ fontSize: 13, color: C.muted, marginTop: 28 }}>
+        New to Cove?{" "}
+        <span onClick={onNewUser} style={{ color: C.ocean, cursor: "pointer", textDecoration: "underline" }}>
+          Start here →
+        </span>
+      </p>
+    </div>
+  );
+}
+
+function Onboard({ step, setStep, userData, update, finish, supaUser, darkMode, toggleDark }) {
   const go = (nextStep, event, props = {}) => {
     track(event, { step: nextStep, ...props });
     setStep(nextStep);
@@ -393,6 +483,28 @@ function Onboard({ step, setStep, userData, update, finish, supaUser }) {
             lineHeight: 1,
           }}
         >‹</div>
+      )}
+      {/* Dark mode toggle */}
+      <button
+        onClick={toggleDark}
+        style={{
+          position: "absolute", top: 16, right: step > 0 ? 60 : 18, zIndex: 20,
+          background: "none", border: "none", cursor: "pointer",
+          fontSize: 16, color: C.dim, padding: "6px 8px", lineHeight: 1,
+        }}
+        title={darkMode ? "switch to light" : "switch to dark"}
+      >{darkMode ? "☀︎" : "☽"}</button>
+      {/* Skip onboarding */}
+      {step > 0 && (
+        <button
+          onClick={() => { track("onboarding_skipped", { at_step: step }); finish(); }}
+          style={{
+            position: "absolute", top: 20, right: 18, zIndex: 20,
+            background: "none", border: "none", cursor: "pointer",
+            fontSize: 11, color: C.dim, fontFamily: "monospace",
+            letterSpacing: 1, padding: 0, lineHeight: 1,
+          }}
+        >skip</button>
       )}
       {showDots && (
         <div style={{
@@ -515,7 +627,7 @@ function StepWhyCove({ next }) {
         </div>
       </div>
 
-      <Btn onClick={next} style={{ marginTop: 32 }}>got it. let's go.</Btn>
+      <Btn onClick={next} style={{ marginTop: 32 }}>Next →</Btn>
     </div>
   );
 }
@@ -583,7 +695,7 @@ function StepPrivacy({ next }) {
           ))}
         </div>
       </div>
-      <Btn onClick={next} style={{ marginTop: 32 }}>got it! let's go.</Btn>
+      <Btn onClick={next} style={{ marginTop: 32 }}>Next →</Btn>
     </div>
   );
 }
@@ -710,7 +822,7 @@ function StepPhilosophy({ next }) {
           ))}
         </div>
       </div>
-      <Btn onClick={next} style={{ marginTop: 32 }}>I can get with that 🙂‍↕️</Btn>
+      <Btn onClick={next} style={{ marginTop: 32 }}>Next →</Btn>
     </div>
   );
 }
@@ -866,7 +978,7 @@ function StepMatrixIntro({ name, next }) {
         </div>
       </div>
 
-      <Btn onClick={next} style={{ marginTop: 32 }}>Place yourself →</Btn>
+      <Btn onClick={next} style={{ marginTop: 32 }}>Place yourself on the matrix →</Btn>
     </div>
   );
 }
@@ -1139,7 +1251,7 @@ function StepAdamIntro({ next }) {
         </div>
       </div>
 
-      <Btn onClick={next} style={{ marginTop: 36 }}>Let's name it →</Btn>
+      <Btn onClick={next} style={{ marginTop: 36 }}>Next →</Btn>
     </div>
   );
 }
@@ -1291,7 +1403,7 @@ function StepWarmCold({ next }) {
             warm is always better. this is not up for debate.
           </p>
 
-          <Btn onClick={next}>always go warm. let's build the list →</Btn>
+          <Btn onClick={next}>Build the list →</Btn>
         </div>
       </div>
 
@@ -1501,7 +1613,7 @@ function StepListReveal({ contacts = [], name, next }) {
         </div>
       </div>
 
-      <Btn onClick={next} style={{ marginTop: 32 }}>looks good →</Btn>
+      <Btn onClick={next} style={{ marginTop: 32 }}>Next →</Btn>
     </div>
   );
 }
@@ -1563,7 +1675,7 @@ function StepBreath({ name, contacts = [], selfPosition, next }) {
       </div>
 
       <div style={{ width: "100%", maxWidth: 320 }}>
-        <Btn onClick={next}>one more thing →</Btn>
+        <Btn onClick={next}>Next →</Btn>
       </div>
 
       <p style={{ fontSize: 11, color: C.dim, marginTop: 20, fontStyle: "italic" }}>almost done</p>
@@ -2144,7 +2256,7 @@ function StepCareersOverCash({ next }) {
 
       {p("One conversation. Twenty minutes. Someone who's been where you're trying to go. That's the whole model — and it's what Cove is built around.", C.pearl)}
 
-      <Btn onClick={next} style={{ marginTop: 8 }}>I'm in.</Btn>
+      <Btn onClick={next} style={{ marginTop: 8 }}>Next →</Btn>
     </div>
   );
 }
@@ -2301,7 +2413,7 @@ function StepMatrixPause({ selfPosition, next, goBack }) {
         that's not me, move my dot
       </button>
 
-      <Btn onClick={next}>keep going</Btn>
+      <Btn onClick={next}>Next →</Btn>
     </div>
   );
 }
@@ -2416,7 +2528,7 @@ function StepQuadrantReveal({ selfPosition, next }) {
             </div>
           </div>
 
-          <Btn onClick={next}>What does this mean for you? →</Btn>
+          <Btn onClick={next}>What this means for you →</Btn>
         </div>
       </div>
     </div>
@@ -2498,7 +2610,7 @@ function StepQuadrantRead({ selfPosition, next }) {
 
       </div>
 
-      <Btn onClick={next} style={{ marginTop: 32 }}>keep going →</Btn>
+      <Btn onClick={next} style={{ marginTop: 32 }}>Next →</Btn>
     </div>
   );
 }
@@ -2585,7 +2697,7 @@ function StepAshStory({ next }) {
         </p>
       </div>
 
-      <Btn onClick={next}>hell yea. let's keep it moving.</Btn>
+      <Btn onClick={next}>Next →</Btn>
     </div>
   );
 }
@@ -2629,7 +2741,7 @@ function StepBraveReflect({ next }) {
         </p>
       </div>
       <Btn onClick={() => next(text)} disabled={!text.trim()} style={{ marginTop: 24 }}>
-        That's it
+        Next →
       </Btn>
     </div>
   );
@@ -2674,7 +2786,7 @@ function StepFearsReflect({ next }) {
         </p>
       </div>
       <Btn onClick={() => next(text)} disabled={!text.trim()} style={{ marginTop: 24 }}>
-        I said it
+        Next →
       </Btn>
     </div>
   );
@@ -2742,7 +2854,7 @@ function StepFounderNote({ next }) {
         </a>
       </div>
 
-      <Btn onClick={next}>let's go →</Btn>
+      <Btn onClick={next}>Next →</Btn>
     </div>
   );
 }
@@ -2973,7 +3085,7 @@ function StepDone({ name, finish }) {
 // MAIN APP
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function MainApp({ userData, update, tab, setTab, activeContact, setActiveContact, onReset, darkMode, toggleDark, supaUser }) {
+function MainApp({ userData, update, tab, setTab, activeContact, setActiveContact, onReset, onSignOut, darkMode, toggleDark, supaUser }) {
   const openContact = (c) => { setActiveContact(c); setTab("contact"); };
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(userData.name || "");
@@ -3046,7 +3158,7 @@ function MainApp({ userData, update, tab, setTab, activeContact, setActiveContac
           {tab === "coach"     && <CoachTab     supaUser={supaUser} userData={userData} />}
           {tab === "matches"   && <MatchesTab   supaUser={supaUser} userData={userData} />}
           {tab === "list"      && <List100Tab userData={userData} />}
-          {tab === "you"       && <ProfileTab   userData={userData} update={update} onReset={onReset} />}
+          {tab === "you"       && <ProfileTab   userData={userData} update={update} onReset={onReset} onSignOut={onSignOut} supaUser={supaUser} />}
         </div>
 
         {/* Bottom nav */}
@@ -5280,7 +5392,8 @@ function CoachMetaRow({ label, value, mono, dim }) {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 function Shell({ children, depth }) {
-  const d = depth != null ? getDepthPalette(depth) : null;
+  const isDark = C === DARK;
+  const d = (depth != null && !isDark) ? getDepthPalette(depth) : null;
   const bg = d ? d.bg : C.bg;
   return (
     <div style={{
@@ -5378,7 +5491,7 @@ function SectionLabel({ children }) {
 }
 
 // ── You / Profile Tab ─────────────────────────────────────────────────────────
-function ProfileTab({ userData, update, onReset }) {
+function ProfileTab({ userData, update, onReset, onSignOut, supaUser }) {
   const visible = useFadeIn(["you"]);
   const quadrant = userData.selfPosition ? getQuadrant(userData.selfPosition.x, userData.selfPosition.y) : null;
   const qr = quadrant ? QUADRANT_READS[quadrant] : null;
@@ -5546,6 +5659,16 @@ function ProfileTab({ userData, update, onReset }) {
           <a href="https://github.com/sponsors/chieffhiwa" target="_blank" rel="noopener noreferrer" style={{ fontSize: 11, color: C.ocean, textDecoration: "none", fontFamily: "monospace", letterSpacing: 0.5 }}>contribute on github →</a>
         </div>
       </div>
+
+      {/* Sign out */}
+      {supaUser && (
+        <div style={{ marginTop: 10 }}>
+          <button
+            onClick={onSignOut}
+            style={{ background: "none", border: `1px solid ${C.borderSoft}`, borderRadius: 10, padding: "11px 20px", color: C.muted, fontSize: 11, cursor: "pointer", fontFamily: "monospace", letterSpacing: 1, width: "100%" }}
+          >sign out</button>
+        </div>
+      )}
 
       {/* Reset */}
       <div style={{ marginTop: 10 }}>
