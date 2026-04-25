@@ -244,15 +244,41 @@ function AppInner() {
 
   // Supabase auth listener
   useEffect(() => {
+    const loadProfile = async (user) => {
+      if (!user?.email) return;
+      const { data } = await supabase.from("profiles").select("*").eq("email", user.email).maybeSingle();
+      if (!data) return;
+      const restored = {
+        name: data.name || "",
+        email: data.email || "",
+        phone: data.phone || "",
+        linkedin: data.linkedin || "",
+        photoUrl: data.photo_url || "",
+        selfPosition: (data.x != null && data.y != null) ? { x: data.x, y: data.y } : null,
+        braveReflection: data.brave_reflection || "",
+        fearsReflection: data.fears_reflection || "",
+        wants: data.wants || [],
+        contacts: data.contacts || [],
+      };
+      setUserData(prev => {
+        // Only overwrite fields that are blank locally — keeps any newer local edits
+        const merged = { ...restored };
+        if (prev.name) merged.name = prev.name;
+        if (prev.selfPosition) merged.selfPosition = prev.selfPosition;
+        if (prev.contacts?.length) merged.contacts = prev.contacts;
+        return merged;
+      });
+    };
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       const user = session?.user ?? null;
       setSupaUser(user);
-      if (user) setPhase(prev => prev === "login" ? "main" : prev);
+      if (user) { loadProfile(user); setPhase(prev => prev === "login" ? "main" : prev); }
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
       const user = session?.user ?? null;
       setSupaUser(user);
-      if (user) setPhase(prev => prev === "login" ? "main" : prev);
+      if (user) { loadProfile(user); setPhase(prev => prev === "login" ? "main" : prev); }
     });
     return () => subscription.unsubscribe();
   }, []);
@@ -3941,19 +3967,13 @@ function CoachTab({ supaUser, userData }) {
     setLoading(true);
     scrollBottom();
 
-    if (!ANTHROPIC_KEY) {
-      setMessages(prev => [...prev, { role: "assistant", content: "AI coach coming soon — add your Anthropic key to unlock it." }]);
-      setLoading(false);
-      return;
-    }
-
     try {
       const systemPrompt = buildCoachPrompt(matrix?.archetype, matrix?.bravery, matrix?.curiosity);
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
+      const res = await fetch("/api/chat", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01" },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "claude-sonnet-4-6", max_tokens: 300, system: systemPrompt,
+          system: systemPrompt,
           messages: next.map(m => ({ role: m.role, content: m.content })),
         }),
       });
