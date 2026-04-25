@@ -595,7 +595,7 @@ function StepWhyCove({ next }) {
           The job search is broken.
         </h2>
         <p style={{ fontSize: 15, color: C.mist, lineHeight: 1.85, margin: "0 0 28px" }}>
-          Cold applications. Ghosted inboxes. Nobody telling you the truth. Cove is built to change that.
+          Cove gives you a framework, a coach, and a tool to build the relationships that actually move the needle.
         </p>
 
         {/* Stats */}
