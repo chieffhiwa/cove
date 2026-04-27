@@ -4750,84 +4750,6 @@ function List100Tab({ userData }) {
     );
   };
 
-  // ── Add / Edit form (bottom sheet) ────────────────────────────────────────
-  const EntryForm = () => (
-    <div style={{
-      position: "fixed", inset: 0, background: "#000000cc",
-      zIndex: 200, display: "flex", alignItems: "flex-end",
-    }} onClick={e => { if (e.target === e.currentTarget) setShowForm(false); }}>
-      <div style={{
-        width: "100%", maxHeight: "88vh", overflowY: "auto",
-        background: D.surface, borderRadius: "20px 20px 0 0",
-        padding: "24px 20px 44px",
-      }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-          <span style={{ fontSize: 10, fontFamily: "monospace", letterSpacing: 2, color: D.muted }}>
-            {editId ? "EDIT CONTACT" : "ADD CONTACT"}
-          </span>
-          <span onClick={() => setShowForm(false)} style={{ color: D.muted, cursor: "pointer", fontSize: 18 }}>✕</span>
-        </div>
-
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
-          <input value={form.firstName} onChange={e => setForm(f => ({ ...f, firstName: e.target.value }))}
-            placeholder="First name" style={inputStyle} />
-          <input value={form.lastName} onChange={e => setForm(f => ({ ...f, lastName: e.target.value }))}
-            placeholder="Last name" style={inputStyle} />
-        </div>
-        <input value={form.company} onChange={e => setForm(f => ({ ...f, company: e.target.value }))}
-          placeholder="Company / Organization" style={{ ...inputStyle, marginBottom: 8 }} />
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
-          <input value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-            placeholder="Email" style={inputStyle} />
-          <input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
-            placeholder="Phone" style={inputStyle} />
-        </div>
-        <input value={form.linkedin} onChange={e => setForm(f => ({ ...f, linkedin: e.target.value }))}
-          placeholder="LinkedIn URL" style={{ ...inputStyle, marginBottom: 8 }} />
-        <textarea value={form.why} onChange={e => setForm(f => ({ ...f, why: e.target.value }))}
-          placeholder="Why this person? What do you admire or want to learn?" rows={2}
-          style={{ ...inputStyle, resize: "none", lineHeight: 1.6, marginBottom: 8 }} />
-        <textarea value={form.ask} onChange={e => setForm(f => ({ ...f, ask: e.target.value }))}
-          placeholder="What's the ask? Coffee chat, referral, advice, intro..." rows={2}
-          style={{ ...inputStyle, resize: "none", lineHeight: 1.6, marginBottom: 12 }} />
-
-        <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-          {[{ val: "warm", label: "🔥 warm" }, { val: "cold", label: "❄️ cold" }].map(p => (
-            <div key={p.val} onClick={() => setForm(f => ({ ...f, warm: p.val }))} style={{
-              flex: 1, textAlign: "center", padding: "9px 0", borderRadius: 8, cursor: "pointer",
-              fontSize: 12, fontFamily: "monospace",
-              border: `1px solid ${form.warm === p.val ? (p.val === "warm" ? "#c47020" : D.ocean) : D.border}`,
-              background: form.warm === p.val ? (p.val === "warm" ? "#c4702015" : `${D.ocean}15`) : "transparent",
-              color: form.warm === p.val ? (p.val === "warm" ? "#c47020" : D.ocean) : D.muted,
-            }}>{p.label}</div>
-          ))}
-        </div>
-
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12 }}>
-          {[{ field: "attempt1", label: "ATTEMPT 1" }, { field: "attempt2", label: "ATTEMPT 2" }].map(({ field, label }) => (
-            <div key={field}>
-              <div style={{ fontSize: 9, color: D.dim, fontFamily: "monospace", letterSpacing: 1, marginBottom: 6 }}>{label}</div>
-              <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-                {ATTEMPT_STATUSES.map(s => (
-                  <div key={s} onClick={() => setForm(f => ({ ...f, [field]: s }))} style={{
-                    padding: "4px 9px", borderRadius: 20, cursor: "pointer", fontSize: 11, fontFamily: "monospace",
-                    border: `1px solid ${form[field] === s ? (ATTEMPT_COLORS[s] || D.muted) + "80" : D.border}`,
-                    background: form[field] === s ? `${ATTEMPT_COLORS[s] || D.muted}15` : "transparent",
-                    color: form[field] === s ? (ATTEMPT_COLORS[s] || D.muted) : D.dim,
-                  }}>{s}</div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-          placeholder="Notes..." rows={2}
-          style={{ ...inputStyle, resize: "none", lineHeight: 1.6, marginBottom: 16 }} />
-        <Btn onClick={saveForm} style={{ width: "100%" }}>{editId ? "save changes" : "+ add to list"}</Btn>
-      </div>
-    </div>
-  );
 
   return (
     <div style={{ padding: "24px 20px 0", background: D.bg, minHeight: "100%" }}>
@@ -4920,7 +4842,83 @@ function List100Tab({ userData }) {
         </div>
       )}
 
-      {showForm && <EntryForm />}
+      {showForm && (
+    <div style={{
+      position: "fixed", inset: 0, background: "#000000cc",
+      zIndex: 200, display: "flex", alignItems: "flex-end",
+    }} onClick={e => { if (e.target === e.currentTarget) setShowForm(false); }}>
+      <div style={{
+        width: "100%", maxHeight: "88vh", overflowY: "auto",
+        background: D.surface, borderRadius: "20px 20px 0 0",
+        padding: "24px 20px 44px",
+      }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+          <span style={{ fontSize: 10, fontFamily: "monospace", letterSpacing: 2, color: D.muted }}>
+            {editId ? "EDIT CONTACT" : "ADD CONTACT"}
+          </span>
+          <span onClick={() => setShowForm(false)} style={{ color: D.muted, cursor: "pointer", fontSize: 18 }}>✕</span>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
+          <input value={form.firstName} onChange={e => setForm(f => ({ ...f, firstName: e.target.value }))}
+            placeholder="First name" style={inputStyle} />
+          <input value={form.lastName} onChange={e => setForm(f => ({ ...f, lastName: e.target.value }))}
+            placeholder="Last name" style={inputStyle} />
+        </div>
+        <input value={form.company} onChange={e => setForm(f => ({ ...f, company: e.target.value }))}
+          placeholder="Company / Organization" style={{ ...inputStyle, marginBottom: 8 }} />
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
+          <input value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+            placeholder="Email" style={inputStyle} />
+          <input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+            placeholder="Phone" style={inputStyle} />
+        </div>
+        <input value={form.linkedin} onChange={e => setForm(f => ({ ...f, linkedin: e.target.value }))}
+          placeholder="LinkedIn URL" style={{ ...inputStyle, marginBottom: 8 }} />
+        <textarea value={form.why} onChange={e => setForm(f => ({ ...f, why: e.target.value }))}
+          placeholder="Why this person? What do you admire or want to learn?" rows={2}
+          style={{ ...inputStyle, resize: "none", lineHeight: 1.6, marginBottom: 8 }} />
+        <textarea value={form.ask} onChange={e => setForm(f => ({ ...f, ask: e.target.value }))}
+          placeholder="What's the ask? Coffee chat, referral, advice, intro..." rows={2}
+          style={{ ...inputStyle, resize: "none", lineHeight: 1.6, marginBottom: 12 }} />
+
+        <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+          {[{ val: "warm", label: "🔥 warm" }, { val: "cold", label: "❄️ cold" }].map(p => (
+            <div key={p.val} onClick={() => setForm(f => ({ ...f, warm: p.val }))} style={{
+              flex: 1, textAlign: "center", padding: "9px 0", borderRadius: 8, cursor: "pointer",
+              fontSize: 12, fontFamily: "monospace",
+              border: `1px solid ${form.warm === p.val ? (p.val === "warm" ? "#c47020" : D.ocean) : D.border}`,
+              background: form.warm === p.val ? (p.val === "warm" ? "#c4702015" : `${D.ocean}15`) : "transparent",
+              color: form.warm === p.val ? (p.val === "warm" ? "#c47020" : D.ocean) : D.muted,
+            }}>{p.label}</div>
+          ))}
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12 }}>
+          {[{ field: "attempt1", label: "ATTEMPT 1" }, { field: "attempt2", label: "ATTEMPT 2" }].map(({ field, label }) => (
+            <div key={field}>
+              <div style={{ fontSize: 9, color: D.dim, fontFamily: "monospace", letterSpacing: 1, marginBottom: 6 }}>{label}</div>
+              <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+                {ATTEMPT_STATUSES.map(s => (
+                  <div key={s} onClick={() => setForm(f => ({ ...f, [field]: s }))} style={{
+                    padding: "4px 9px", borderRadius: 20, cursor: "pointer", fontSize: 11, fontFamily: "monospace",
+                    border: `1px solid ${form[field] === s ? (ATTEMPT_COLORS[s] || D.muted) + "80" : D.border}`,
+                    background: form[field] === s ? `${ATTEMPT_COLORS[s] || D.muted}15` : "transparent",
+                    color: form[field] === s ? (ATTEMPT_COLORS[s] || D.muted) : D.dim,
+                  }}>{s}</div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <textarea value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+          placeholder="Notes..." rows={2}
+          style={{ ...inputStyle, resize: "none", lineHeight: 1.6, marginBottom: 16 }} />
+        <Btn onClick={saveForm} style={{ width: "100%" }}>{editId ? "save changes" : "+ add to list"}</Btn>
+      </div>
+    </div>
+      )}
 
       {toast && (
         <div style={{
