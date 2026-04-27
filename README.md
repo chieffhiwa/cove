@@ -66,20 +66,42 @@ Tables: `profiles`, `matrix_sessions`, `reflections`, `questions`, `user_answers
 
 ## Roadmap
 
+### Done
 | | Item |
 |---|---|
 | ✅ | Auth, onboarding, matrix, reflections |
 | ✅ | AI coach (proxied via serverless fn) |
 | ✅ | Dark/light mode throughout |
-| ✅ | White-label landing pages |
+| ✅ | White-label landing pages (Bowdoin) |
 | 🔄 | Profile restore on login |
-| 🔜 | Multi-tenant infrastructure |
-| 🔜 | Coach dashboard analytics |
+
+### Now — Infrastructure
+| | Item | Owner |
+|---|---|---|
+| 🔜 | Acquire `cove.app` domain | Fhiwa |
+| 🔜 | Backend infrastructure + email setup on `cove.app` | Aaron Serpilin |
+| 🔜 | Multi-tenant architecture (one codebase, many communities) | eng |
+| 🔜 | Coach dashboard — read user profiles, send nudges | eng |
+
+### Next — Biographical Matching (core product bet)
+| | Item | Notes |
+|---|---|---|
+| 🔜 | User profile deepening via AI Q&A (5–7 questions → rich self-portrait) | The skeleton |
+| 🔜 | Biographical match engine — surface 3–5 real people who walked your path | Alumni, career-changers, founders |
+| 🔜 | Match display UI — name, path, how they got their first meeting | The mirror |
+| 🔜 | Coach review layer — human reads matches, adds context before surfacing | The flesh |
+
+### Later — Data & Growth
+| | Item | Notes |
+|---|---|---|
+| 🔜 | Bowdoin Alumni Relations data ingestion | Pending institutional partnership |
+| 🔜 | BCAN ambassador program — paid ambassadors onboard peers organically | Todd H., Madison, Molly, etc. |
+| 🔜 | Expand to additional campuses via white-label | HBCUs, liberal arts, etc. |
 
 ---
 
 ## Contributing
 
-High-leverage areas: multi-tenant theming, coach dashboard, splitting `App.jsx` (~5k lines).
+High-leverage areas right now: biographical match engine, coach dashboard, splitting `App.jsx` (~5k lines).
 
 Open an issue or ping [@chieffhiwa](https://github.com/chieffhiwa).
