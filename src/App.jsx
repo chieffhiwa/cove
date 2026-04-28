@@ -3978,8 +3978,13 @@ function CoachTab({ supaUser, userData }) {
         }),
       });
       const data = await res.json();
-      setMessages(prev => [...prev, { role: "assistant", content: data?.content?.[0]?.text ?? "Lost the thread. Try again." }]);
-    } catch {
+      if (!res.ok) {
+        const errMsg = data?.error?.message || data?.error || `API error ${res.status}`;
+        setMessages(prev => [...prev, { role: "assistant", content: `Something went wrong: ${errMsg}` }]);
+      } else {
+        setMessages(prev => [...prev, { role: "assistant", content: data?.content?.[0]?.text ?? "Lost the thread. Try again." }]);
+      }
+    } catch (err) {
       setMessages(prev => [...prev, { role: "assistant", content: "Lost connection. Try again." }]);
     } finally {
       setLoading(false);
