@@ -13,7 +13,9 @@
     "start": "react-scripts start",
     "build": "CI=false react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "construction:on": "cp public/repairs.html public/index.html && git add public/index.html && git commit -m 'cove: construction page up' && git push origin main",
+    "construction:off": "cp public/app-index.html public/index.html && git add public/index.html && git commit -m 'cove: app restored' && git push origin main"
   },
   "eslintConfig": {
     "extends": [

@@ -79,59 +79,59 @@ const TAGLINE = TAGLINE_VERSION === "A"
 
 // ─── PALETTE ────────────────────────────────────────────────────────────────
 const LIGHT = {
-  bg:         "#f0f4f8",
-  surface:    "#fafcfe",
-  raised:     "#e8f0f8",
-  border:     "#ccd8e4",
-  borderSoft: "#dde6f0",
-  text:       "#1e2d3d",
-  muted:      "#526070",
-  faint:      "#dce8f4",
-  dim:        "#708898",
-  ocean:      "#1e6fa8",
-  oceanDeep:  "#145280",
-  seafoam:    "#178a72",
-  sky:        "#2e78a8",
-  mist:       "#4e7088",
-  tide:       "#1e6080",
-  pearl:      "#0a1828",
+  bg:         "#eff6ff",
+  surface:    "#fafcff",
+  raised:     "#e0edff",
+  border:     "#c2d6f5",
+  borderSoft: "#d8e8f8",
+  text:       "#0f1e30",
+  muted:      "#4a607a",
+  faint:      "#d0e4f8",
+  dim:        "#6070a0",
+  ocean:      "#2563eb",
+  oceanDeep:  "#1d4ed8",
+  seafoam:    "#10b981",
+  sky:        "#3b82f6",
+  mist:       "#5870a0",
+  tide:       "#2563eb",
+  pearl:      "#0f172a",
 };
 
 const DARK = {
-  bg:         "#0c1520",
-  surface:    "#111d2e",
-  raised:     "#172030",
-  border:     "#1e2e42",
-  borderSoft: "#192840",
-  text:       "#c8dced",
-  muted:      "#6a8faa",
-  faint:      "#172030",
-  dim:        "#4a6a80",
-  ocean:      "#4aa8e0",
-  oceanDeep:  "#2e7ab8",
-  seafoam:    "#2ab89a",
-  sky:        "#5ab8e0",
-  mist:       "#5a8aa8",
-  tide:       "#3a88b8",
-  pearl:      "#e0f0ff",
+  bg:         "#0c1526",
+  surface:    "#101f32",
+  raised:     "#162334",
+  border:     "#1e3050",
+  borderSoft: "#1a2c48",
+  text:       "#cce0f8",
+  muted:      "#6898c0",
+  faint:      "#162334",
+  dim:        "#4a70a8",
+  ocean:      "#38bdf8",
+  oceanDeep:  "#0ea5e9",
+  seafoam:    "#2dd4b0",
+  sky:        "#7dd3fc",
+  mist:       "#6490b8",
+  tide:       "#0ea5e9",
+  pearl:      "#f0f9ff",
 };
 
 let C = LIGHT;
 
 // ─── FEELING DEFINITIONS ─────────────────────────────────────────────────────
 const FEELINGS = [
-  { id: "Freedom",     color: "#4a9eca", desc: "Autonomy over when, where, and how you work" },
-  { id: "Stability",   color: "#9cb8cc", desc: "A financial floor you can actually build from" },
-  { id: "Growth",      color: "#6dbb8a", desc: "Getting better at something that matters to you" },
-  { id: "Purpose",     color: "#c4a040", desc: "Work that means something beyond the paycheck" },
-  { id: "Belonging",   color: "#a87ac4", desc: "A team and culture where you genuinely fit" },
-  { id: "Impact",      color: "#e07868", desc: "Changing something real in the world or in people" },
-  { id: "Creativity",  color: "#e0a060", desc: "Making things, solving things, expressing things" },
-  { id: "Legacy",      color: "#5ec4b0", desc: "Meaning that outlasts the role" },
-  { id: "Joy",         color: "#b8ccd8", desc: "People and work that genuinely light something up" },
-  { id: "Curiosity",   color: "#7ab8d8", desc: "Problems worth losing yourself in" },
-  { id: "Recognition", color: "#d4986a", desc: "Being seen and acknowledged for what you bring" },
-  { id: "Access",      color: "#3d7fa8", desc: "A seat where real decisions get made" },
+  { id: "Freedom",     color: "#38bdf8", desc: "Autonomy over when, where, and how you work" },
+  { id: "Stability",   color: "#93c5fd", desc: "A financial floor you can actually build from" },
+  { id: "Growth",      color: "#4ade80", desc: "Getting better at something that matters to you" },
+  { id: "Purpose",     color: "#fbbf24", desc: "Work that means something beyond the paycheck" },
+  { id: "Belonging",   color: "#c084fc", desc: "A team and culture where you genuinely fit" },
+  { id: "Impact",      color: "#f87171", desc: "Changing something real in the world or in people" },
+  { id: "Creativity",  color: "#fb923c", desc: "Making things, solving things, expressing things" },
+  { id: "Legacy",      color: "#2dd4bf", desc: "Meaning that outlasts the role" },
+  { id: "Joy",         color: "#fde68a", desc: "People and work that genuinely light something up" },
+  { id: "Curiosity",   color: "#60a5fa", desc: "Problems worth losing yourself in" },
+  { id: "Recognition", color: "#f9a8d4", desc: "Being seen and acknowledged for what you bring" },
+  { id: "Access",      color: "#a78bfa", desc: "A seat where real decisions get made" },
 ];
 
 const SEED_WANTS = [
@@ -156,10 +156,10 @@ function lerpHex(c1, c2, t) {
 }
 
 const DEPTH_STOPS = [
-  { bg: "#f0f4f8", text: "#1e2d3d", accent: "#1e6fa8" },   // 0
-  { bg: "#eaf1f8", text: "#1a2838", accent: "#1a60a0" },   // 6
-  { bg: "#e4ecf6", text: "#152030", accent: "#145280" },   // 11
-  { bg: "#dce8f4", text: "#0a1828", accent: "#104070" },   // 17
+  { bg: "#eff6ff", text: "#0f1e30", accent: "#2563eb" },   // 0
+  { bg: "#e8f0ff", text: "#0d1a28", accent: "#1d4ed8" },   // 6
+  { bg: "#dce8fa", text: "#0a1620", accent: "#1e40af" },   // 11
+  { bg: "#d0dff5", text: "#07101a", accent: "#1e3a8a" },   // 17
 ];
 
 function getDepthPalette(step) {
@@ -261,11 +261,18 @@ function AppInner() {
         contacts: data.contacts || [],
       };
       setUserData(prev => {
-        // Only overwrite fields that are blank locally — keeps any newer local edits
+        // Local data wins for any field that has content — Supabase fills in gaps
         const merged = { ...restored };
         if (prev.name) merged.name = prev.name;
         if (prev.selfPosition) merged.selfPosition = prev.selfPosition;
         if (prev.contacts?.length) merged.contacts = prev.contacts;
+        if (prev.braveReflection) merged.braveReflection = prev.braveReflection;
+        if (prev.fearsReflection) merged.fearsReflection = prev.fearsReflection;
+        if (prev.wants?.length) merged.wants = prev.wants;
+        if (prev.email) merged.email = prev.email;
+        if (prev.phone) merged.phone = prev.phone;
+        if (prev.linkedin) merged.linkedin = prev.linkedin;
+        if (prev.photoUrl) merged.photoUrl = prev.photoUrl;
         return merged;
       });
     };
@@ -314,6 +321,7 @@ function AppInner() {
         update={update}
         supaUser={supaUser}
         finish={() => { upsertProfile(userData); setPhase("main"); }}
+        onGoToLogin={() => setPhase("login")}
         darkMode={darkMode}
         toggleDark={toggleDark}
       />
@@ -347,6 +355,7 @@ function AppInner() {
         setActiveContact={setActiveContact}
         onReset={resetAll}
         onSignOut={signOut}
+        onGoToLogin={() => setPhase("login")}
         darkMode={darkMode}
         toggleDark={toggleDark}
         supaUser={supaUser}
@@ -438,7 +447,7 @@ function LoginLanding({ onLogin, onNewUser, darkMode, toggleDark }) {
   );
 }
 
-function Onboard({ step, setStep, userData, update, finish, supaUser, darkMode, toggleDark }) {
+function Onboard({ step, setStep, userData, update, finish, supaUser, darkMode, toggleDark, onGoToLogin }) {
   const go = (nextStep, event, props = {}) => {
     track(event, { step: nextStep, ...props });
     setStep(nextStep);
@@ -499,17 +508,15 @@ function Onboard({ step, setStep, userData, update, finish, supaUser, darkMode, 
   return (
     <Shell depth={step}>
       {/* Back button */}
-      {step > 0 && (
-        <div
-          onClick={() => setStep(Math.max(0, step - 1))}
-          style={{
-            position: "absolute", top: 16, left: 18, zIndex: 20,
-            fontSize: 22, color: C.muted, cursor: "pointer",
-            padding: "6px 10px", borderRadius: 8,
-            lineHeight: 1,
-          }}
-        >‹</div>
-      )}
+      <div
+        onClick={() => step === 0 ? onGoToLogin?.() : setStep(step - 1)}
+        style={{
+          position: "absolute", top: 16, left: 18, zIndex: 20,
+          fontSize: 22, color: C.muted, cursor: "pointer",
+          padding: "6px 10px", borderRadius: 8,
+          lineHeight: 1,
+        }}
+      >‹</div>
       {/* Dark mode toggle */}
       <button
         onClick={toggleDark}
@@ -615,7 +622,7 @@ function StepWhyCove({ next }) {
         <p style={{ fontSize: 11, letterSpacing: 3, color: C.muted, fontFamily: "monospace", margin: "0 0 14px" }}>HOW IT WORKS</p>
         {[
           { n: "01", title: "Know yourself", body: "The Bravery / Curiosity Matrix — a simple framework to see where you actually are, not where you wish you were." },
-          { n: "02", title: "Build the list", body: "Your List of 100. The people already in your corner who can open real doors." },
+          { n: "02", title: "Build the list", body: <>Start reaching out to people in your network before you need something. ✨ Inspired by <a href="https://carlyvalancy.substack.com" target="_blank" rel="noopener noreferrer" style={{ color: C.ocean, textDecoration: "none" }}>Carly Valancy</a>'s 100 Days Project — the right doors are already within reach.</> },
           { n: "03", title: "Talk it out", body: "Get honest about what's in the way. That's the whole move." },
         ].map(({ n, title, body }) => (
           <div key={n} style={{ display: "flex", gap: 14, marginBottom: 16, padding: "16px 18px", borderRadius: 14, background: C.surface, border: `1px solid ${C.borderSoft}` }}>
@@ -630,7 +637,7 @@ function StepWhyCove({ next }) {
         {/* Open source */}
         <div style={{ marginTop: 24, padding: "18px 20px", borderRadius: 14, background: C.faint, border: `1px solid ${C.border}` }}>
           <p style={{ fontSize: 13, color: C.muted, margin: "0 0 10px", lineHeight: 1.7 }}>
-            Cove is open-source. No company. No profit motive. Built by someone who went through it and wanted something better.
+            100% open-source. Built by those who went through it, and wanted something better.
           </p>
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
             <a
@@ -3111,7 +3118,7 @@ function StepDone({ name, finish }) {
 // MAIN APP
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function MainApp({ userData, update, tab, setTab, activeContact, setActiveContact, onReset, onSignOut, darkMode, toggleDark, supaUser }) {
+function MainApp({ userData, update, tab, setTab, activeContact, setActiveContact, onReset, onSignOut, onGoToLogin, darkMode, toggleDark, supaUser }) {
   const openContact = (c) => { setActiveContact(c); setTab("contact"); };
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(userData.name || "");
@@ -3184,7 +3191,7 @@ function MainApp({ userData, update, tab, setTab, activeContact, setActiveContac
           {tab === "coach"     && <CoachTab     supaUser={supaUser} userData={userData} />}
           {tab === "matches"   && <MatchesTab   supaUser={supaUser} userData={userData} />}
           {tab === "list"      && <List100Tab userData={userData} />}
-          {tab === "you"       && <ProfileTab   userData={userData} update={update} onReset={onReset} onSignOut={onSignOut} supaUser={supaUser} />}
+          {tab === "you"       && <ProfileTab   userData={userData} update={update} onReset={onReset} onSignOut={onSignOut} onGoToLogin={onGoToLogin} supaUser={supaUser} />}
         </div>
 
         {/* Bottom nav */}
@@ -3267,57 +3274,74 @@ function HomeTab({ userData, setTab }) {
   return (
     <div style={{ ...fadeStyle(visible), padding: "28px 22px" }}>
 
-      {/* Greeting */}
-      <div style={{ marginBottom: 32 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 400, margin: "0 0 8px", color: C.pearl, letterSpacing: -0.3 }}>
-          {firstName ? `Hey, ${firstName}.` : "Welcome back."}
-        </h1>
-        <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.85, margin: 0 }}>
-          {TAGLINE}
-        </p>
-      </div>
-
-      {/* Matrix position widget */}
-      {qr && userData.selfPosition && (
-        <div style={{ marginBottom: 28 }}>
-          <SectionLabel>where you are</SectionLabel>
+      {/* Hero card — greeting + matrix position */}
+      <div style={{
+        position: "relative", overflow: "hidden",
+        borderRadius: 16, marginBottom: 24,
+        background: C.surface,
+        border: `1px solid ${C.borderSoft}`,
+        padding: "24px 22px",
+        minHeight: 130,
+      }}>
+        {/* Background matrix — right side */}
+        {qr && userData.selfPosition && (
           <div style={{
-            padding: "16px", borderRadius: 12,
-            background: C.surface, border: `1px solid ${C.borderSoft}`,
-            display: "flex", gap: 14, alignItems: "center",
+            position: "absolute", right: 18, top: "50%",
+            transform: "translateY(-50%)",
+            width: 112, height: 112,
           }}>
-            {/* Mini matrix */}
+            <div style={{ position: "absolute", inset: 0, border: `1px solid ${C.ocean}22`, borderRadius: 8 }} />
+            <div style={{ position: "absolute", top: "50%", left: 0, right: 0, height: 1, background: `${C.ocean}18` }} />
+            <div style={{ position: "absolute", left: "50%", top: 0, bottom: 0, width: 1, background: `${C.ocean}18` }} />
+            {/* Active quadrant fill */}
             <div style={{
-              width: 60, height: 60, flexShrink: 0,
-              position: "relative",
-              background: C.raised, borderRadius: 8,
-              border: `1px solid ${C.border}`, overflow: "hidden",
+              position: "absolute",
+              left: userData.selfPosition.x >= 50 ? "50%" : 0,
+              top: userData.selfPosition.y <= 50 ? 0 : "50%",
+              width: "50%", height: "50%",
+              background: `${qr.color}16`,
+              borderRadius: userData.selfPosition.x >= 50
+                ? (userData.selfPosition.y <= 50 ? "0 8px 0 0" : "0 0 8px 0")
+                : (userData.selfPosition.y <= 50 ? "8px 0 0 0" : "0 0 0 8px"),
+            }} />
+            {/* Pulsing dot */}
+            <div style={{
+              position: "absolute",
+              left: `${userData.selfPosition.x}%`,
+              top: `${userData.selfPosition.y}%`,
+              transform: "translate(-50%, -50%)",
             }}>
-              <div style={{ position: "absolute", top: "50%", left: 0, right: 0, height: 1, background: C.border }} />
-              <div style={{ position: "absolute", left: "50%", top: 0, bottom: 0, width: 1, background: C.border }} />
-              {/* Self dot */}
               <div style={{
-                position: "absolute",
-                left: `${userData.selfPosition.x}%`,
-                top: `${userData.selfPosition.y}%`,
-                transform: "translate(-50%,-50%)",
-              }}>
-                <div style={{
-                  width: 10, height: 10, borderRadius: "50%",
-                  background: qr.color,
-                  boxShadow: `0 0 6px ${qr.color}80`,
-                }} />
-              </div>
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 11, color: qr.color, fontFamily: "monospace", letterSpacing: 1, marginBottom: 4 }}>
-                {qr.title.toUpperCase()}
-              </div>
-              <p style={{ margin: 0, fontSize: 12, color: C.muted, lineHeight: 1.7 }}>{qr.short}</p>
+                width: 11, height: 11, borderRadius: "50%",
+                background: qr.color,
+                boxShadow: `0 0 10px ${qr.color}`,
+                animation: "cove-pulse 2.5s ease-in-out infinite",
+              }} />
             </div>
           </div>
+        )}
+
+        {/* Text */}
+        <div style={{ maxWidth: qr ? "56%" : "100%", position: "relative", zIndex: 1 }}>
+          <div style={{ fontSize: 9, letterSpacing: 3, color: C.ocean, fontFamily: "monospace", marginBottom: 14, opacity: 0.65 }}>
+            C O V E
+          </div>
+          <h1 style={{ fontSize: 26, fontWeight: 400, margin: "0 0 8px", color: C.pearl, letterSpacing: -0.5, lineHeight: 1.25 }}>
+            {firstName ? `Hey, ${firstName}.` : "Welcome back."}
+          </h1>
+          <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.75, margin: qr ? "0 0 14px" : 0 }}>
+            {TAGLINE}
+          </p>
+          {qr && (
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <div style={{ width: 6, height: 6, borderRadius: "50%", background: qr.color, flexShrink: 0 }} />
+              <span style={{ fontSize: 10, color: qr.color, fontFamily: "monospace", letterSpacing: 1.5 }}>
+                {qr.title.toUpperCase()}
+              </span>
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
       {/* Running contact list */}
       <div style={{ marginBottom: 28 }}>
@@ -4762,13 +4786,13 @@ function List100Tab({ userData }) {
       {/* Header */}
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 18 }}>
         <div>
-          <SectionLabel>list of 100</SectionLabel>
-          <div style={{ fontSize: 20, color: D.pearl, fontWeight: 400 }}>Your target list</div>
+          <SectionLabel>your list</SectionLabel>
+          <div style={{ fontSize: 20, color: D.pearl, fontWeight: 400 }}>Your reach-out list</div>
         </div>
         <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
           <div style={{ textAlign: "right" }}>
             <div style={{ fontSize: 24, color: D.ocean, fontWeight: 400 }}>
-              {entries.length}<span style={{ fontSize: 13, color: D.muted }}>/100</span>
+              {entries.length}
             </div>
             <div style={{ fontSize: 10, color: D.muted, fontFamily: "monospace" }}>
               {warm} warm · {reached} reached
@@ -5514,7 +5538,7 @@ function SectionLabel({ children }) {
 }
 
 // ── You / Profile Tab ─────────────────────────────────────────────────────────
-function ProfileTab({ userData, update, onReset, onSignOut, supaUser }) {
+function ProfileTab({ userData, update, onReset, onSignOut, onGoToLogin, supaUser }) {
   const visible = useFadeIn(["you"]);
   const quadrant = userData.selfPosition ? getQuadrant(userData.selfPosition.x, userData.selfPosition.y) : null;
   const qr = quadrant ? QUADRANT_READS[quadrant] : null;
@@ -5678,20 +5702,25 @@ function ProfileTab({ userData, update, onReset, onSignOut, supaUser }) {
         <div style={{ flex: 1 }}>
           <p style={{ fontSize: 9, letterSpacing: 2, color: C.dim, fontFamily: "monospace", margin: "0 0 2px" }}>BUILT BY</p>
           <p style={{ fontSize: 13, color: C.pearl, margin: "0 0 6px", fontWeight: 400 }}>Fhiwa Ndou</p>
-          <p style={{ fontSize: 11, color: C.muted, lineHeight: 1.6, margin: "0 0 10px" }}>Free and open-source. You don't always need a reason to help somebody.</p>
+          <p style={{ fontSize: 11, color: C.muted, lineHeight: 1.6, margin: "0 0 10px" }}>100% open-source. Built by those who went through it, and wanted something better.</p>
           <a href="https://github.com/sponsors/chieffhiwa" target="_blank" rel="noopener noreferrer" style={{ fontSize: 11, color: C.ocean, textDecoration: "none", fontFamily: "monospace", letterSpacing: 0.5 }}>contribute on github →</a>
         </div>
       </div>
 
-      {/* Sign out */}
-      {supaUser && (
-        <div style={{ marginTop: 10 }}>
+      {/* Sign in / Sign out */}
+      <div style={{ marginTop: 10 }}>
+        {supaUser ? (
           <button
             onClick={onSignOut}
             style={{ background: "none", border: `1px solid ${C.borderSoft}`, borderRadius: 10, padding: "11px 20px", color: C.muted, fontSize: 11, cursor: "pointer", fontFamily: "monospace", letterSpacing: 1, width: "100%" }}
           >sign out</button>
-        </div>
-      )}
+        ) : (
+          <button
+            onClick={onGoToLogin}
+            style={{ background: "none", border: `1px solid ${C.ocean}60`, borderRadius: 10, padding: "11px 20px", color: C.ocean, fontSize: 11, cursor: "pointer", fontFamily: "monospace", letterSpacing: 1, width: "100%" }}
+          >sign in →</button>
+        )}
+      </div>
 
       {/* Reset */}
       <div style={{ marginTop: 10 }}>
