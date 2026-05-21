@@ -876,6 +876,7 @@ function StepName({ next }) {
         </p>
         <input
           autoFocus
+          autoComplete="given-name"
           value={name}
           onChange={e => setName(e.target.value)}
           onKeyDown={e => e.key === "Enter" && name.trim() && next(name.trim())}
