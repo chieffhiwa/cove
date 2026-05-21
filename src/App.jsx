@@ -1,180 +1,16 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "./supabase";
-import posthog from "posthog-js";
-
-// ─── ANALYTICS ───────────────────────────────────────────────────────────────
-const PH_KEY = process.env.REACT_APP_POSTHOG_KEY;
-if (PH_KEY) posthog.init(PH_KEY, { api_host: "https://us.i.posthog.com", person_profiles: "identified_only" });
-const track = (event, props) => { if (PH_KEY) posthog.capture(event, props); };
-
-// ─── DISCORD WEBHOOK ─────────────────────────────────────────────────────────
-const DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1477427861706117265/mewcLc9XgpBYM10AiQQl3lpY016KvrmI1sc897YD2yYQJL78TTqVu73lbDrsHbrgwK5i";
-
-async function upsertProfile(userData) {
-  const quadrant = userData.selfPosition ? getQuadrant(userData.selfPosition.x, userData.selfPosition.y) : null;
-  const quadrantLabel = quadrant ? QUADRANT_READS[quadrant]?.title : null;
-  const ref = localStorage.getItem("cove_ref") || null;
-  const { data, error } = await supabase.from("profiles").upsert({
-    name: userData.name || null,
-    email: userData.email || null,
-    quadrant: quadrantLabel,
-    x: userData.selfPosition?.x ?? null,
-    y: userData.selfPosition?.y ?? null,
-    brave_reflection: userData.braveReflection || null,
-    fears_reflection: userData.fearsReflection || null,
-    contacts: userData.contacts || [],
-    ref,
-    updated_at: new Date().toISOString(),
-  }, { onConflict: "email", ignoreDuplicates: false });
-  if (data?.[0]?.id) localStorage.setItem("cove_profile_id", data[0].id);
-  return { data, error };
-}
-
-function postReflections({ name, email, selfPosition, braveReflection, fearsReflection, wants = [] }) {
-  const quadrant = selfPosition ? getQuadrant(selfPosition.x, selfPosition.y) : null;
-  const quadrantLabel = quadrant ? QUADRANT_READS[quadrant]?.title : "Unknown";
-  const wantsSummary = wants.filter(w => w.feeling).map(w => `${w.feeling}: ${w.text}`).join("\n") || "_(none tagged)_";
-  const ref = localStorage.getItem("cove_ref") || null;
-
-  // Save to Supabase
-  supabase.from("reflections").insert({
-    name: name || null,
-    phone: email || null,
-    ref: ref,
-    quadrant: quadrantLabel,
-    brave_reflection: braveReflection || null,
-    fears_reflection: fearsReflection || null,
-  }).then(() => {}); // fire and forget
-
-  // Also ping Discord
-  fetch(DISCORD_WEBHOOK, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      username: "Cove",
-      embeds: [{
-        title: `New reflection — ${name || "Anonymous"}`,
-        color: 0x4a9eca,
-        fields: [
-          { name: "📍 Matrix placement", value: quadrantLabel, inline: true },
-          { name: "📧 Email", value: email || "_(not provided)_", inline: true },
-          { name: "🔗 Ref", value: ref || "_(direct)_", inline: true },
-          { name: "💙 Brave decision", value: braveReflection || "_(no response)_" },
-          { name: "🌊 What's in the way", value: fearsReflection || "_(no response)_" },
-          { name: "✨ What they want", value: wantsSummary },
-        ],
-        footer: { text: `cove · ${TAGLINE}` },
-        timestamp: new Date().toISOString(),
-      }],
-    }),
-  }).catch(() => {}); // fire and forget — don't block the user
-}
-
-// ─── TAGLINE A/B ─────────────────────────────────────────────────────────────
-// "A" = original  |  "B" = matrix hook  ← change one letter to switch
-const TAGLINE_VERSION = "A";
-const TAGLINE = TAGLINE_VERSION === "A"
-  ? "your career. your current."
-  : "where do you land on the matrix?";
-
-// ─── PALETTE ────────────────────────────────────────────────────────────────
-const LIGHT = {
-  bg:         "#eff6ff",
-  surface:    "#fafcff",
-  raised:     "#e0edff",
-  border:     "#c2d6f5",
-  borderSoft: "#d8e8f8",
-  text:       "#0f1e30",
-  muted:      "#4a607a",
-  faint:      "#d0e4f8",
-  dim:        "#6070a0",
-  ocean:      "#2563eb",
-  oceanDeep:  "#1d4ed8",
-  seafoam:    "#10b981",
-  sky:        "#3b82f6",
-  mist:       "#5870a0",
-  tide:       "#2563eb",
-  pearl:      "#0f172a",
-};
-
-const DARK = {
-  bg:         "#0c1526",
-  surface:    "#101f32",
-  raised:     "#162334",
-  border:     "#1e3050",
-  borderSoft: "#1a2c48",
-  text:       "#cce0f8",
-  muted:      "#6898c0",
-  faint:      "#162334",
-  dim:        "#4a70a8",
-  ocean:      "#38bdf8",
-  oceanDeep:  "#0ea5e9",
-  seafoam:    "#2dd4b0",
-  sky:        "#7dd3fc",
-  mist:       "#6490b8",
-  tide:       "#0ea5e9",
-  pearl:      "#f0f9ff",
-};
+import { track, posthog, PH_KEY } from "./lib/analytics";
+import { upsertProfile, postReflections } from "./lib/api";
+import { LIGHT, DARK, getDepthPalette } from "./config/palette";
+import { FEELINGS, SEED_WANTS } from "./config/feelings";
+import { TAGLINE, DEFAULT_USER_DATA, HOME_QUOTES } from "./config/constants";
+import {
+  QUADRANT_READS, QUADRANT_PAUSE, QUADRANT_STORIES,
+  getQuadrant, getQuadrantImage,
+} from "./config/quadrants";
 
 let C = LIGHT;
-
-// ─── FEELING DEFINITIONS ─────────────────────────────────────────────────────
-const FEELINGS = [
-  { id: "Freedom",     color: "#38bdf8", desc: "Autonomy over when, where, and how you work" },
-  { id: "Stability",   color: "#93c5fd", desc: "A financial floor you can actually build from" },
-  { id: "Growth",      color: "#4ade80", desc: "Getting better at something that matters to you" },
-  { id: "Purpose",     color: "#fbbf24", desc: "Work that means something beyond the paycheck" },
-  { id: "Belonging",   color: "#c084fc", desc: "A team and culture where you genuinely fit" },
-  { id: "Impact",      color: "#f87171", desc: "Changing something real in the world or in people" },
-  { id: "Creativity",  color: "#fb923c", desc: "Making things, solving things, expressing things" },
-  { id: "Legacy",      color: "#2dd4bf", desc: "Meaning that outlasts the role" },
-  { id: "Joy",         color: "#fde68a", desc: "People and work that genuinely light something up" },
-  { id: "Curiosity",   color: "#60a5fa", desc: "Problems worth losing yourself in" },
-  { id: "Recognition", color: "#f9a8d4", desc: "Being seen and acknowledged for what you bring" },
-  { id: "Access",      color: "#a78bfa", desc: "A seat where real decisions get made" },
-];
-
-const SEED_WANTS = [
-  "Travel on my own terms",
-  "Work from wherever",
-  "Leave something lasting",
-  "Work on hard problems",
-  "Earn enough to breathe easy",
-  "Be around people I admire",
-  "Have a voice in the room",
-  "Build things that get used",
-];
-
-// ─── DEPTH PALETTE ───────────────────────────────────────────────────────────
-// As the user moves through onboarding (steps 0–17), the water clears.
-// Deep/murky → mid-depth → clearing → surface light.
-function lerp(a, b, t) { return Math.round(a + (b - a) * t); }
-function lerpHex(c1, c2, t) {
-  const p = (h) => [parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16)];
-  const [r1,g1,b1] = p(c1); const [r2,g2,b2] = p(c2);
-  return `#${[lerp(r1,r2,t),lerp(g1,g2,t),lerp(b1,b2,t)].map(v=>v.toString(16).padStart(2,"0")).join("")}`;
-}
-
-const DEPTH_STOPS = [
-  { bg: "#eff6ff", text: "#0f1e30", accent: "#2563eb" },   // 0
-  { bg: "#e8f0ff", text: "#0d1a28", accent: "#1d4ed8" },   // 6
-  { bg: "#dce8fa", text: "#0a1620", accent: "#1e40af" },   // 11
-  { bg: "#d0dff5", text: "#07101a", accent: "#1e3a8a" },   // 17
-];
-
-function getDepthPalette(step) {
-  const TOTAL = 19;
-  const t = Math.min(step, TOTAL) / TOTAL;
-  const stops = DEPTH_STOPS;
-  const seg = (stops.length - 1) * t;
-  const i = Math.min(Math.floor(seg), stops.length - 2);
-  const local = seg - i;
-  return {
-    bg:     lerpHex(stops[i].bg,     stops[i+1].bg,     local),
-    text:   lerpHex(stops[i].text,   stops[i+1].text,   local),
-    accent: lerpHex(stops[i].accent, stops[i+1].accent, local),
-  };
-}
 
 // ─── FADE-IN HOOK ─────────────────────────────────────────────────────────────
 function useFadeIn(deps = []) {
@@ -188,20 +24,6 @@ function useFadeIn(deps = []) {
   }, deps); // eslint-disable-line react-hooks/exhaustive-deps
   return visible;
 }
-
-// ─── ROOT ────────────────────────────────────────────────────────────────────
-const DEFAULT_USER_DATA = {
-  name: "",
-  email: "",
-  phone: "",
-  linkedin: "",
-  photoUrl: "",
-  selfPosition: null,
-  braveReflection: "",
-  fearsReflection: "",
-  wants: [],
-  contacts: [],
-};
 
 export default function App() {
   const isCoach = typeof window !== "undefined" &&
@@ -1018,79 +840,6 @@ function StepMatrixIntro({ name, next }) {
 }
 
 // ── Step 3: Self Matrix ───────────────────────────────────────────────────────
-
-// Landscape images per quadrant — rotates by day+hour for freshness
-const QUADRANT_IMAGES = {
-  "brave-curious": [
-    "https://source.unsplash.com/featured/900x400/?ocean,dawn,horizon",
-    "https://source.unsplash.com/featured/900x400/?open,sea,sunrise,sailing",
-    "https://source.unsplash.com/featured/900x400/?coastline,wave,morning,light",
-    "https://source.unsplash.com/featured/900x400/?adventure,wide,sky,open",
-  ],
-  "brave-judgmental": [
-    "https://source.unsplash.com/featured/900x400/?mountain,peak,clear,sky",
-    "https://source.unsplash.com/featured/900x400/?summit,alpine,sharp,ridge",
-    "https://source.unsplash.com/featured/900x400/?cliff,bold,height,blue",
-    "https://source.unsplash.com/featured/900x400/?glacier,crisp,vast,ice",
-  ],
-  "fearful-curious": [
-    "https://source.unsplash.com/featured/900x400/?forest,light,depth,trees",
-    "https://source.unsplash.com/featured/900x400/?underwater,blue,deep,ocean",
-    "https://source.unsplash.com/featured/900x400/?jungle,green,quiet,canopy",
-    "https://source.unsplash.com/featured/900x400/?cave,light,dark,explore",
-  ],
-  "fearful-judgmental": [
-    "https://source.unsplash.com/featured/900x400/?fog,mist,morning,path",
-    "https://source.unsplash.com/featured/900x400/?still,lake,reflection,calm",
-    "https://source.unsplash.com/featured/900x400/?winter,quiet,snow,soft",
-    "https://source.unsplash.com/featured/900x400/?mist,valley,gentle,earth",
-  ],
-};
-
-function getQuadrantImage(quadrant) {
-  const arr = QUADRANT_IMAGES[quadrant] || QUADRANT_IMAGES["brave-curious"];
-  return arr[(new Date().getDate() + new Date().getHours()) % arr.length];
-}
-
-const QUADRANT_READS = {
-  "brave-curious": {
-    title: "Brave + Curious",
-    color: "#5ec4b0",
-    short: "You move fast and ask hard questions.",
-    read: "You belong in environments that haven't figured everything out yet and don't pretend to. Startups, innovation teams, roles where the playbook is still being written. Places that reward people who say 'what if we tried this?' out loud. Avoid anywhere that confuses confidence with certainty.",
-    jobs: ["Product", "Strategy", "Founding roles", "Innovation", "Research"],
-  },
-  "brave-judgmental": {
-    title: "Brave + Judgmental",
-    color: "#7ab8d8",
-    short: "Strong convictions. You act on them.",
-    read: "You know what good looks like and you have the courage to hold the line. You thrive where there's a standard to uphold ops, legal, finance, senior leadership. Places that need someone who won't fold under pressure. Watch out for environments that mistake rigidity for rigor.",
-    jobs: ["Operations", "Leadership", "Policy", "Legal", "Editorial"],
-  },
-  "fearful-curious": {
-    title: "Fearful + Curious",
-    color: "#4a9eca",
-    short: "You process deeply before you move.",
-    read: "You're thoughtful in a way that looks like hesitation from the outside but it's not. You do your best work when you have strong mentorship, clear context, and enough psychological safety to experiment without performing confidence you don't have yet. Look for cultures that value depth over speed.",
-    jobs: ["Research", "Design", "Writing", "Analysis", "Education"],
-  },
-  "fearful-judgmental": {
-    title: "In a cautious place right now.",
-    color: "#9cb8cc",
-    short: "That's okay. Most people are.",
-    read: "Something's made you careful. That's data worth reading. Before you optimize for the right role, find one person: a mentor, a sponsor, someone who's seen you at your best and will say so. The right environment will follow. Cove is a good place to map who that person might be.",
-    jobs: ["Find a mentor first", "Low-stakes experiments", "Internal moves"],
-  },
-};
-
-function getQuadrant(x, y) {
-  const brave = y < 50;
-  const curious = x > 50;
-  if (brave && curious)   return "brave-curious";
-  if (brave && !curious)  return "brave-judgmental";
-  if (!brave && curious)  return "fearful-curious";
-  return "fearful-judgmental";
-}
 
 function StepSelfMatrix({ name, initialPosition, next }) {
   const visible = useFadeIn([]);
@@ -2296,44 +2045,6 @@ function StepCareersOverCash({ next }) {
 }
 
 // ── Step 4: Matrix Pause + Return Check-in ───────────────────────────────────
-// eslint-disable-next-line no-unused-vars
-const QUADRANT_TASKS = {
-  "brave-curious": {
-    headline: "You're moving and you're open.",
-    task: "Before you come back: reach out to one person in your network you haven't talked to in a year. No agenda. Just check in.",
-  },
-  "brave-judgmental": {
-    headline: "You're willing to move. Stay open about where.",
-    task: "Before you come back: spend 20 minutes listening to someone whose career path looks nothing like yours. Podcast, interview, conversation. Just listen.",
-  },
-  "fearful-curious": {
-    headline: "You see it. Something's holding you back.",
-    task: "Before you come back: write down the one career move you keep circling but haven't made. Don't share it. Just put it somewhere real.",
-  },
-  "fearful-judgmental": {
-    headline: "You're in a careful place right now. That's okay.",
-    task: "Before you come back: do one thing today that feels even slightly uncomfortable. Doesn't have to be career-related. Just move.",
-  },
-};
-
-const QUADRANT_PAUSE = {
-  "brave-curious": {
-    opener: "You're already in motion.",
-    question: "What would it look like to slow down just enough to pick the right direction?",
-  },
-  "brave-judgmental": {
-    opener: "You know what you want.",
-    question: "Where have you been most willing to be wrong lately?",
-  },
-  "fearful-curious": {
-    opener: "You see more than you let on.",
-    question: "What would you try if you knew no one was judging?",
-  },
-  "fearful-judgmental": {
-    opener: "Something's made you careful. That's okay.",
-    question: "Who has seen you at your best — and when did they last say so?",
-  },
-};
 
 function StepMatrixPause({ selfPosition, next, goBack }) {
   const visible = useFadeIn([]);
@@ -2570,48 +2281,6 @@ function StepQuadrantReveal({ selfPosition, next }) {
 }
 
 // ── Step 7: Quadrant Read — per-quadrant "so what" story ─────────────────────
-const QUADRANT_STORIES = {
-  "brave-curious": {
-    label: "THE FAST MOVER",
-    headline: "You ask the question before anyone else knows it's a question.",
-    body: [
-      "There's a moment in every room when someone decides to go first. To say the thing. To try the approach that might not work. You're usually that person — or you're the one who sees it clearly enough that you should be.",
-      "Carol Dweck spent years studying what separates people who improve from people who plateau. Her finding was simple: the learners believe ability grows. They lean toward challenges instead of away from them. That's you, right now. Brave enough to move. Curious enough to keep updating.",
-      "Your risk isn't failure. Your risk is moving so fast you skip the step that would have made the next ten easier. The best version of this quadrant doesn't just move — it moves with a question in its hand.",
-      "Environments that fit you: early-stage startups, innovation roles, places still figuring out the playbook. Places where \"we haven't tried that yet\" is an invitation, not a warning.",
-    ],
-  },
-  "brave-judgmental": {
-    label: "THE STANDARD HOLDER",
-    headline: "You know what good looks like. Sit with that.",
-    body: [
-      "There's a version of \"high standards\" that's just fear of being wrong. But there's another version — the one you have — where you've actually seen enough to know the difference. You've built a model of quality, and you hold it.",
-      "The research on conscientiousness shows it's one of the strongest predictors of long-term career success. Not charisma. Not raw intelligence. The willingness to do the thing right, even when no one's checking.",
-      "Where this gets complicated: the line between conviction and rigidity. The best standard-holders stay open to the possibility that their model of good is incomplete. Not because they're wishy-washy — because they're curious enough to update.",
-      "Environments that fit you: operations, editorial, leadership, policy — anywhere that needs someone who won't fold under pressure. Watch for places that mistake loudness for confidence. You deserve rooms where substance is the currency.",
-    ],
-  },
-  "fearful-curious": {
-    label: "THE DEEP THINKER",
-    headline: "You process differently. That's the whole thing.",
-    body: [
-      "Here's what looks like hesitation from the outside: you reading the room before you move. Noticing the thing no one else noticed. Asking the question quietly, to yourself first, before you know whether the room is safe enough for it.",
-      "Amy Edmondson's research on psychological safety changed how we think about high-performing teams. Her finding: teams don't perform well because they never fail. They perform well because they're safe enough to try — and safe enough to say when something's not working.",
-      "You do your best thinking in environments with that kind of safety — the presence of trust. You need a room that rewards depth over speed.",
-      "The move for you right now isn't bravery for its own sake. It's finding one environment — one mentor, one team, one role — where you can be fully visible. The output that comes after that tends to surprise people. Including you.",
-    ],
-  },
-  "fearful-judgmental": {
-    label: "FINDING FOOTING",
-    headline: "Something made you careful. That's information.",
-    body: [
-      "Most people have been here. The cautious place. The place where you're sizing up the terrain before you commit to a direction. It doesn't mean you're behind — it means something, probably something real, taught you to be careful.",
-      "Edward Deci and Richard Ryan spent decades studying what makes people actually move. Their conclusion: we need three things — some sense of autonomy, some sense of competence, and some sense of connection. When those are missing, we go quiet. We protect.",
-      "The question isn't how to force yourself to be brave. The question is: what's the smallest environment where you'd feel safe enough to be honest? One person. One conversation. One low-stakes experiment. That's where this starts.",
-      "You don't need a breakthrough. You need a foothold. Cove is designed for exactly this moment — to help you find the people and the context that make the next step feel possible.",
-    ],
-  },
-};
 
 function StepQuadrantRead({ selfPosition, next }) {
   const visible = useFadeIn([]);
@@ -3240,16 +2909,6 @@ function MainApp({ userData, update, tab, setTab, activeContact, setActiveContac
 }
 
 // ── Home Tab ──────────────────────────────────────────────────────────────────
-const HOME_QUOTES = [
-  { text: "The karma compounds quietly.", attr: null },
-  { text: "Do you always need a reason to help somebody?", attr: "— Ash Ketchum" },
-  { text: "Careers over cash. The right fit pays you back in ways money can't count.", attr: null },
-  { text: "Go-Giver first. Show up with something to offer.", attr: null },
-  { text: "Where you start is not where you have to stay.", attr: null },
-  { text: "The brave career decision is rarely the comfortable one.", attr: null },
-  { text: "Your energy is finite. Spend it on people who multiply it.", attr: null },
-  { text: "Generous enthusiasm is a superpower.", attr: null },
-];
 
 function HomeTab({ userData, setTab }) {
   const visible = useFadeIn(["home"]);
