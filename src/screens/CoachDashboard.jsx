@@ -32,25 +32,33 @@ export function CoachDashboard() {
   const [pw, setPw] = useState("");
   const [pwError, setPwError] = useState(false);
   const [reflections, setReflections] = useState(null);
+  const [profiles, setProfiles] = useState(null);
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [filterQ, setFilterQ] = useState("all");
+  const [view, setView] = useState("reflections");
 
   const handleLogin = () => {
     if (pw === COACH_PASSWORD) {
       setAuthed(true);
       setPwError(false);
       setLoading(true);
-      supabase
-        .from("reflections")
-        .select("id, name, phone, quadrant, brave_reflection, fears_reflection, ref, created_at")
-        .order("created_at", { ascending: false })
-        .then(({ data, error }) => {
-          if (!error && data) setReflections(data);
-          setLoading(false);
-        });
+      Promise.all([
+        supabase
+          .from("reflections")
+          .select("id, name, phone, quadrant, brave_reflection, fears_reflection, ref, created_at")
+          .order("created_at", { ascending: false }),
+        supabase
+          .from("profiles")
+          .select("id, name, email, linkedin, quadrant, x, y, created_at, updated_at")
+          .order("created_at", { ascending: false }),
+      ]).then(([{ data: rData }, { data: pData }]) => {
+        if (rData) setReflections(rData);
+        if (pData) setProfiles(pData);
+        setLoading(false);
+      });
     } else {
       setPwError(true);
     }
@@ -212,9 +220,32 @@ export function CoachDashboard() {
         </button>
       </div>
 
+      {/* View toggle */}
+      {!loading && (reflections || profiles) && (
+        <div style={{ display: "flex", gap: 6, marginBottom: 28 }}>
+          {["reflections", "profiles"].map(v => (
+            <button
+              key={v}
+              onClick={() => setView(v)}
+              style={{
+                background: view === v ? `${C.ocean}20` : "none",
+                border: `1px solid ${view === v ? C.ocean : C.border}`,
+                borderRadius: 20, padding: "5px 16px",
+                color: view === v ? C.ocean : C.muted,
+                fontSize: 11, cursor: "pointer", ...mono, transition: "all 0.15s",
+              }}
+            >{v}</button>
+          ))}
+        </div>
+      )}
+
       {loading && <div style={{ ...mono, fontSize: 12, color: C.dim, letterSpacing: 1 }}>loading...</div>}
 
-      {!loading && reflections && (
+      {!loading && view === "profiles" && profiles && (
+        <ProfilesView profiles={profiles} C={C} mono={mono} QUADRANT_READS={QUADRANT_READS} />
+      )}
+
+      {!loading && view === "reflections" && reflections && (
         <>
           {/* ── Stat cards ── */}
           <div style={{ display: "flex", gap: 10, marginBottom: 24, flexWrap: "wrap" }}>
@@ -472,6 +503,76 @@ export function CoachDashboard() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function ProfilesView({ profiles, C, mono, QUADRANT_READS }) {
+  const withLinkedin = profiles.filter(p => p.linkedin);
+  const withEmail    = profiles.filter(p => p.email);
+
+  return (
+    <div>
+      <div style={{ display: "flex", gap: 10, marginBottom: 24, flexWrap: "wrap" }}>
+        <div style={{ flex: "1 1 120px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 12, padding: "16px 20px" }}>
+          <div style={{ ...mono, fontSize: 9, color: C.muted, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>total profiles</div>
+          <div style={{ fontSize: 28, color: C.pearl, fontFamily: "Georgia, serif" }}>{profiles.length}</div>
+        </div>
+        <div style={{ flex: "1 1 120px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 12, padding: "16px 20px" }}>
+          <div style={{ ...mono, fontSize: 9, color: C.muted, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>with linkedin</div>
+          <div style={{ fontSize: 28, color: C.ocean, fontFamily: "Georgia, serif" }}>{withLinkedin.length}</div>
+        </div>
+        <div style={{ flex: "1 1 120px", background: C.surface, border: `1px solid ${C.border}`, borderRadius: 12, padding: "16px 20px" }}>
+          <div style={{ ...mono, fontSize: 9, color: C.muted, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 8 }}>with email</div>
+          <div style={{ fontSize: 28, color: C.seafoam, fontFamily: "Georgia, serif" }}>{withEmail.length}</div>
+        </div>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {profiles.map(p => {
+          const key = Object.keys(QUADRANT_READS).find(k => QUADRANT_READS[k].title === p.quadrant);
+          const color = key ? QUADRANT_READS[key].color : C.muted;
+          const date = p.created_at
+            ? new Date(p.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+            : "";
+          const liUrl = p.linkedin
+            ? (p.linkedin.startsWith("http") ? p.linkedin : `https://${p.linkedin}`)
+            : null;
+          return (
+            <div
+              key={p.id}
+              style={{
+                background: C.surface, border: `1px solid ${C.border}`,
+                borderLeft: `3px solid ${color}`, borderRadius: 10, padding: "14px 16px",
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6, gap: 12, flexWrap: "wrap" }}>
+                <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                  <span style={{ fontSize: 14, color: C.pearl, fontWeight: 500 }}>{p.name || "Anonymous"}</span>
+                  {p.quadrant && <span style={{ ...mono, fontSize: 10, color, letterSpacing: 0.5 }}>{p.quadrant}</span>}
+                </div>
+                <span style={{ ...mono, fontSize: 10, color: C.dim }}>{date}</span>
+              </div>
+              {p.email && (
+                <div style={{ ...mono, fontSize: 11, color: C.muted, marginBottom: 4 }}>{p.email}</div>
+              )}
+              {liUrl && (
+                <a
+                  href={liUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ ...mono, fontSize: 11, color: C.ocean, textDecoration: "none", display: "block" }}
+                >
+                  {p.linkedin.replace(/^https?:\/\/(www\.)?/, "")} →
+                </a>
+              )}
+              {!p.email && !p.linkedin && (
+                <div style={{ ...mono, fontSize: 10, color: C.dim, fontStyle: "italic" }}>no contact info</div>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

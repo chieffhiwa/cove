@@ -2505,6 +2505,7 @@ function StepBetaForm({ name, selfPosition, userData, supaUser, finish }) {
   const [copied, setCopied]   = useState(false);
   const [email, setEmail]     = useState(userData?.email || "");
   const [password, setPassword] = useState("");
+  const [linkedin, setLinkedin] = useState(userData?.linkedin || "");
   const [authErr, setAuthErr] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
   const [accountCreated, setAccountCreated] = useState(!!supaUser);
@@ -2575,6 +2576,9 @@ function StepBetaForm({ name, selfPosition, userData, supaUser, finish }) {
       }
     }
 
+    // Save profile (including linkedin) so it's there when loadProfile fires
+    await upsertProfile({ ...userData, email: email.trim(), linkedin: linkedin.trim() });
+
     setAccountCreated(true);
     setAuthLoading(false);
   };
@@ -2634,6 +2638,19 @@ function StepBetaForm({ name, selfPosition, userData, supaUser, finish }) {
               value={password}
               onChange={e => setPassword(e.target.value)}
               onKeyDown={e => e.key === "Enter" && handleSignUp()}
+              style={{
+                width: "100%", boxSizing: "border-box",
+                background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8,
+                padding: "11px 13px", fontSize: 14, color: C.text, outline: "none",
+                marginBottom: 8, fontFamily: "inherit",
+              }}
+            />
+            <input
+              type="url"
+              placeholder="linkedin.com/in/yourname (optional)"
+              value={linkedin}
+              onChange={e => setLinkedin(e.target.value)}
+              autoComplete="off"
               style={{
                 width: "100%", boxSizing: "border-box",
                 background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8,
@@ -4614,10 +4631,11 @@ function ProfileTab({ userData, update, onReset, onSignOut, onGoToLogin, supaUse
     setEmailError("");
   };
 
-  const saveLinkedin = () => {
+  const saveLinkedin = async () => {
     const trimmed = linkedinDraft.trim();
     update({ linkedin: trimmed });
     setEditingLinkedin(false);
+    await upsertProfile({ ...userData, linkedin: trimmed });
   };
 
   const handlePhotoChange = (e) => {

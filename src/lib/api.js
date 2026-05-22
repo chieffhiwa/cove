@@ -54,6 +54,7 @@ export async function upsertProfile(userData) {
   const { data, error } = await supabase.from("profiles").upsert({
     name: userData.name || null,
     email: userData.email || null,
+    linkedin: userData.linkedin || null,
     quadrant: quadrantLabel,
     x: userData.selfPosition?.x ?? null,
     y: userData.selfPosition?.y ?? null,
