@@ -13,20 +13,22 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useState, useEffect, useRef } from "react";
-import { supabase } from "../supabase";
-import { track, posthog, PH_KEY } from "../lib/analytics";
-import { postReflections, upsertProfile } from "../lib/api";
+import { useTheme } from "../context/ThemeContext";
+import { useFadeIn, fadeStyle } from "../lib/hooks";
 import { FEELINGS, SEED_WANTS } from "../config/feelings";
-import { TAGLINE } from "../config/constants";
 import {
   QUADRANT_READS, QUADRANT_PAUSE, QUADRANT_STORIES,
   getQuadrant, getQuadrantImage,
 } from "../config/quadrants";
-import { useTheme } from "../context/ThemeContext";
-import { useFadeIn, fadeStyle } from "../lib/hooks";
+// eslint-disable-next-line no-unused-vars
+import { DEPTH_STOPS, getDepthPalette, DARK } from "../config/palette";
+import { postReflections, upsertProfile } from "../lib/api";
+import { Btn } from "../components/Btn";
+import { supabase } from "../supabase";
+import { track, posthog, PH_KEY } from "../lib/analytics";
+import { TAGLINE } from "../config/constants";
 import { Shell } from "../components/Shell";
 import { Avatar } from "../components/Avatar";
-import { Btn } from "../components/Btn";
 
 export function Onboard({ step, setStep, userData, update, finish, supaUser, darkMode, toggleDark, onGoToLogin }) {
   const C = useTheme();
