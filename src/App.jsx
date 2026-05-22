@@ -1161,6 +1161,7 @@ function StepListBuilder({ contacts = [], update, next }) {
             onKeyDown={e => e.key === "Enter" && addName()}
             placeholder="a name, a company, a role..."
             autoFocus
+            autoComplete="off"
             style={{
               flex: 1, background: C.surface, border: `1px solid ${input ? C.ocean : C.border}`,
               borderRadius: 10, padding: "13px 16px", fontSize: 15, color: C.text,
@@ -1520,6 +1521,7 @@ function StepWants({ wants, update, next }) {
               onChange={e => setCustomText(e.target.value)}
               onKeyDown={e => e.key === "Enter" && addCustom()}
               placeholder="add your own want..."
+              autoComplete="off"
               style={{
                 flex: 1, background: C.surface, border: `1px solid ${C.border}`,
                 borderRadius: 10, padding: "12px 14px", fontSize: 13,
@@ -4485,20 +4487,20 @@ function List100Tab({ userData }) {
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
           <input value={form.firstName} onChange={e => setForm(f => ({ ...f, firstName: e.target.value }))}
-            placeholder="First name" style={inputStyle} />
+            placeholder="First name" autoComplete="off" style={inputStyle} />
           <input value={form.lastName} onChange={e => setForm(f => ({ ...f, lastName: e.target.value }))}
-            placeholder="Last name" style={inputStyle} />
+            placeholder="Last name" autoComplete="off" style={inputStyle} />
         </div>
         <input value={form.company} onChange={e => setForm(f => ({ ...f, company: e.target.value }))}
-          placeholder="Company / Organization" style={{ ...inputStyle, marginBottom: 8 }} />
+          placeholder="Company / Organization" autoComplete="off" style={{ ...inputStyle, marginBottom: 8 }} />
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
           <input value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-            placeholder="Email" style={inputStyle} />
+            placeholder="Email" autoComplete="off" style={inputStyle} />
           <input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
-            placeholder="Phone" style={inputStyle} />
+            placeholder="Phone" autoComplete="off" style={inputStyle} />
         </div>
         <input value={form.linkedin} onChange={e => setForm(f => ({ ...f, linkedin: e.target.value }))}
-          placeholder="LinkedIn URL" style={{ ...inputStyle, marginBottom: 8 }} />
+          placeholder="LinkedIn URL" autoComplete="off" style={{ ...inputStyle, marginBottom: 8 }} />
         <textarea value={form.why} onChange={e => setForm(f => ({ ...f, why: e.target.value }))}
           placeholder="Why this person? What do you admire or want to learn?" rows={2}
           style={{ ...inputStyle, resize: "none", lineHeight: 1.6, marginBottom: 8 }} />
