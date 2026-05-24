@@ -82,7 +82,7 @@ export function Onboard({ step, setStep, userData, update, finish, supaUser, dar
     <StepListReveal     key={19} contacts={userData.contacts} name={userData.name} next={() => go(20, "step_completed", { step_name: "list_reveal" })} />,
     <StepBreath         key={20} name={userData.name} contacts={userData.contacts} selfPosition={userData.selfPosition} next={() => go(21, "step_completed", { step_name: "breath" })} />,
     <StepFounderNote    key={21} next={() => go(22, "step_completed", { step_name: "founder_note" })} />,
-    <StepBetaForm       key={22} name={userData.name} selfPosition={userData.selfPosition} userData={userData} supaUser={supaUser} finish={() => { track("onboarding_completed"); finish(); }} />,
+    <StepBetaForm       key={22} name={userData.name} finish={() => { track("onboarding_completed"); finish(); }} />,
   ];
 
   // Dots: philosophy(4), name(5), matrix intro(6), matrix(7), brave(12), fears(13), list(16-22)
@@ -655,7 +655,7 @@ function StepListDialogue({ name, next }) {
       {/* Content */}
       <div style={{ flex: 1, padding: "0 28px 48px", display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
         <h2 style={{ fontSize: 30, fontWeight: 300, color: C.pearl, lineHeight: 1.4, margin: "0 0 16px" }}>
-          {name ? `${name}, who do you actually want to talk to?` : "Who do you actually want to talk to?"}
+          Who do you actually <em>need</em> to talk to?
         </h2>
         <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.85, margin: "0 0 8px" }}>
           Not a dream. Not a stretch. The people — real or aspirational — you'd actually want 20 minutes with.
@@ -780,8 +780,8 @@ function StepListBuilder({ contacts = [], update, next }) {
     <div style={{ ...fadeStyle(visible), padding: "72px 28px 48px", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <div style={{ flex: 1 }}>
         <p style={{ fontSize: 11, letterSpacing: 2, color: C.ocean, fontFamily: "monospace", margin: "0 0 20px" }}>YOUR LIST</p>
-        <h2 style={{ fontSize: 26, fontWeight: 300, color: C.pearl, lineHeight: 1.4, margin: "0 0 10px" }}>
-          Who do you actually want to talk to?
+        <h2 style={{ fontSize: 26, fontWeight: 300, color: C.pearl, lineHeight: 1.4, margin: "0 0 10px", whiteSpace: "nowrap" }}>
+          Who do you <em>need</em> to talk to?
         </h2>
         <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.8, margin: "0 0 24px" }}>
           Heroes, mentors, people in roles you want. Don't filter yet — just name them.
@@ -1880,207 +1880,195 @@ function StepFounderNote({ next }) {
   );
 }
 
-// ── Step Final: Share screen ───────────────────────────────────────────────────
-function StepBetaForm({ name, selfPosition, userData, supaUser, finish }) {
+// ── Fireworks canvas overlay ───────────────────────────────────────────────────
+function Fireworks() {
+  const canvasRef = useRef(null);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
+    resize();
+    window.addEventListener("resize", resize);
+
+    const PALETTE = [
+      "#ffffff", "#f0f8ff", "#e8f4ff",
+      "#c8d8e8", "#b0c4d8", "#d0dce8",
+      "#1e6fa8", "#2e8fd4", "#4a9eca", "#6bb8e8", "#a8d4f5",
+      "#d4a030", "#e8b84b", "#f5c842", "#ffd700", "#ffe066",
+    ];
+
+    class Particle {
+      constructor(x, y, color) {
+        this.x = x; this.y = y; this.color = color;
+        const angle = Math.random() * Math.PI * 2;
+        const speed = Math.random() * 5 + 2;
+        this.vx = Math.cos(angle) * speed;
+        this.vy = Math.sin(angle) * speed - 1.5;
+        this.alpha = 1;
+        this.radius = Math.random() * 2.2 + 0.8;
+        this.decay = Math.random() * 0.012 + 0.008;
+        this.gravity = 0.07;
+        this.twinkle = Math.random() > 0.6;
+        this.twinkleRate = Math.random() * 0.2 + 0.1;
+      }
+      update() {
+        this.x += this.vx; this.vy += this.gravity; this.y += this.vy;
+        this.vx *= 0.97; this.alpha -= this.decay;
+      }
+      draw(t) {
+        const r = this.twinkle ? this.radius * (0.6 + 0.4 * Math.sin(t * this.twinkleRate)) : this.radius;
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, this.alpha);
+        ctx.fillStyle = this.color;
+        ctx.shadowBlur = 6; ctx.shadowColor = this.color;
+        ctx.beginPath(); ctx.arc(this.x, this.y, r, 0, Math.PI * 2); ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    let particles = [], animId, t = 0, done = false;
+    const W = () => canvas.width, H = () => canvas.height;
+    const burst = (x, y) => {
+      const color = PALETTE[Math.floor(Math.random() * PALETTE.length)];
+      const accent = PALETTE[Math.floor(Math.random() * PALETTE.length)];
+      for (let i = 0; i < 60 + Math.floor(Math.random() * 35); i++)
+        particles.push(new Particle(x, y, i % 5 === 0 ? accent : color));
+    };
+
+    const schedule = [
+      [0,    () => burst(W() * 0.5,  H() * 0.28)],
+      [350,  () => burst(W() * 0.25, H() * 0.38)],
+      [700,  () => burst(W() * 0.75, H() * 0.32)],
+      [1100, () => burst(W() * 0.4,  H() * 0.22)],
+      [1500, () => burst(W() * 0.65, H() * 0.42)],
+      [1900, () => burst(W() * 0.2,  H() * 0.30)],
+      [2350, () => burst(W() * 0.8,  H() * 0.25)],
+      [2800, () => burst(W() * 0.5,  H() * 0.35)],
+      [3300, () => { burst(W() * 0.35, H() * 0.28); burst(W() * 0.65, H() * 0.28); }],
+    ];
+    const timers = schedule.map(([delay, fn]) => setTimeout(fn, delay));
+    const stopTimer = setTimeout(() => { done = true; }, 5000);
+
+    const animate = () => {
+      ctx.clearRect(0, 0, W(), H());
+      t++;
+      particles = particles.filter(p => p.alpha > 0.02);
+      particles.forEach(p => { p.update(); p.draw(t); });
+      if (!done || particles.length > 0) animId = requestAnimationFrame(animate);
+    };
+    animate();
+
+    return () => {
+      cancelAnimationFrame(animId);
+      timers.forEach(clearTimeout);
+      clearTimeout(stopTimer);
+      window.removeEventListener("resize", resize);
+    };
+  }, []);
+
+  return (
+    <canvas ref={canvasRef}
+      style={{ position: "fixed", inset: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 50 }}
+    />
+  );
+}
+
+// ── Step Final: Arrival ────────────────────────────────────────────────────────
+function StepBetaForm({ name, finish }) {
   const C = useTheme();
   const visible = useFadeIn([]);
-  const [copied, setCopied]   = useState(false);
-  const [email, setEmail]     = useState(userData?.email || "");
-  const [password, setPassword] = useState("");
-  const [linkedin, setLinkedin] = useState(userData?.linkedin || "");
-  const [authErr, setAuthErr] = useState("");
-  const [authLoading, setAuthLoading] = useState(false);
-  const [accountCreated, setAccountCreated] = useState(!!supaUser);
+  const [copied, setCopied] = useState(false);
 
-  const qLabel = selfPosition
-    ? `${selfPosition.y < 50 ? "Brave" : "Fearful"} + ${selfPosition.x > 50 ? "Curious" : "Judgmental"}`
-    : null;
   const shareUrl  = "https://cove-main.vercel.app";
-  const shareText = `Hey! Check out this new career app called Cove. I wanna see where you land on the matrix :) ${shareUrl}`;
+  const shareText = `Hey! You have to try this career app — I wanna see where you land on the matrix. ${shareUrl}`;
 
   const handleShare = async () => {
     if (navigator.share) {
       try { await navigator.share({ text: shareText, url: shareUrl }); } catch {}
     } else {
-      await navigator.clipboard?.writeText(`${shareText}\n${shareUrl}`);
+      await navigator.clipboard?.writeText(shareText);
       setCopied(true);
       setTimeout(() => setCopied(false), 2200);
     }
   };
 
-  const handleSignUp = async () => {
-    if (!email.trim() || !password.trim()) { setAuthErr("Enter your email and a password."); return; }
-    if (password.length < 6) { setAuthErr("Password must be at least 6 characters."); return; }
-    setAuthLoading(true);
-    setAuthErr("");
-
-    const { data, error } = await supabase.auth.signUp({
-      email: email.trim(),
-      password,
-      options: { data: { name: name || "" } },
-    });
-
-    if (error) {
-      if (error.message?.toLowerCase().includes("already registered")) {
-        const { error: signInErr } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-        if (signInErr) { setAuthErr("Couldn't sign in. Check your password."); setAuthLoading(false); return; }
-      } else {
-        setAuthErr(error.message);
-        setAuthLoading(false);
-        return;
-      }
-    }
-
-    // Write matrix scores
-    const userId = data?.user?.id;
-    if (userId && selfPosition) {
-      const bravery   = selfPosition.x / 100;
-      const curiosity = 1 - selfPosition.y / 100;
-      const archetype = bravery >= 0.5 && curiosity >= 0.5 ? "Pioneer"
-        : bravery >= 0.5 ? "Builder"
-        : curiosity >= 0.5 ? "Sage" : "Anchor";
-      await supabase.from("user_matrix_scores").upsert(
-        { user_id: userId, bravery, curiosity, archetype },
-        { onConflict: "user_id" }
-      );
-      if (userData?.braveReflection || userData?.fearsReflection) {
-        await supabase.from("onboarding_answers").upsert(
-          { user_id: userId, bravery_text: userData.braveReflection || null, curiosity_text: userData.fearsReflection || null, archetype },
-          { onConflict: "user_id" }
-        );
-      }
-    }
-
-    // Save profile (including linkedin) to Supabase now so it's there when loadProfile fires
-    await upsertProfile({ ...userData, email: email.trim(), linkedin: linkedin.trim() });
-
-    setAccountCreated(true);
-    setAuthLoading(false);
-  };
+  const perks = [
+    { glyph: "◎", text: "Match with real professionals and coaches who've been where you are" },
+    { glyph: "⊹", text: "Track your progress through your career exploration — not just job apps" },
+    { glyph: "→", text: "Start going after opportunities, warm — not cold, never cold" },
+    { glyph: "◑", text: "Build a record of every brave thing you've done, every door you've opened" },
+  ];
 
   return (
-    <div style={{ ...fadeStyle(visible), minHeight: "100vh", display: "flex", flexDirection: "column", background: C.bg }}>
+    <div style={{ ...fadeStyle(visible), minHeight: "100vh", display: "flex", flexDirection: "column", background: C.bg, position: "relative" }}>
+
+      <Fireworks />
 
       {/* Photo */}
-      <div style={{ position: "relative", height: 240, overflow: "hidden", flexShrink: 0, background: C.raised }}>
+      <div style={{ position: "relative", height: 270, overflow: "hidden", flexShrink: 0 }}>
         <img src="/fhiwa-kid.jpg" alt=""
-          style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 50%", filter: "brightness(1.05) saturate(0.9)" }}
+          style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "50% 50%", filter: "brightness(1.05) saturate(0.88)" }}
         />
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, transparent 50%, rgba(240,244,248,0.92) 100%)" }} />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, transparent 40%, rgba(240,244,248,0.96) 100%)" }} />
+        <p style={{ position: "absolute", bottom: 14, left: 22, fontSize: 10, color: C.dim, fontFamily: "monospace", letterSpacing: 1, margin: 0, fontStyle: "italic" }}>
+          brave + curious since day one
+        </p>
       </div>
 
-      <div style={{ flex: 1, padding: "28px 24px 56px", display: "flex", flexDirection: "column", gap: 18 }}>
-
-        <p style={{ fontSize: 11, color: C.dim, fontFamily: "monospace", letterSpacing: 1, margin: 0, fontStyle: "italic" }}>
-          me, probably plotting something. — brave + curious
-        </p>
+      <div style={{ flex: 1, padding: "28px 24px 52px", display: "flex", flexDirection: "column", gap: 22 }}>
 
         <div>
-          <h2 style={{ fontSize: 26, fontWeight: 400, color: C.text, fontFamily: "Georgia, serif", lineHeight: 1.35, margin: "0 0 8px" }}>
-            {name ? `You're in, ${name.split(" ")[0]}.` : "You're in."}
+          <p style={{ fontSize: 10, letterSpacing: 3, color: C.ocean, fontFamily: "monospace", margin: "0 0 10px", opacity: 0.85 }}>
+            YOU MADE IT
+          </p>
+          <h2 style={{ fontSize: 27, fontWeight: 300, color: C.pearl, lineHeight: 1.3, margin: "0 0 10px", letterSpacing: -0.3 }}>
+            This is just the beginning{name ? `, ${name.split(" ")[0]}` : ""}.
           </h2>
-          <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.75, margin: 0 }}>
-            {qLabel
-              ? `You placed yourself as ${qLabel}. That's the starting point — not the ceiling.`
-              : "You've done something most people skip. Now let's put it to work."}
+          <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.8, margin: 0 }}>
+            You've done something real today. Most people never slow down enough to do this. Here's what comes next.
           </p>
         </div>
 
-        {/* Account creation */}
-        {!accountCreated ? (
-          <div style={{ padding: "20px 18px", borderRadius: 14, background: C.surface, border: `1px solid ${C.border}` }}>
-            <div style={{ fontSize: 13, color: C.pearl, fontWeight: 600, marginBottom: 4 }}>
-              ✦ Save your profile + unlock Coach & Matches
+        <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+          {perks.map((p, i) => (
+            <div key={i} style={{
+              display: "flex", gap: 14, alignItems: "flex-start",
+              padding: "13px 16px", borderRadius: 11,
+              background: C.surface, border: `1px solid ${C.borderSoft}`,
+            }}>
+              <span style={{ fontSize: 13, color: C.ocean, fontFamily: "monospace", flexShrink: 0, paddingTop: 2, opacity: 0.8 }}>{p.glyph}</span>
+              <span style={{ fontSize: 13, color: C.muted, lineHeight: 1.7 }}>{p.text}</span>
             </div>
-            <div style={{ fontSize: 12, color: C.muted, marginBottom: 14, lineHeight: 1.6 }}>
-              Create a free account to get AI coaching, see who matches your matrix, and track your progress across sessions.
-            </div>
-            <input
-              type="email"
-              placeholder="your email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              style={{
-                width: "100%", boxSizing: "border-box",
-                background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8,
-                padding: "11px 13px", fontSize: 14, color: C.text, outline: "none",
-                marginBottom: 8, fontFamily: "inherit",
-              }}
-            />
-            <input
-              type="password"
-              placeholder="choose a password (6+ chars)"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && handleSignUp()}
-              style={{
-                width: "100%", boxSizing: "border-box",
-                background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8,
-                padding: "11px 13px", fontSize: 14, color: C.text, outline: "none",
-                marginBottom: 8, fontFamily: "inherit",
-              }}
-            />
-            <input
-              type="url"
-              placeholder="linkedin.com/in/yourname (optional)"
-              value={linkedin}
-              onChange={e => setLinkedin(e.target.value)}
-              autoComplete="off"
-              style={{
-                width: "100%", boxSizing: "border-box",
-                background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8,
-                padding: "11px 13px", fontSize: 14, color: C.text, outline: "none",
-                marginBottom: authErr ? 8 : 12, fontFamily: "inherit",
-              }}
-            />
-            {authErr && <div style={{ fontSize: 12, color: "#e07868", marginBottom: 10 }}>{authErr}</div>}
-            <div
-              onClick={handleSignUp}
-              style={{
-                background: C.ocean, color: "#fff", textAlign: "center",
-                padding: "12px 0", borderRadius: 10, cursor: "pointer",
-                fontSize: 14, fontWeight: 600, opacity: authLoading ? 0.6 : 1,
-              }}
-            >
-              {authLoading ? "creating account..." : "create free account →"}
-            </div>
-            <div onClick={finish} style={{ textAlign: "center", fontSize: 12, color: C.dim, marginTop: 10, cursor: "pointer" }}>
-              skip for now
-            </div>
-          </div>
-        ) : (
-          <div style={{ padding: "16px 18px", borderRadius: 14, background: "#f0fdf4", border: "1px solid #86efac" }}>
-            <div style={{ fontSize: 14, color: "#166534", fontWeight: 600 }}>✓ Account created — you're all set</div>
-            <div style={{ fontSize: 12, color: "#4ade80", marginTop: 4 }}>Coach and Matches are unlocked in your dashboard.</div>
-          </div>
-        )}
+          ))}
+        </div>
 
-        {/* Share */}
         <div onClick={handleShare} style={{
-          padding: "14px 18px", borderRadius: 10, border: `1px solid ${C.border}`,
+          padding: "13px 18px", borderRadius: 10, border: `1px solid ${C.border}`,
           background: C.surface, cursor: "pointer", display: "flex", alignItems: "center",
           gap: 12, touchAction: "manipulation",
         }}>
-          <span style={{ fontSize: 20 }}>🔗</span>
+          <span style={{ fontSize: 14, color: C.ocean, fontFamily: "monospace", fontWeight: 600 }}>↗</span>
           <div>
             <div style={{ fontSize: 13, color: C.text, fontWeight: 600, marginBottom: 2 }}>
-              {copied ? "Copied! Send it." : "Invite someone to try it"}
+              {copied ? "Copied — send it." : "Bring someone with you"}
             </div>
-            <div style={{ fontSize: 11, color: C.muted }}>who else needs to find their matrix?</div>
+            <div style={{ fontSize: 11, color: C.muted }}>who else needs to figure this out?</div>
           </div>
         </div>
 
         <div style={{ flex: 1 }} />
 
-        <div onClick={finish} style={{
-          textAlign: "center", padding: "20px 24px", cursor: "pointer",
-          background: C.ocean, color: "#fff",
+        <button onClick={finish} style={{
+          padding: "19px 24px", cursor: "pointer", border: "none",
+          background: C.ocean, color: "#fff", width: "100%",
           fontSize: 17, borderRadius: 12, fontFamily: "Georgia, serif",
           letterSpacing: 0.3, touchAction: "manipulation",
-          boxShadow: `0 4px 16px rgba(30,111,168,0.25)`,
+          boxShadow: `0 4px 20px rgba(30,111,168,0.3)`,
         }}>
-          Open Cove →
-        </div>
+          open cove →
+        </button>
+
       </div>
     </div>
   );

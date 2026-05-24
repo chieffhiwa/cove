@@ -51,7 +51,9 @@ export async function upsertProfile(userData) {
   const quadrant = userData.selfPosition ? getQuadrant(userData.selfPosition.x, userData.selfPosition.y) : null;
   const quadrantLabel = quadrant ? QUADRANT_READS[quadrant]?.title : null;
   const ref = localStorage.getItem("cove_ref") || null;
-  const { data, error } = await supabase.from("profiles").upsert({
+  const savedId = localStorage.getItem("cove_profile_id");
+
+  const row = {
     name: userData.name || null,
     email: userData.email || null,
     linkedin: userData.linkedin || null,
@@ -63,8 +65,21 @@ export async function upsertProfile(userData) {
     contacts: userData.contacts || [],
     ref,
     updated_at: new Date().toISOString(),
-  }, { onConflict: "email", ignoreDuplicates: false });
-  if (data?.[0]?.id) localStorage.setItem("cove_profile_id", data[0].id);
+  };
+
+  // If we know the profile ID, update directly — no email needed
+  // Supabase v2 requires .select() to return data; without it data is always null
+  if (savedId) {
+    const { error } = await supabase.from("profiles").update(row).eq("id", savedId);
+    if (!error) return { error: null };
+  }
+
+  const builder = userData.email
+    ? supabase.from("profiles").upsert(row, { onConflict: "email" }).select("id").maybeSingle()
+    : supabase.from("profiles").insert(row).select("id").maybeSingle();
+
+  const { data, error } = await builder;
+  if (data?.id) localStorage.setItem("cove_profile_id", data.id);
   return { data, error };
 }
 
