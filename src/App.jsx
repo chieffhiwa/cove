@@ -54,10 +54,24 @@ function AppInner() {
     const loadProfile = async (user) => {
       if (!user?.email) return;
       const { data } = await supabase.from("profiles").select("*").eq("email", user.email).maybeSingle();
-      if (!data) return;
+
+      if (!data) {
+        // No profile row yet — seed one linked to this auth email and store the ID
+        const { data: newRow } = await supabase
+          .from("profiles")
+          .insert({ email: user.email, updated_at: new Date().toISOString() })
+          .select("id").maybeSingle();
+        if (newRow?.id) localStorage.setItem("cove_profile_id", newRow.id);
+        setUserData(prev => ({ ...prev, email: user.email }));
+        return;
+      }
+
+      // Profile exists — store its ID so future saves go to the right row
+      if (data.id) localStorage.setItem("cove_profile_id", data.id);
+
       const restored = {
         name: data.name || "",
-        email: data.email || "",
+        email: data.email || user.email,
         phone: data.phone || "",
         linkedin: data.linkedin || "",
         photoUrl: data.photo_url || "",
@@ -68,7 +82,6 @@ function AppInner() {
         contacts: data.contacts || [],
       };
       setUserData(prev => {
-        // Local data wins for any field that has content — Supabase fills in gaps
         const merged = { ...restored };
         if (prev.name) merged.name = prev.name;
         if (prev.selfPosition) merged.selfPosition = prev.selfPosition;
