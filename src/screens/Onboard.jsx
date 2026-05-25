@@ -411,7 +411,7 @@ function StepMatrixIntro({ name, next }) {
       <div style={{ flex: 1 }}>
         <p style={{ fontSize: 11, letterSpacing: 2, color: C.muted, fontFamily: "monospace", margin: "0 0 20px" }}>THE MATRIX</p>
         <h2 style={{ fontSize: 26, fontWeight: 400, margin: "0 0 16px", color: C.pearl, lineHeight: 1.4 }}>
-          Where are you sitting right now{name ? `, ${name}` : ""}?
+          Where are you right now?
         </h2>
         <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.8, margin: "0 0 32px" }}>
           Not who you want to be — where you actually are today. You'll place a dot on a two-axis grid. Takes about ten seconds.
@@ -502,7 +502,7 @@ function StepSelfMatrix({ name, initialPosition, next }) {
         ) : (
           <>
             <h2 style={{ fontSize: 24, fontWeight: 400, margin: "0 0 8px", color: C.pearl, lineHeight: 1.35 }}>
-              Be real with yourself, {name}.
+              Be real with yourself.
             </h2>
             <p style={{ fontSize: 13, color: C.muted, lineHeight: 1.7, margin: "0 0 22px" }}>
               Brave or fearful? Curious or judgmental? Be honest. Where you actually are today.
@@ -564,7 +564,7 @@ function StepSelfMatrix({ name, initialPosition, next }) {
               boxShadow: `0 2px 12px rgba(46,143,212,0.4)`,
               border: `2px solid rgba(255,255,255,0.6)`,
             }}>
-              {name ? name[0].toUpperCase() : "?"}
+              ◉
             </div>
           </div>
         )}
@@ -2023,7 +2023,7 @@ function StepBetaForm({ name, finish }) {
             YOU MADE IT
           </p>
           <h2 style={{ fontSize: 27, fontWeight: 300, color: C.pearl, lineHeight: 1.3, margin: "0 0 10px", letterSpacing: -0.3 }}>
-            This is just the beginning{name ? `, ${name.split(" ")[0]}` : ""}.
+            This is just the beginning.
           </h2>
           <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.8, margin: 0 }}>
             You've done something real today. Most people never slow down enough to do this. Here's what comes next.
