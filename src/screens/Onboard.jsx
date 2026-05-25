@@ -1847,15 +1847,15 @@ function StepFounderNote({ next }) {
         </p>
 
         <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.85, margin: "0 0 14px" }}>
-          Job searching sucks. So much of it is outside your control, and it quietly messes with your head until you've forgotten what it felt like to just be excited about work.
+          Job searching is hard. So much of it feels well outside of our control, and it quietly messes with our heads until we've forgotten what it felt like to just be excited about work.
         </p>
 
         <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.85, margin: "0 0 14px" }}>
-          I still think about how excited I was to get hired at Toys R Us, 18 years ago. I had no idea what I was in for, good or bad, but I didn't care. I was curious.
+          I still think about getting hired at Toys R Us, 18 years ago. I had no idea what I was in for — but I didn't care. I was curious.
         </p>
 
         <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.85, margin: "0 0 24px" }}>
-          I built this to get that feeling back. Turns out a lot of people need it.
+          We built this to get that feeling back. Turns out a lot of us need it.
         </p>
 
         <p style={{ fontSize: 12, color: C.dim, fontStyle: "italic", margin: "0 0 10px" }}>— Fhiwa Ndou</p>
