@@ -69,6 +69,11 @@ function AppInner() {
       // Profile exists — store its ID so future saves go to the right row
       if (data.id) localStorage.setItem("cove_profile_id", data.id);
 
+      // Restore list from Supabase if localStorage is empty
+      if (data.list_data?.length && !localStorage.getItem("cove_list100")) {
+        localStorage.setItem("cove_list100", JSON.stringify(data.list_data));
+      }
+
       const restored = {
         name: data.name || "",
         email: data.email || user.email,
@@ -208,7 +213,8 @@ function MainApp({ userData, update, tab, setTab, activeContact, setActiveContac
   const [nameInput, setNameInput] = useState(userData.name || "");
 
   const saveName = () => {
-    if (nameInput.trim()) update({ name: nameInput.trim() });
+    const name = nameInput.trim();
+    if (name) { update({ name }); upsertProfile({ ...userData, name }); }
     setEditingName(false);
   };
 
@@ -274,7 +280,7 @@ function MainApp({ userData, update, tab, setTab, activeContact, setActiveContac
           {tab === "matrix"    && <MatrixTab    contacts={userData.contacts} openContact={openContact} selfPosition={userData.selfPosition} name={userData.name} />}
           {tab === "coach"     && <CoachTab     supaUser={supaUser} userData={userData} />}
           {tab === "matches"   && <MatchesTab   supaUser={supaUser} userData={userData} />}
-          {tab === "list"      && <List100Tab userData={userData} />}
+          {tab === "list"      && <List100Tab userData={userData} onListSave={(list) => upsertProfile({ ...userData, listData: list })} />}
           {tab === "you"       && <ProfileTab   userData={userData} update={update} onReset={onReset} onSignOut={onSignOut} onGoToLogin={onGoToLogin} supaUser={supaUser} />}
         </div>
 
@@ -1613,7 +1619,7 @@ function makeEntry(firstName = "", lastName = "") {
   };
 }
 
-function List100Tab({ userData }) {
+function List100Tab({ userData, onListSave }) {
   const [entries, setEntries] = useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem("cove_list100") || "[]");
@@ -1678,6 +1684,7 @@ function List100Tab({ userData }) {
   const save = (next) => {
     setEntries(next);
     localStorage.setItem("cove_list100", JSON.stringify(next));
+    onListSave?.(next);
   };
 
   const showToast = (msg) => {
@@ -2102,7 +2109,11 @@ function ProfileTab({ userData, update, onReset, onSignOut, onGoToLogin, supaUse
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = (ev) => update({ photoUrl: ev.target.result });
+    reader.onload = (ev) => {
+      const photoUrl = ev.target.result;
+      update({ photoUrl });
+      upsertProfile({ ...userData, photoUrl });
+    };
     reader.readAsDataURL(file);
   };
 

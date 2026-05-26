@@ -57,6 +57,8 @@ export async function upsertProfile(userData) {
     name: userData.name || null,
     email: userData.email || null,
     linkedin: userData.linkedin || null,
+    photo_url: userData.photoUrl || null,
+    list_data: userData.listData || null,
     quadrant: quadrantLabel,
     x: userData.selfPosition?.x ?? null,
     y: userData.selfPosition?.y ?? null,
