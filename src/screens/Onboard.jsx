@@ -210,7 +210,7 @@ function StepWhyCove({ next }) {
         {[
           { n: "01", title: "Know yourself", body: "The Bravery / Curiosity Matrix — a simple framework to see where you actually are, not where you wish you were." },
           { n: "02", title: "Build the list", body: <>Start reaching out to people in your network before you need something. ✨ Inspired by <a href="https://carlyvalancy.substack.com" target="_blank" rel="noopener noreferrer" style={{ color: C.ocean, textDecoration: "none" }}>Carly Valancy</a>'s 100 Days Project — the right doors are already within reach.</> },
-          { n: "03", title: "Talk it out", body: "Get honest about what's in the way. That's the whole move." },
+          { n: "03", title: "Talk it out", body: "Get honest about the fears and judgments that are getting in your way." },
         ].map(({ n, title, body }) => (
           <div key={n} style={{ display: "flex", gap: 14, marginBottom: 16, padding: "16px 18px", borderRadius: 14, background: C.surface, border: `1px solid ${C.borderSoft}` }}>
             <div style={{ fontSize: 11, color: C.ocean, fontFamily: "monospace", fontWeight: 600, paddingTop: 2, flexShrink: 0 }}>{n}</div>
