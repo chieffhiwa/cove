@@ -208,7 +208,7 @@ function StepWhyCove({ next }) {
         {/* Three moves */}
         <p style={{ fontSize: 11, letterSpacing: 3, color: C.muted, fontFamily: "monospace", margin: "0 0 14px" }}>HOW IT WORKS</p>
         {[
-          { n: "01", title: "Know yourself", body: "The Bravery / Curiosity Matrix — a simple framework to see where you actually are, not where you wish you were." },
+          { n: "01", title: "Know yourself", body: "The Bravery × Curiosity Matrix is a simple framework for getting an honest read on where you actually are." },
           { n: "02", title: "Build the list", body: <>Start reaching out to people in your network before you need something. ✨ Inspired by <a href="https://carlyvalancy.substack.com" target="_blank" rel="noopener noreferrer" style={{ color: C.ocean, textDecoration: "none" }}>Carly Valancy</a>'s 100 Days Project — the right doors are already within reach.</> },
           { n: "03", title: "Talk it out", body: "Get honest about the fears and judgments that are getting in your way." },
         ].map(({ n, title, body }) => (
