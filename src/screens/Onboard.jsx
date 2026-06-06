@@ -263,9 +263,6 @@ function StepSlowDown({ next }) {
         <h2 style={{ fontSize: 30, fontWeight: 400, margin: "0 0 20px", color: C.pearl, lineHeight: 1.3, letterSpacing: -0.5 }}>
           This takes a couple minutes.
         </h2>
-        <p style={{ fontSize: 16, color: C.mist, lineHeight: 1.9, margin: "0 0 20px" }}>
-          A moment to actually slow down.
-        </p>
         <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.85, margin: 0 }}>
           If you're in a rush, close the tab and come back when you have a few minutes to yourself. It's worth it.
         </p>
@@ -273,9 +270,6 @@ function StepSlowDown({ next }) {
       <div style={{ width: "100%", maxWidth: 320 }}>
         <Btn onClick={next}>I'm ready</Btn>
       </div>
-      <p style={{ fontSize: 12, color: C.dim, marginTop: 20, fontStyle: "italic" }}>
-        the whole thing is about slowing down
-      </p>
     </div>
   );
 }
