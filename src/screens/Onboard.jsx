@@ -189,7 +189,7 @@ function StepWhyCove({ next }) {
           The job search is broken.
         </h2>
         <p style={{ fontSize: 15, color: C.mist, lineHeight: 1.85, margin: "0 0 28px" }}>
-          Cove gives you a framework, a coach, and a tool to build the relationships that actually move the needle.
+          Cove gives you a framework, a tool, and a coach to navigate your career with way less friction. Less friction means a faster pathway to unlocking your next job or opportunity.
         </p>
 
         {/* Stats */}
