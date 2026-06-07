@@ -310,30 +310,43 @@
     .colleges-strip {
       background: var(--black); color: var(--white);
       padding: 80px 32px; text-align: center;
+      transition: background 0.45s ease;
     }
-    .colleges-strip .eyebrow { color: #555; }
-    .colleges-strip .section-h2 { color: var(--white); }
-    .colleges-strip .section-p { color: #888; margin: 0 auto 36px; }
+    .colleges-strip .eyebrow { color: #555; transition: color 0.3s; }
+    .colleges-strip .section-h2 { color: var(--white); transition: color 0.3s; }
+    .colleges-strip .section-p { color: #888; margin: 0 auto 28px; transition: color 0.3s; }
     .colleges-logos {
       display: flex; flex-wrap: wrap; gap: 12px;
-      justify-content: center; margin: 32px 0 40px;
+      justify-content: center; margin: 24px 0 36px;
     }
     .college-tag {
       font-family: 'IBM Plex Mono', monospace;
       font-size: 9px; letter-spacing: 2px;
       padding: 8px 14px; border: 1px solid #333;
-      border-radius: 3px; color: #666;
+      border-radius: 3px; color: #666; cursor: pointer;
+      transition: border-color 0.3s, color 0.3s, background 0.3s;
     }
-    .college-tag.active { border-color: var(--white); color: var(--white); }
+    .college-tag:hover { opacity: 0.85; }
     .btn-white {
       display: inline-block;
       font-family: 'IBM Plex Mono', monospace;
       font-size: 10px; letter-spacing: 2px;
       background: var(--white); color: var(--black);
       padding: 15px 28px; border-radius: 3px;
-      text-decoration: none; transition: opacity 0.15s;
+      text-decoration: none; transition: opacity 0.15s, background 0.3s, color 0.3s;
     }
     .btn-white:hover { opacity: 0.85; }
+    #school-badge {
+      width: 72px; height: 72px; border-radius: 50%;
+      display: none; align-items: center; justify-content: center;
+      font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 700;
+      margin: 0 auto 20px; transition: background 0.3s, color 0.3s;
+    }
+    @keyframes badgePop {
+      from { transform: scale(0.6); opacity: 0; }
+      to   { transform: scale(1);   opacity: 1; }
+    }
+    .badge-pop { animation: badgePop 0.35s cubic-bezier(0.34,1.56,0.64,1); }
 
     /* ─── FOOTER ──────────────────────────────────────────── */
     footer {
@@ -737,21 +750,109 @@
 </section>
 
 <!-- ── FOR COLLEGES ───────────────────────────────────────── -->
-<section class="colleges-strip" id="colleges">
-  <p class="eyebrow">WHITE-LABELED FOR INSTITUTIONS</p>
-  <h2 class="section-h2" style="color:white; max-width:600px; margin:0 auto 14px;">Cove for <em>your</em> campus.</h2>
-  <p class="section-p" style="color:#666; margin: 0 auto 28px; max-width:480px;">Your brand, your mascot, your network. Open-source and white-label ready.</p>
+<section class="colleges-strip" id="college-section">
+  <p class="eyebrow" id="college-eyebrow">WHITE-LABELED FOR INSTITUTIONS</p>
+  <h2 class="section-h2" id="college-heading" style="color:white; max-width:600px; margin:0 auto 14px;">Cove for <em>your</em> campus.</h2>
+  <div id="school-badge"></div>
+  <p class="section-p" id="college-desc" style="color:#666; max-width:480px; margin:0 auto 0;">Your brand, your mascot, your network. Open-source and white-label ready.</p>
   <div class="colleges-logos">
-    <span class="college-tag active">BOWDOIN ↗</span>
-    <span class="college-tag">WELLESLEY</span>
-    <span class="college-tag">MOREHOUSE</span>
-    <span class="college-tag">HOWARD</span>
-    <span class="college-tag">SPELMAN</span>
-    <span class="college-tag">UVM</span>
-    <span class="college-tag">YOUR SCHOOL</span>
+    <span class="college-tag" data-school="BOWDOIN" onclick="selectSchool('BOWDOIN')" style="border-color:#fff;color:#fff;">BOWDOIN ↗</span>
+    <span class="college-tag" data-school="WELLESLEY" onclick="selectSchool('WELLESLEY')">WELLESLEY</span>
+    <span class="college-tag" data-school="MOREHOUSE" onclick="selectSchool('MOREHOUSE')">MOREHOUSE</span>
+    <span class="college-tag" data-school="HOWARD" onclick="selectSchool('HOWARD')">HOWARD</span>
+    <span class="college-tag" data-school="SPELMAN" onclick="selectSchool('SPELMAN')">SPELMAN</span>
+    <span class="college-tag" data-school="UVM" onclick="selectSchool('UVM')">UVM</span>
+    <span class="college-tag" data-school="YOURS" onclick="selectSchool('YOURS')">YOUR SCHOOL</span>
   </div>
-  <a href="mailto:fhiwa@cove.so" class="btn-white">Partner with us →</a>
+  <a href="mailto:fhiwa@cove.so" class="btn-white" id="college-cta">Partner with us →</a>
 </section>
+
+<script>
+(function() {
+  var schools = {
+    BOWDOIN: {
+      bg: '#0d0d0d', accent: '#ffffff', muted: '#888', border: '#444',
+      heading: 'Cove for <em>Bowdoin.</em>',
+      desc: 'Your brand, your mascot, your network. Open-source and white-label ready.',
+      badge: 'B', badgeBg: '#f0f0f0', badgeColor: '#0d0d0d',
+      btnBg: '#ffffff', btnColor: '#0d0d0d'
+    },
+    WELLESLEY: {
+      bg: '#1a3f7a', accent: '#ffffff', muted: '#9ab8e0', border: '#3a5fa0',
+      heading: 'Cove for <em>Wellesley.</em>',
+      desc: 'Wellesley alumni are already in the rooms you want to be in.',
+      badge: 'W', badgeBg: '#C4A030', badgeColor: '#ffffff',
+      btnBg: '#C4A030', btnColor: '#1a3f7a'
+    },
+    MOREHOUSE: {
+      bg: '#3d1410', accent: '#ffffff', muted: '#c49890', border: '#7a3028',
+      heading: 'Cove for <em>Morehouse.</em>',
+      desc: 'Morehouse alumni are builders, leaders, and changemakers. Connect with them.',
+      badge: 'M', badgeBg: '#C8A060', badgeColor: '#3d1410',
+      btnBg: '#C8A060', btnColor: '#3d1410'
+    },
+    HOWARD: {
+      bg: '#002850', accent: '#ffffff', muted: '#7ab0d8', border: '#1a5080',
+      heading: 'Cove for <em>Howard.</em>',
+      desc: 'The Howard network is one of the most powerful in the world. Time to use it.',
+      badge: 'HU', badgeBg: '#E8C030', badgeColor: '#002850',
+      btnBg: '#E8C030', btnColor: '#002850'
+    },
+    SPELMAN: {
+      bg: '#001f58', accent: '#ffffff', muted: '#8899dd', border: '#1a3888',
+      heading: 'Cove for <em>Spelman.</em>',
+      desc: 'Spelman women have always found a way. Cove helps map the path forward.',
+      badge: 'SC', badgeBg: '#B09828', badgeColor: '#ffffff',
+      btnBg: '#B09828', btnColor: '#001f58'
+    },
+    UVM: {
+      bg: '#0f3826', accent: '#ffffff', muted: '#7aaa88', border: '#286848',
+      heading: 'Cove for <em>UVM.</em>',
+      desc: 'Burlington-born, world-ready. The UVM network is bigger than you think.',
+      badge: 'UVM', badgeBg: '#FFC72C', badgeColor: '#0f3826',
+      btnBg: '#FFC72C', btnColor: '#0f3826'
+    },
+    YOURS: {
+      bg: '#111111', accent: '#ffffff', muted: '#666', border: '#444',
+      heading: 'Cove for <em>your school.</em>',
+      desc: 'Every campus has graduates who need this. Let\'s build it for yours.',
+      badge: '?', badgeBg: '#333', badgeColor: '#aaa',
+      btnBg: '#ffffff', btnColor: '#111111'
+    }
+  };
+
+  window.selectSchool = function(key) {
+    var s = schools[key];
+    var section = document.getElementById('college-section');
+    section.style.background = s.bg;
+
+    document.getElementById('college-heading').innerHTML = s.heading;
+    document.getElementById('college-desc').textContent = s.desc;
+    document.getElementById('college-eyebrow').style.color = s.muted;
+    document.getElementById('college-desc').style.color = s.muted;
+
+    var badge = document.getElementById('school-badge');
+    badge.style.background = s.badgeBg;
+    badge.style.color = s.badgeColor;
+    badge.textContent = s.badge;
+    badge.style.display = 'flex';
+    badge.classList.remove('badge-pop');
+    void badge.offsetWidth;
+    badge.classList.add('badge-pop');
+
+    document.querySelectorAll('.college-tag').forEach(function(t) {
+      t.style.borderColor = s.border;
+      t.style.color = s.muted;
+    });
+    var active = document.querySelector('.college-tag[data-school="' + key + '"]');
+    if (active) { active.style.borderColor = s.accent; active.style.color = s.accent; }
+
+    var cta = document.getElementById('college-cta');
+    cta.style.background = s.btnBg;
+    cta.style.color = s.btnColor;
+  };
+})();
+</script>
 
 <!-- ── BUILT BY ────────────────────────────────────────────── -->
 <section class="section" id="team" style="background:var(--cream); border-top:1px solid var(--mist);">
