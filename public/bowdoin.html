@@ -336,12 +336,12 @@
       text-decoration: none; transition: opacity 0.15s, background 0.3s, color 0.3s;
     }
     .btn-white:hover { opacity: 0.85; }
-    #school-badge {
-      width: 72px; height: 72px; border-radius: 50%;
-      display: none; align-items: center; justify-content: center;
-      font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 700;
-      margin: 0 auto 20px; transition: background 0.3s, color 0.3s;
+    #school-logo {
+      width: 88px; height: 88px; border-radius: 50%;
+      display: none; margin: 0 auto 20px;
+      object-fit: contain;
     }
+    #school-logo.logo-dark { filter: brightness(0) invert(1); }
     @keyframes badgePop {
       from { transform: scale(0.6); opacity: 0; }
       to   { transform: scale(1);   opacity: 1; }
@@ -753,7 +753,7 @@
 <section class="colleges-strip" id="college-section">
   <p class="eyebrow" id="college-eyebrow">WHITE-LABELED FOR INSTITUTIONS</p>
   <h2 class="section-h2" id="college-heading" style="color:white; max-width:600px; margin:0 auto 14px;">Cove for <em>your</em> campus.</h2>
-  <div id="school-badge"></div>
+  <img id="school-logo" src="" alt="" />
   <p class="section-p" id="college-desc" style="color:#666; max-width:480px; margin:0 auto 0;">Your brand, your mascot, your network. Open-source and white-label ready.</p>
   <div class="colleges-logos">
     <span class="college-tag" data-school="BOWDOIN" onclick="selectSchool('BOWDOIN')" style="border-color:#fff;color:#fff;">BOWDOIN ↗</span>
@@ -774,49 +774,49 @@
       bg: '#0d0d0d', accent: '#ffffff', muted: '#888', border: '#444',
       heading: 'Cove for <em>Bowdoin.</em>',
       desc: 'Your brand, your mascot, your network. Open-source and white-label ready.',
-      badge: 'B', badgeBg: '#f0f0f0', badgeColor: '#0d0d0d',
+      logo: 'logo-bowdoin.png', logoClass: '',
       btnBg: '#ffffff', btnColor: '#0d0d0d'
     },
     WELLESLEY: {
       bg: '#1a3f7a', accent: '#ffffff', muted: '#9ab8e0', border: '#3a5fa0',
       heading: 'Cove for <em>Wellesley.</em>',
       desc: 'Wellesley alumni are already in the rooms you want to be in.',
-      badge: 'W', badgeBg: '#C4A030', badgeColor: '#ffffff',
-      btnBg: '#C4A030', btnColor: '#1a3f7a'
+      logo: 'logo-wellesley.png', logoClass: 'logo-dark',
+      btnBg: '#C4A030', btnColor: '#ffffff'
     },
     MOREHOUSE: {
       bg: '#3d1410', accent: '#ffffff', muted: '#c49890', border: '#7a3028',
       heading: 'Cove for <em>Morehouse.</em>',
       desc: 'Morehouse alumni are builders, leaders, and changemakers. Connect with them.',
-      badge: 'M', badgeBg: '#C8A060', badgeColor: '#3d1410',
+      logo: 'logo-morehouse.png', logoClass: 'logo-dark',
       btnBg: '#C8A060', btnColor: '#3d1410'
     },
     HOWARD: {
       bg: '#002850', accent: '#ffffff', muted: '#7ab0d8', border: '#1a5080',
       heading: 'Cove for <em>Howard.</em>',
       desc: 'The Howard network is one of the most powerful in the world. Time to use it.',
-      badge: 'HU', badgeBg: '#E8C030', badgeColor: '#002850',
+      logo: 'logo-howard.png', logoClass: 'logo-dark',
       btnBg: '#E8C030', btnColor: '#002850'
     },
     SPELMAN: {
-      bg: '#001f58', accent: '#ffffff', muted: '#8899dd', border: '#1a3888',
+      bg: '#1a1a1a', accent: '#ffffff', muted: '#aaaaaa', border: '#444',
       heading: 'Cove for <em>Spelman.</em>',
       desc: 'Spelman women have always found a way. Cove helps map the path forward.',
-      badge: 'SC', badgeBg: '#B09828', badgeColor: '#ffffff',
-      btnBg: '#B09828', btnColor: '#001f58'
+      logo: 'logo-spelman.png', logoClass: 'logo-dark',
+      btnBg: '#ffffff', btnColor: '#1a1a1a'
     },
     UVM: {
       bg: '#0f3826', accent: '#ffffff', muted: '#7aaa88', border: '#286848',
       heading: 'Cove for <em>UVM.</em>',
       desc: 'Burlington-born, world-ready. The UVM network is bigger than you think.',
-      badge: 'UVM', badgeBg: '#FFC72C', badgeColor: '#0f3826',
+      logo: 'logo-uvm.png', logoClass: '',
       btnBg: '#FFC72C', btnColor: '#0f3826'
     },
     YOURS: {
       bg: '#111111', accent: '#ffffff', muted: '#666', border: '#444',
       heading: 'Cove for <em>your school.</em>',
       desc: 'Every campus has graduates who need this. Let\'s build it for yours.',
-      badge: '?', badgeBg: '#333', badgeColor: '#aaa',
+      logo: '', logoClass: '',
       btnBg: '#ffffff', btnColor: '#111111'
     }
   };
@@ -831,14 +831,18 @@
     document.getElementById('college-eyebrow').style.color = s.muted;
     document.getElementById('college-desc').style.color = s.muted;
 
-    var badge = document.getElementById('school-badge');
-    badge.style.background = s.badgeBg;
-    badge.style.color = s.badgeColor;
-    badge.textContent = s.badge;
-    badge.style.display = 'flex';
-    badge.classList.remove('badge-pop');
-    void badge.offsetWidth;
-    badge.classList.add('badge-pop');
+    var logo = document.getElementById('school-logo');
+    if (s.logo) {
+      logo.src = s.logo;
+      logo.alt = key;
+      logo.className = s.logoClass;
+      logo.style.display = 'block';
+      logo.classList.remove('badge-pop');
+      void logo.offsetWidth;
+      logo.classList.add('badge-pop');
+    } else {
+      logo.style.display = 'none';
+    }
 
     document.querySelectorAll('.college-tag').forEach(function(t) {
       t.style.borderColor = s.border;
