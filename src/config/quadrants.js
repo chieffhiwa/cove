@@ -82,7 +82,7 @@ export function getQuadrant(x, y) {
 export const QUADRANT_STORIES = {
   "brave-curious": {
     label: "THE FAST MOVER",
-    headline: "You ask the question before anyone else knows it's a question.",
+    headline: "You ask the right questions before anyone else.",
     body: [
       "There's a moment in every room when someone decides to go first. To say the thing. To try the approach that might not work. You're usually that person — or you're the one who sees it clearly enough that you should be.",
       "Carol Dweck spent years studying what separates people who improve from people who plateau. Her finding was simple: the learners believe ability grows. They lean toward challenges instead of away from them. That's you, right now. Brave enough to move. Curious enough to keep updating.",
