@@ -109,6 +109,71 @@
       background: #cfefff;
       border: 1px solid transparent;
     }
+
+    .video-link {
+      color: inherit;
+      text-decoration: underline;
+      cursor: pointer;
+      background: none;
+      border: none;
+      font: inherit;
+      padding: 0;
+    }
+
+    #video-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 12, 40, 0.85);
+      z-index: 10;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    #video-modal.open {
+      display: flex;
+    }
+
+    .video-modal-inner {
+      position: relative;
+      width: 100%;
+      max-width: 720px;
+    }
+
+    .video-modal-frame {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+
+    .video-modal-frame iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    .video-modal-close {
+      position: absolute;
+      top: -2.5rem;
+      right: 0;
+      background: none;
+      border: none;
+      color: rgba(207, 239, 255, 0.75);
+      font-size: 1.5rem;
+      line-height: 1;
+      cursor: pointer;
+      padding: 0.25rem;
+    }
+
+    .video-modal-close:hover {
+      color: #cfefff;
+    }
   </style>
 </head>
 <body>
@@ -120,12 +185,44 @@
       we're taking a step back, incorporating <strong>your feedback</strong>,
       and building something even more valuable to new and returning
       job seekers.<br><br>
-      we <a href="https://www.youtube.com/watch?v=EvGjAYH-Nq4" target="_blank" rel="noopener" style="color: inherit; text-decoration: underline;">can't hardly wait</a> 🎵
+      we <button type="button" class="video-link" onclick="openVideoModal()">can't hardly wait</button> 🎵
     </div>
     <div class="buttons">
       <a class="btn btn-outline" href="https://github.com/chieffhiwa/cove" target="_blank" rel="noopener">↗ view on github</a>
       <a class="btn btn-solid" href="https://github.com/sponsors/chieffhiwa" target="_blank" rel="noopener">♥ sponsor</a>
     </div>
   </div>
+
+  <div id="video-modal" onclick="if (event.target === this) closeVideoModal()">
+    <div class="video-modal-inner">
+      <button type="button" class="video-modal-close" onclick="closeVideoModal()" aria-label="Close video">✕</button>
+      <div class="video-modal-frame" id="video-modal-frame"></div>
+    </div>
+  </div>
+
+  <script>
+    var VIDEO_ID = 'EvGjAYH-Nq4';
+
+    function openVideoModal() {
+      var frame = document.getElementById('video-modal-frame');
+      var iframe = document.createElement('iframe');
+      iframe.src = 'https://www.youtube.com/embed/' + VIDEO_ID + '?autoplay=1';
+      iframe.title = 'cove video';
+      iframe.allow = 'autoplay; encrypted-media; picture-in-picture';
+      iframe.allowFullscreen = true;
+      frame.innerHTML = '';
+      frame.appendChild(iframe);
+      document.getElementById('video-modal').classList.add('open');
+    }
+
+    function closeVideoModal() {
+      document.getElementById('video-modal').classList.remove('open');
+      document.getElementById('video-modal-frame').innerHTML = '';
+    }
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') closeVideoModal();
+    });
+  </script>
 </body>
 </html>
